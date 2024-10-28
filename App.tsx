@@ -1,20 +1,32 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useFonts } from "expo-font";
+import Content from "./content";
+import { AppContextWrapper } from "./context/app";
+import { AuthContextWrapper } from "./context/auth";
+import { ContentContextWrapper } from "./context/content";
+import { GameContextWrapper } from "./context/game";
+import { NotificationsContextWrapper } from "./context/notifications";
+import {
+  Montserrat_400Regular,
+  Montserrat_700Bold,
+} from "@expo-google-fonts/montserrat";
+import { Text } from "react-native";
 
 export default function App() {
+  // const [fontsLoaded] = useFonts({
+  //   Montserrat_400Regular,
+  //   Montserrat_700Bold,
+  // });
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <AppContextWrapper>
+      <AuthContextWrapper>
+        <ContentContextWrapper>
+          <GameContextWrapper>
+            <NotificationsContextWrapper>
+              <Content />
+            </NotificationsContextWrapper>
+          </GameContextWrapper>
+        </ContentContextWrapper>
+      </AuthContextWrapper>
+    </AppContextWrapper>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

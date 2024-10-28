@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "iq-game",
-    "slug": "iq-game",
+    "name": "iq-night",
+    "slug": "iq-night",
     "version": "1.0.0",
+    "scheme": "iq-night",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -12,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "y"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,6 +24,13 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "04bda34c-5ce2-4edd-804f-f4cdd1cb6c82"
+      }
+    },
+    "owner": "iq-night",
+    "plugins": ["expo-font"]
   }
 }
