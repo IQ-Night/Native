@@ -24,6 +24,7 @@ import { useContentContext } from "../../context/content";
 import { ActivityIndicator } from "react-native-paper";
 import Img from "../../components/image";
 import { DefineUserLevel } from "../../functions/userLevelOptimizer";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -107,7 +108,7 @@ const Profile = ({ navigation }: any) => {
               <Text
                 style={{ color: theme.text, fontSize: 14, fontWeight: 500 }}
               >
-                Level: {level?.current}
+                Lvl: {level?.current}
               </Text>
             </View>
 
@@ -120,7 +121,8 @@ const Profile = ({ navigation }: any) => {
                 justifyContent: "center",
               }}
             >
-              <View
+              <LinearGradient
+                colors={["yellow", "orange"]}
                 style={{
                   backgroundColor: "rgba(255,255,255,0.1)",
                   width: "100%",
@@ -129,21 +131,19 @@ const Profile = ({ navigation }: any) => {
                   borderRadius: 50,
                   overflow: "hidden",
                 }}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
               >
                 <View
                   style={{
                     position: "absolute",
-                    backgroundColor:
-                      level?.percent < 34
-                        ? "yellow"
-                        : level?.percent > 33 && level?.percent < 67
-                        ? "orange"
-                        : "green",
-                    width: `${level?.percent}%`,
+                    right: 0,
+                    backgroundColor: "#333",
+                    width: `${100 - level?.percent}%`,
                     height: "100%",
                   }}
                 ></View>
-              </View>
+              </LinearGradient>
             </View>
 
             {/* View 3: Auto-sized based on its children */}

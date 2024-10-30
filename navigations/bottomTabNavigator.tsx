@@ -326,7 +326,7 @@ const ScreenManager = () => {
             </ProfileContextWrapper>
           )}
         </Tab.Screen>
-        {currentUser?.admin && (
+        {currentUser?.admin?.active && (
           <Tab.Screen name="Admin">
             {() => (
               <AdminContextWrapper>

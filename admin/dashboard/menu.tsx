@@ -8,6 +8,10 @@ const Menu = ({ navigation }: any) => {
    */
   const items = [
     {
+      screen: "Management",
+      label: "Management",
+    },
+    {
       screen: "Users",
       label: "Users",
     },

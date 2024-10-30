@@ -73,12 +73,14 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
 
     const handleUpdateRoomInfo = (response: any) => {
       if (response.roomId === doorReview._id && response) {
-        setLiveUsers(response.usersInRoom);
+        if (response?.usersInRoom) {
+          setLiveUsers(response.usersInRoom);
+          if (response?.usersInRoom?.length < 1) {
+            setDoorReview(null);
+          }
+        }
         if (response?.gameLevel) {
           setGameLevel(response?.gameLevel);
-        }
-        if (response?.usersInRoom?.length < 1) {
-          setDoorReview(null);
         }
       }
     };
@@ -164,7 +166,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
         if (
           response.data.data.room.games[
             response.data.data.room.games.length - 1
-          ].gameLevel?.status === "In play"
+          ].gameLevel?.status === "In Play"
         ) {
           setLoadingSpectate(true);
         }
@@ -191,6 +193,48 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
       useNativeDriver: true, // For smoother and better performance
     }).start();
   }, [editRoom]);
+
+  // on join button
+
+  const onPressFunction = () => {
+    const isGameInPlay = gameLevel?.status === "In Play";
+    if (doorReview?.admin?.founder?._id !== currentUser?._id) {
+      const playerCountMismatch =
+        liveUsers?.filter((u: any) => u.type === "player").length !==
+        doorReview?.options.maxPlayers;
+
+      if (!isGameInPlay || playerCountMismatch) {
+        const isPrivateAndValidCode =
+          (doorReview?.private.value &&
+            pinCodeInput === doorReview?.private.code) ||
+          !doorReview?.private.value;
+
+        if (isPrivateAndValidCode) {
+          if (
+            isGameInPlay &&
+            liveUsers?.some(
+              (u: any) => u.userId === currentUser?._id && !u?.death
+            )
+          ) {
+            CheckRoom("player", "reJoin");
+          } else {
+            CheckRoom("player", "");
+          }
+        } else {
+          alert("Wrong Pin Code");
+        }
+      }
+    } else {
+      if (
+        isGameInPlay &&
+        liveUsers?.some((u: any) => u.userId === currentUser?._id && !u?.death)
+      ) {
+        CheckRoom("player", "reJoin");
+      } else {
+        CheckRoom("player", "");
+      }
+    }
+  };
 
   return (
     <>
@@ -235,34 +279,35 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 16 }}
               >
+                <MaterialIcons
+                  onPress={() => {
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
+                    navigation.navigate("Logs", {
+                      room: doorReview,
+                    });
+                  }}
+                  name="format-list-bulleted"
+                  style={{ position: "relative", top: 1 }}
+                  size={26}
+                  color={theme.text}
+                />
+
                 {doorReview.admin.founder._id === currentUser._id && (
                   <MaterialIcons
                     onPress={() => {
                       if (haptics) {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
                       }
-                      navigation.navigate("Logs", {
-                        room: doorReview,
-                      });
+                      setEditRoom(true);
                     }}
-                    name="format-list-bulleted"
+                    name="settings"
                     style={{ position: "relative", top: 1 }}
-                    size={26}
+                    size={25}
                     color={theme.text}
                   />
                 )}
-                <MaterialIcons
-                  onPress={() => {
-                    if (haptics) {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                    }
-                    setEditRoom(true);
-                  }}
-                  name="settings"
-                  style={{ position: "relative", top: 1 }}
-                  size={25}
-                  color={theme.text}
-                />
 
                 {doorReview.admin.founder._id === currentUser._id && (
                   <MaterialCommunityIcons
@@ -528,89 +573,71 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                 marginTop: 12,
               }}
             >
-              {doorReview.private.value && (
-                <View style={{ alignItems: "center", gap: 8, width: "100%" }}>
-                  <View
-                    style={{
-                      width: "100%",
-                      alignItems: "center",
-                      gap: 16,
-                    }}
-                  >
-                    <Text
+              {doorReview.private.value &&
+                doorReview?.admin?.founder?._id !== currentUser?._id && (
+                  <View style={{ alignItems: "center", gap: 8, width: "100%" }}>
+                    <View
                       style={{
-                        color: theme.text,
-                        fontSize: 18,
-                        fontWeight: 500,
+                        width: "100%",
+                        alignItems: "center",
+                        gap: 16,
                       }}
                     >
-                      Pin Code
-                    </Text>
-                    <View style={{ width: "100%" }}>
-                      <TextInput
-                        placeholder="Enter Pin Code"
-                        placeholderTextColor={theme.text}
-                        maxLength={8}
-                        value={pinCodeInput}
-                        onChangeText={setDoorReviewInput}
+                      <Text
                         style={{
-                          backgroundColor: "transparent",
-                          color: theme.active,
-                          borderColor: "rgba(255,255,255,0.1)",
-                          borderWidth: 1.5,
-                          height: 56,
-                          borderRadius: 12,
-                          paddingLeft: 16,
+                          color: theme.text,
+                          fontSize: 18,
+                          fontWeight: 500,
                         }}
-                      />
+                      >
+                        Pin Code
+                      </Text>
+                      <View style={{ width: "100%" }}>
+                        <TextInput
+                          placeholder="Enter Pin Code"
+                          placeholderTextColor={theme.text}
+                          maxLength={8}
+                          value={pinCodeInput}
+                          onChangeText={setDoorReviewInput}
+                          style={{
+                            backgroundColor: "transparent",
+                            color: theme.active,
+                            borderColor: "rgba(255,255,255,0.1)",
+                            borderWidth: 1.5,
+                            height: 56,
+                            borderRadius: 12,
+                            paddingLeft: 16,
+                          }}
+                        />
+                      </View>
                     </View>
                   </View>
-                </View>
-              )}
-              {(gameLevel?.status !== "In Play" ||
-                (gameLevel?.status === "In Play" &&
-                  liveUsers?.filter((u: any) => u.type === "player").length !==
-                    doorReview?.options.maxPlayers)) && (
-                <Button
-                  title={
-                    doorReview?.spectatorMode &&
-                    gameLevel?.status !== "In Play" &&
-                    !liveUsers?.find((u: any) => u.userId === currentUser?._id)
-                      ? "Join as a Player"
-                      : doorReview?.spectatorMode &&
-                        liveUsers?.some(
-                          (u: any) => u.userId === currentUser?._id && !u?.death
-                        )
-                      ? "Return in Game"
-                      : "Join"
-                  }
-                  style={{
-                    backgroundColor: theme.active,
-                    color: "white",
-                    width: "100%",
-                  }}
-                  loading={loading}
-                  onPressFunction={
-                    (doorReview?.private.value &&
-                      pinCodeInput === doorReview?.private.code) ||
-                    !doorReview?.private.value
-                      ? () => {
-                          if (
-                            gameLevel?.status === "In Play" &&
-                            liveUsers?.some(
-                              (u: any) =>
-                                u.userId === currentUser?._id && !u?.death
-                            )
-                          ) {
-                            CheckRoom("player", "reJoin");
-                          } else {
-                            CheckRoom("player", "");
-                          }
-                        }
-                      : () => alert("Wrong Pin Code")
-                  }
-                />
-              )}
+                )}
+
+              <Button
+                title={
+                  gameLevel?.status === "In Play"
+                    ? "Playing now"
+                    : gameLevel?.status !== "In Play" &&
+                      liveUsers?.filter((u: any) => u.type === "player")
+                        .length === doorReview?.options.maxPlayers
+                    ? "Room is full"
+                    : "Join as a Player"
+                }
+                style={{
+                  backgroundColor: theme.active,
+                  color: "white",
+                  width: "100%",
+                }}
+                disabled={
+                  gameLevel?.status === "In Play" ||
+                  liveUsers?.filter((u: any) => u.type === "player").length ===
+                    doorReview?.options.maxPlayers
+                }
+                loading={loading}
+                onPressFunction={onPressFunction}
+              />
+
               {doorReview?.spectatorMode && (
                 <Button
                   title="Join as a Spectator"
@@ -620,15 +647,24 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                     width: "100%",
                   }}
                   loading={loadingSpectator}
-                  onPressFunction={
-                    (doorReview?.private.value &&
-                      pinCodeInput === doorReview?.private.code) ||
-                    !doorReview?.private.value
-                      ? () => {
-                          CheckRoom("spectator", "");
-                        }
-                      : () => alert("Wrong Pin Code")
-                  }
+                  onPressFunction={() => {
+                    if (
+                      doorReview?.admin?.founder?._id !== currentUser?._id &&
+                      !currentUser?.admin.active
+                    ) {
+                      if (
+                        (doorReview?.private.value &&
+                          pinCodeInput === doorReview?.private.code) ||
+                        !doorReview?.private.value
+                      ) {
+                        CheckRoom("spectator", "");
+                      } else {
+                        alert("Wrong Pin Code");
+                      }
+                    } else {
+                      CheckRoom("spectator", "");
+                    }
+                  }}
                 />
               )}
             </View>

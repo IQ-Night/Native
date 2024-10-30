@@ -7,6 +7,7 @@ import axios from "axios";
 import { ActivityIndicator } from "react-native-paper";
 import { BlurView } from "expo-blur";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useAuthContext } from "../../context/auth";
 
 const User = ({ route, navigation, userItem }: any) => {
   let item: any = route?.params?.item || userItem;
@@ -15,6 +16,9 @@ const User = ({ route, navigation, userItem }: any) => {
    */
   const { theme, apiUrl } = useAppContext();
 
+  // auth
+  const { currentUser } = useAuthContext();
+
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const UpdateUser = async () => {
@@ -22,15 +26,13 @@ const User = ({ route, navigation, userItem }: any) => {
       const response = await axios.get(apiUrl + "/api/v1/users/" + item?._id);
       if (response.data.status === "success") {
         setUser(response.data.data.user);
-        setTimeout(() => {
-          setLoading(false);
-        }, 300);
+
+        setLoading(false);
       }
     } catch (error: any) {
       console.log(error.response.data);
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+
+      setLoading(false);
     }
   };
 
@@ -58,16 +60,27 @@ const User = ({ route, navigation, userItem }: any) => {
         <View
           style={{
             flexDirection: "row",
-
             gap: 16,
           }}
         >
           <View style={{ width: "33%", aspectRatio: 1, overflow: "hidden" }}>
             <Img uri={item?.cover || item?.userCover} onLoad={UpdateUser} />
           </View>
-          <Text style={{ color: theme.text, fontWeight: 500, fontSize: 16 }}>
-            Level: {level?.current}
-          </Text>
+          <View style={{ gap: 8 }}>
+            <Text style={{ color: theme.text, fontWeight: 500, fontSize: 16 }}>
+              Level: {level?.current}
+            </Text>
+
+            <Text
+              style={{
+                color: theme.text,
+                fontWeight: 500,
+                fontSize: 16,
+              }}
+            >
+              Rating: {item?.rating} P.
+            </Text>
+          </View>
         </View>
         <View>
           <View style={{ gap: 12 }}>

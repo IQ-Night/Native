@@ -7,10 +7,10 @@ import { useAuthContext } from "../context/auth";
 import Clan from "../screens/screen-clans/clan-screen";
 import Liderboard from "../screens/screen-liderboard/main";
 import User from "../screens/screen-user/main";
-import { renderBlockButton } from "../functions/blockUser";
 import { Confirm } from "../components/confirm";
 import { LiderboardContextWrapper } from "../context/liderboard";
 import Coins from "../screens/screen-coins/coins";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const LiderboardStackNavigator = () => {
   /**
@@ -84,17 +84,13 @@ const LiderboardStackNavigator = () => {
           component={User}
           options={({ route }: any) => ({
             title: route.params?.item?.name || "User",
-            headerRight:
-              route.params.item?._id !== currentUser?._id
-                ? () =>
-                    renderBlockButton({
-                      user: route.params.item,
-                      haptics,
-                      setConfirm,
-                      text: "Are you sure you want to block the user?",
-                      style: { marginRight: 15 },
-                    })
-                : undefined,
+            headerRight: () => (
+              <MaterialCommunityIcons
+                name="block-helper"
+                size={19}
+                color="red"
+              />
+            ),
           })}
         />
         <LiderboardStack.Screen name="Coins" component={Coins} />

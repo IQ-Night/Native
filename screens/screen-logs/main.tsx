@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Pressable,
@@ -32,6 +32,7 @@ const Logs = ({ route, item }: any) => {
   const [page, setPage] = useState(1);
 
   const GetLogs = async () => {
+    console.log("getLogs");
     try {
       const response = await axios.get(
         apiUrl + "/api/v1/rooms/" + room?._id + "/logs?page=1"
@@ -48,34 +49,48 @@ const Logs = ({ route, item }: any) => {
     }
   };
 
-  const AddHisotry = async () => {
+  const AddHistory = async () => {
     const newPage = page + 1;
     setLoadLogs(true);
+
+    if (!room?._id) {
+      console.log("Room ID is not available.");
+      setLoadLogs(false);
+      return;
+    }
+
     try {
-      const response = await axios.get(
-        apiUrl + "/api/v1/rooms/" + room?._id + `/logs?page=${newPage}`
+      const { data } = await axios.get(
+        `${apiUrl}/api/v1/rooms/${room._id}/logs?page=${newPage}`
       );
-      if (response.data.status === "success") {
-        let logsList = response.data.data.logs;
+
+      if (data.status === "success") {
+        const logsList = data.data.logs;
+
         setLogs((prevLogs: any) => {
-          const logsMap = new Map(
-            prevLogs.map((logs: any) => [logs._id, logs])
+          // Create a Set of existing log IDs for fast lookup
+          const existingLogIds = new Set(
+            prevLogs.map((log: any) => log.number)
           );
 
-          logsList.forEach((newLogs: any) => {
-            if (!logsMap.has(newLogs._id)) {
-              logsMap.set(newLogs._id, newLogs);
-            }
-          });
+          // Filter new logs to include only those that are not already present
+          const uniqueNewLogs = logsList.filter(
+            (newLog: any) => !existingLogIds.has(newLog.number)
+          );
 
-          const uniqueLogs = Array.from(logsMap.values());
-          return uniqueLogs;
+          // Return the concatenated array of previous logs and unique new logs
+          return [...prevLogs, ...uniqueNewLogs];
         });
+
         setPage(newPage);
-        setLoadLogs(false);
       }
     } catch (error: any) {
-      console.log(error.response.data.message);
+      console.error(
+        "Error fetching logs:",
+        error?.response?.data?.message || error.message
+      );
+    } finally {
+      setLoadLogs(false);
     }
   };
 
@@ -159,7 +174,7 @@ const Logs = ({ route, item }: any) => {
             contentSize.height - 350;
           if (isCloseToBottom) {
             if (totalLogs > logs?.length) {
-              AddHisotry();
+              AddHistory();
             }
           }
         }}
@@ -461,11 +476,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
+    height: "100%",
     zIndex: 20,
   },
   row: {
     width: "100%",
-    paddingBottom: 88,
+    paddingBottom: 24,
     paddingHorizontal: 12,
     marginTop: 8,
     gap: 4,

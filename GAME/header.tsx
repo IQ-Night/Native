@@ -4,28 +4,32 @@ import {
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import axios from "axios";
+import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Animated,
   Dimensions,
   Pressable,
   StyleSheet,
+  Switch,
   Text,
   View,
-  Switch,
 } from "react-native";
+import Button from "../components/button";
 import Img from "../components/image";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
-import { BlurView } from "expo-blur";
-import Button from "../components/button";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-const Header = ({ setAttention, setOpenLogs, game }: any) => {
+const Header = ({
+  setAttention,
+  setOpenLogs,
+  game,
+  setOpenSpectators,
+}: any) => {
   const { apiUrl, theme, haptics } = useAppContext();
   const { currentUser } = useAuthContext();
   const {
@@ -133,6 +137,7 @@ const Header = ({ setAttention, setOpenLogs, game }: any) => {
   // disable voice & video
   const [voice, setVoice] = useState(true);
   const [video, setVideo] = useState(true);
+  const [chat, setChat] = useState(true);
 
   // switch to spectator
   const changeToSpectator = async () => {
@@ -191,6 +196,7 @@ const Header = ({ setAttention, setOpenLogs, game }: any) => {
             color={theme.text}
           />
         </Pressable>
+
         <Pressable
           style={{ position: "absolute", top: 0, right: 16, zIndex: 0 }}
           onPress={() => {
@@ -228,7 +234,15 @@ const Header = ({ setAttention, setOpenLogs, game }: any) => {
             left: 16,
           }}
         >
-          <View
+          <Pressable
+            onPress={() => {
+              if (spectators?.length > 0) {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+                setOpenSpectators(true);
+              }
+            }}
             style={{
               flexDirection: "row",
               alignItems: "center",
@@ -237,7 +251,7 @@ const Header = ({ setAttention, setOpenLogs, game }: any) => {
           >
             <MaterialCommunityIcons name="eye" size={18} color={theme.text} />
             <Text style={{ color: theme.text }}>{spectators?.length}</Text>
-          </View>
+          </Pressable>
           {game?.value === "Ready to start" && (
             <View style={{ marginTop: 12, position: "relative", right: 8 }}>
               <Switch
@@ -326,6 +340,7 @@ const Header = ({ setAttention, setOpenLogs, game }: any) => {
           color={theme.text}
         />
       </Pressable>
+
       <Pressable style={{ position: "absolute", top: 148, right: 18 }}>
         <MaterialCommunityIcons
           onPress={() => {
@@ -335,6 +350,20 @@ const Header = ({ setAttention, setOpenLogs, game }: any) => {
             setVideo((prev: any) => !prev);
           }}
           name={video ? "video" : "video-off"}
+          size={26}
+          color={theme.text}
+        />
+      </Pressable>
+
+      <Pressable style={{ position: "absolute", top: 186, right: 18 }}>
+        <MaterialCommunityIcons
+          onPress={() => {
+            if (haptics) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+            }
+            setChat((prev: any) => !prev);
+          }}
+          name="chat"
           size={26}
           color={theme.text}
         />

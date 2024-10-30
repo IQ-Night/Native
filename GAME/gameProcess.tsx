@@ -27,8 +27,7 @@ const GameProcess = ({
   SkipSpeech,
   changeSpeakerLoading,
   setOpenConfirmRoles,
-  confirmedRoles,
-  setConfirmedRoles,
+  StartPlay,
 }: any) => {
   /**
    * App context
@@ -99,20 +98,6 @@ const GameProcess = ({
    * total players to ready start game
    */
   const totalReadyPlayers = gamePlayers?.filter((p: any) => p.readyToStart);
-
-  /**
-   * Start play with less users than provided in room mac players
-   */
-  const StartPlay = () => {
-    if (socket) {
-      socket.emit("startPlay", {
-        roomId: activeRoom?._id,
-        confirmedRoles:
-          confirmedRoles?.length > 0 ? confirmedRoles : activeRoom?.roles,
-      });
-      setConfirmedRoles([]);
-    }
-  };
 
   // Get current user type (either "spectator" or "player")
   const currentUserType =

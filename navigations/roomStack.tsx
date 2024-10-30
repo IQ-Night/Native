@@ -1,16 +1,16 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 import React, { useState } from "react";
 import { Text, View } from "react-native";
 import CountryFlag from "react-native-country-flag";
+import { Confirm } from "../components/confirm";
 import { useAppContext } from "../context/app";
-import { renderBlockButton } from "../functions/blockUser";
+import { useAuthContext } from "../context/auth";
 import Clan from "../screens/screen-clans/clan-screen";
+import Coins from "../screens/screen-coins/coins";
 import Logs from "../screens/screen-logs/main";
 import Rooms from "../screens/screen-rooms/main";
 import User from "../screens/screen-user/main";
-import { Confirm } from "../components/confirm";
-import { useAuthContext } from "../context/auth";
-import Coins from "../screens/screen-coins/coins";
 
 const RoomssStackNavigator = () => {
   /**
@@ -55,17 +55,13 @@ const RoomssStackNavigator = () => {
           component={User}
           options={({ route }: any) => ({
             title: route.params?.item?.name || "User",
-            headerRight:
-              route.params.item?._id !== currentUser?._id
-                ? () =>
-                    renderBlockButton({
-                      user: route.params.item,
-                      haptics,
-                      setConfirm,
-                      text: "Are you sure you want to block the user?",
-                      style: { marginRight: 15 },
-                    })
-                : undefined,
+            headerRight: () => (
+              <MaterialCommunityIcons
+                name="block-helper"
+                size={19}
+                color="red"
+              />
+            ),
           })}
         />
 

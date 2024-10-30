@@ -19,6 +19,9 @@ import { FormatDate } from "../../functions/formatDate";
 import axios from "axios";
 import { useAuthContext } from "../../context/auth";
 import { DefineUserLevel } from "../../functions/userLevelOptimizer";
+import { checkBanExpired } from "../../functions/checkBan";
+import BanTimer from "../../components/banTimer";
+import { useRoomsContext } from "../../context/rooms";
 
 interface ItemType {
   _id: string;
@@ -76,9 +79,13 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
    */
   const { socket } = useGameContext();
   /**
+   * Game context
+   */
+  const { setRooms } = useRoomsContext();
+  /**
    * Auth context
    */
-  const { currentUser } = useAuthContext();
+  const { currentUser, setCurrentUser } = useAuthContext();
 
   const [liveUsers, setLiveUsers] = useState<any[]>(item.liveMembers); // State to store users in the room
 
@@ -99,12 +106,18 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
     setLiveUsers(item.liveMembers);
   }, [item]);
 
+  // game level
+  const [gameLevel, setGameLevel] = useState<any>(null);
+
   useEffect(() => {
     // Fetch the number of live users in the room when the component loads
     if (!socket) return; // Ensure the socket is defined
     const handleUpdateRoomInfo = (response: any) => {
       if (response.roomId === item._id) {
         getRoomMembers();
+        if (response?.gameLevel) {
+          setGameLevel(response?.gameLevel);
+        }
       }
     };
 
@@ -118,24 +131,43 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
   }, [socket, item._id]);
 
   // defines room open or not
-  let roomIsOpen = liveUsers?.find(
-    (u: any) => u.userId === item.admin.founder._id
-  );
-  if (item.admin.founder._id === currentUser?._id) {
-    roomIsOpen = true;
-  }
-
   const currentUserRating = DefineUserLevel({ user: currentUser });
+
+  let roomIsOpen = { status: "close", reason: "empty" };
+  if (
+    item.admin.founder._id === currentUser?._id ||
+    liveUsers?.some(
+      (u: { userId: string }) => u.userId === item.admin.founder._id
+    )
+  ) {
+    if (
+      currentUser?.status?.type === "blocked in app" &&
+      !checkBanExpired(currentUser?.status)
+    ) {
+      roomIsOpen = { status: "close", reason: "blocked in app" };
+    } else if (currentUserRating?.current < item?.rating?.min) {
+      roomIsOpen = { status: "close", reason: "rating" };
+    } else {
+      const expired = checkBanExpired(
+        item?.blackList?.find(
+          (i: { user: string }) => i?.user === currentUser?._id
+        )
+      );
+
+      if (expired) {
+        roomIsOpen = { status: "open", reason: "" };
+      } else {
+        roomIsOpen = { status: "close", reason: "ban" };
+      }
+    }
+  }
 
   return (
     <View
       style={[
         styles.shadowContainer,
         {
-          opacity:
-            roomIsOpen && currentUserRating?.current >= item?.rating?.min
-              ? 1
-              : 0.5,
+          opacity: roomIsOpen.status === "open" ? 1 : 0.5,
         },
       ]}
     >
@@ -232,7 +264,10 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
                 <View style={styles.joinButtonContainer}>
                   <Pressable
                     onPress={() => {
-                      if (roomIsOpen) {
+                      if (roomIsOpen?.status === "close") {
+                        return;
+                      }
+                      if (roomIsOpen?.status === "open") {
                         setDoorReview({ ...item, liveMembers: liveUsers });
                         if (haptics) {
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
@@ -244,15 +279,98 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
                     {item.private.value && (
                       <MaterialCommunityIcons
                         size={18}
-                        color={theme.active}
+                        color={
+                          roomIsOpen.status === "open" ? theme.active : "#888"
+                        }
                         name="lock"
                       />
                     )}
-                    <Text style={styles.joinButtonText}>
-                      {currentUserRating?.current < item?.rating?.min
-                        ? "Level not match"
-                        : "Join"}
-                    </Text>
+                    {gameLevel?.status === "In Play" ? (
+                      <Text style={styles.joinButtonText}>Playing now</Text>
+                    ) : (
+                      <Text
+                        style={[
+                          styles.joinButtonText,
+                          {
+                            color:
+                              roomIsOpen?.status === "open"
+                                ? theme.active
+                                : "#888",
+                            fontWeight: 600,
+                          },
+                        ]}
+                      >
+                        {roomIsOpen?.reason === "rating" && (
+                          <Text>Level does't match</Text>
+                        )}
+                        {currentUser?.status?.type === "blocked in app" &&
+                        !checkBanExpired(currentUser?.status) ? (
+                          <Text style={{ color: "#888", fontSize: 14 }}>
+                            Ban:{" "}
+                            <BanTimer
+                              duration={currentUser?.status?.totalHours}
+                              createdAt={currentUser?.status?.createdAt}
+                              afterExpire={() =>
+                                setCurrentUser((prev: any) => ({
+                                  ...prev,
+                                  status: undefined,
+                                }))
+                              }
+                            />
+                          </Text>
+                        ) : (
+                          <>
+                            {roomIsOpen?.reason === "ban" ? (
+                              <Text style={{ color: "#888", fontSize: 14 }}>
+                                Ban:{" "}
+                                <BanTimer
+                                  duration={
+                                    item?.blackList?.find(
+                                      (i: { user: string }) =>
+                                        i?.user === currentUser?._id
+                                    )?.totalHours
+                                  }
+                                  createdAt={
+                                    item?.blackList?.find(
+                                      (i: { user: string }) =>
+                                        i?.user === currentUser?._id
+                                    )?.createdAt
+                                  }
+                                  afterExpire={() =>
+                                    setRooms((prev: any) =>
+                                      prev.map((r: any) => {
+                                        if (r._id === item?._id) {
+                                          return {
+                                            ...r,
+                                            blackList: r.blackList.filter(
+                                              (b: any) =>
+                                                b.user !== currentUser?._id
+                                            ),
+                                          };
+                                        } else {
+                                          return r;
+                                        }
+                                      })
+                                    )
+                                  }
+                                />
+                              </Text>
+                            ) : (
+                              <Text>
+                                {liveUsers?.find(
+                                  (u: any) =>
+                                    u.userId === item.admin.founder._id
+                                )
+                                  ? "Join"
+                                  : item.admin.founder._id === currentUser._id
+                                  ? "Open Room"
+                                  : "Closed"}
+                              </Text>
+                            )}
+                          </>
+                        )}
+                      </Text>
+                    )}
                   </Pressable>
                 </View>
               </View>

@@ -9,9 +9,9 @@ import Clan from "../screens/screen-clans/clan-screen";
 import Clans from "../screens/screen-clans/main";
 import Members from "../screens/screen-clans/members";
 import User from "../screens/screen-user/main";
-import { renderBlockButton } from "../functions/blockUser";
 import { Confirm } from "../components/confirm";
 import Coins from "../screens/screen-coins/coins";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const ClansStackNavigator = () => {
   /**
@@ -85,17 +85,13 @@ const ClansStackNavigator = () => {
           component={User}
           options={({ route }: any) => ({
             title: route.params?.item?.name || "User",
-            headerRight:
-              route.params.item?._id !== currentUser?._id
-                ? () =>
-                    renderBlockButton({
-                      user: route.params.item,
-                      haptics,
-                      setConfirm,
-                      text: "Are you sure you want to block the user?",
-                      style: { marginRight: 15 },
-                    })
-                : undefined,
+            headerRight: () => (
+              <MaterialCommunityIcons
+                name="block-helper"
+                size={19}
+                color="red"
+              />
+            ),
           })}
         />
         <ClanStack.Screen name="Members" component={Members} />

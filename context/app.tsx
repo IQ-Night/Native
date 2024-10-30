@@ -31,8 +31,8 @@ export const AppContextWrapper: React.FC<contextProps> = ({ children }) => {
    * API Url
    */
   // const apiUrl = "192.168.1.137:5000";
-  // const apiUrl = "http://192.168.1.6:5000";
-  const apiUrl = "https://iq-night-acb3bc094c45.herokuapp.com";
+  const apiUrl = "http://192.168.1.6:5000";
+  // const apiUrl = "https://iq-night-acb3bc094c45.herokuapp.com";
 
   /**
    * Loading State
@@ -43,8 +43,8 @@ export const AppContextWrapper: React.FC<contextProps> = ({ children }) => {
    * app theme
    */
   const [appTheme, setAppTheme] = useState("dark");
-  const dark = { text: "#c7c7c7", active: "orange" };
-  const light = { text: "black", active: "orange" };
+  const dark = { text: "#c7c7c7", active: "#F7A023" };
+  const light = { text: "black", active: "#F7A023" };
   const [theme, setTheme] = useState(dark);
 
   useEffect(() => {

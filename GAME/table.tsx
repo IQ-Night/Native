@@ -107,7 +107,7 @@ const Table = ({
                 flexDirection: "row",
                 justifyContent: "center",
                 flexWrap: "wrap",
-                gap: 12,
+                gap: 20,
               }}
             >
               {(() => {

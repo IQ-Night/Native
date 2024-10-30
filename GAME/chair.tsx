@@ -61,17 +61,12 @@ const Chair = ({
     game.value === "Getting to know mafias" &&
     currentUserRole?.includes("mafia");
 
-  const isActiveAdmin =
-    item?.userId ===
-      (activeRoom.admin?.founder?._id || activeRoom.admin?.founder) &&
-    index === 0;
-
   // user connection status
   const [userStatus, setUserStatus] = useState("online");
 
   const textColor = item?.readyToStart
     ? item?.role?.confirm
-      ? "green"
+      ? "#222"
       : theme.active
     : theme.text;
 
@@ -522,6 +517,8 @@ const Chair = ({
     }
   };
 
+  console.log(item);
+
   return (
     <Pressable
       onPress={() => setOpenUser(item)}
@@ -531,13 +528,118 @@ const Chair = ({
           zIndex: 50,
           alignItems: "center",
           justifyContent: "center",
-          overflow: "hidden",
+          // overflow: "hidden",
           gap: 6,
           opacity:
             isMafiaRevealed && !item?.role.value.includes("mafia") ? 0.5 : 1,
         },
       ]}
     >
+      {item?.userId === currentUser._id && !currentUser?.admin.active && (
+        <View
+          style={{
+            borderRadius: 50,
+            overflow: "hidden",
+            position: "absolute",
+            top: 4,
+            right: -10,
+            zIndex: 50,
+          }}
+        >
+          <BlurView
+            intensity={80}
+            tint="dark"
+            style={{
+              padding: 3,
+              paddingHorizontal: 8,
+            }}
+          >
+            <Text
+              style={{
+                color: theme.text,
+                fontWeight: "600",
+                fontSize: 10,
+                textAlign: "center",
+              }}
+            >
+              You
+            </Text>
+          </BlurView>
+        </View>
+      )}
+
+      {(item?.userId === activeRoom?.admin?.founder?._id ||
+        item?.userId === activeRoom?.admin?.founder) && (
+        <View
+          style={{
+            borderRadius: 50,
+            overflow: "hidden",
+            position: "absolute",
+            top: 0,
+            right: -10,
+            zIndex: 50,
+          }}
+        >
+          <BlurView
+            intensity={80}
+            tint="dark"
+            style={{
+              padding: 3,
+              paddingHorizontal: 6,
+            }}
+          >
+            <Text
+              style={{
+                color: theme.active,
+                fontWeight: "600",
+                fontSize: 10,
+                textAlign: "center",
+              }}
+            >
+              Host{" "}
+              <Text style={{ color: theme.text }}>
+                {item?.userId === currentUser._id && "(You)"}
+              </Text>
+            </Text>
+          </BlurView>
+        </View>
+      )}
+      {item?.admin?.active && (
+        <View
+          style={{
+            borderRadius: 50,
+            overflow: "hidden",
+            position: "absolute",
+            top: 0,
+            right: -10,
+            zIndex: 50,
+          }}
+        >
+          <BlurView
+            intensity={80}
+            tint="dark"
+            style={{
+              padding: 3,
+              paddingHorizontal: 6,
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              style={{
+                color: theme.active,
+                fontWeight: "600",
+                fontSize: 10,
+                textAlign: "center",
+              }}
+            >
+              Admin{" "}
+              <Text style={{ color: theme.text }}>
+                {item?.userId === currentUser._id && "(You)"}
+              </Text>
+            </Text>
+          </BlurView>
+        </View>
+      )}
       {((activePlayerToSpeech?.userId === item?.userId &&
         game.value === "Day") ||
         game.value === "Common Time") && (
@@ -556,20 +658,6 @@ const Chair = ({
 
       {item ? (
         <>
-          {isActiveAdmin && (
-            <Text
-              style={{
-                color: theme.active,
-                fontWeight: "600",
-                fontSize: 12,
-                position: "absolute",
-                top: -20,
-              }}
-            >
-              (Admin)
-            </Text>
-          )}
-
           <View
             style={{
               width: (SCREEN_WIDTH * 0.9 - 72) / 4,
@@ -645,11 +733,12 @@ const Chair = ({
                           gap: 4,
                         }}
                       >
-                        <FontAwesome5
-                          name="eye"
+                        <MaterialIcons
+                          name="local-police"
                           size={16}
                           color={theme.active}
                         />
+                        {/* <Text style={{ color: theme.active }}>?</Text> */}
                       </Pressable>
                     )}
                   <Pressable
@@ -694,9 +783,9 @@ const Chair = ({
                         >
                           <Text
                             style={{
-                              color: theme.text,
+                              color: "red",
                               fontWeight: 600,
-                              fontSize: 12,
+                              fontSize: 14,
                               position: "relative",
                               bottom: 0.5,
                             }}
@@ -708,57 +797,68 @@ const Chair = ({
                   </Pressable>
                 </BlurView>
               )}
-            {game?.value === "Night" && currentUserRole === "doctor" && (
-              <BlurView
-                tint="dark"
-                intensity={40}
-                style={{
-                  position: "absolute",
-                  zIndex: 50,
-                  width: "100%",
-                  height: "100%",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: 100,
-                  overflow: "hidden",
-                  gap: 4,
-                }}
-              >
-                <Pressable
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    if (haptics) {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                    }
-                    VoteToSafe(
-                      safePlayer === item?.userId ? undefined : item?.userId
-                    );
-                  }}
+            {game?.value === "Night" &&
+              currentUserRole === "doctor" &&
+              !alreadySafedOnce && (
+                <BlurView
+                  tint="dark"
+                  intensity={40}
                   style={{
-                    width: "70%",
-                    height: "33%",
-                    borderRadius: 100,
-                    backgroundColor: "rgba(0,0,0,0.7)",
+                    position: "absolute",
+                    zIndex: 50,
+                    width: "100%",
+                    height: "100%",
                     alignItems: "center",
                     justifyContent: "center",
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.5)",
-                    flexDirection: "row",
+                    borderRadius: 100,
+                    overflow: "hidden",
                     gap: 4,
                   }}
                 >
-                  <Text
+                  <Pressable
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      if (haptics) {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                      }
+                      VoteToSafe(
+                        safePlayer === item?.userId ? undefined : item?.userId
+                      );
+                    }}
                     style={{
-                      fontSize: 16,
-                      fontWeight: 600,
-                      color: safePlayer === item?.userId ? "gray" : "red",
+                      width: "70%",
+                      height: "33%",
+                      borderRadius: 100,
+                      backgroundColor: "rgba(0,0,0,0.7)",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderWidth: 1,
+                      borderColor: "rgba(255,255,255,0.5)",
+                      flexDirection: "row",
+                      gap: 2,
                     }}
                   >
-                    {safePlayer === item?.userId ? "-" : "+"}
-                  </Text>
-                </Pressable>
-              </BlurView>
-            )}
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: "red",
+                      }}
+                    >
+                      {safePlayer === item?.userId ? "-" : "+"}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: theme.text,
+                      }}
+                    >
+                      {safePlayer === item?.userId ? "" : "Safe"}
+                    </Text>
+                  </Pressable>
+                </BlurView>
+              )}
             {!userInPlay?.death &&
               currentUserRole === "police" &&
               findingNight !== nightNumber &&
@@ -800,7 +900,6 @@ const Chair = ({
                       gap: 4,
                     }}
                   >
-                    <FontAwesome5 name="eye" size={16} color={theme.active} />
                     <Text
                       style={{
                         color: theme.active,
@@ -808,7 +907,7 @@ const Chair = ({
                         fontSize: 12,
                       }}
                     >
-                      Don
+                      Mafia?
                     </Text>
                     {dailyVotes > 0 && (
                       <Pressable
@@ -903,9 +1002,9 @@ const Chair = ({
                         >
                           <Text
                             style={{
-                              color: theme.text,
+                              color: "red",
                               fontWeight: 600,
-                              fontSize: 12,
+                              fontSize: 14,
                               position: "relative",
                               bottom: 0.5,
                             }}
@@ -920,7 +1019,7 @@ const Chair = ({
 
             {game?.value === "Day" &&
               dayNumber > 1 &&
-              activePlayerToSpeech?.userId === currentUser?._id && (
+              activePlayerToSpeech?.userId !== item?.userId && (
                 <BlurView
                   tint="dark"
                   intensity={40}
@@ -938,12 +1037,19 @@ const Chair = ({
                   <Pressable
                     onPress={(e) => {
                       e.stopPropagation();
-                      if (!userInPlay?.death && !userSpectator) {
-                        if (haptics) {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                        }
-                        if (game.value === "Day" && game.options.length === 0) {
-                          VoiceToLeave();
+                      if (activePlayerToSpeech?.userId === currentUser?._id) {
+                        if (!userInPlay?.death && !userSpectator) {
+                          if (haptics) {
+                            Haptics.impactAsync(
+                              Haptics.ImpactFeedbackStyle.Soft
+                            );
+                          }
+                          if (
+                            game.value === "Day" &&
+                            game.options.length === 0
+                          ) {
+                            VoiceToLeave();
+                          }
                         }
                       }
                     }}
@@ -962,7 +1068,10 @@ const Chair = ({
                   >
                     <Text
                       style={{
-                        color: theme.active,
+                        color:
+                          activePlayerToSpeech?.userId === currentUser?._id
+                            ? theme.active
+                            : "#999",
                         fontWeight: 600,
                         fontSize: 12,
                       }}
@@ -1068,7 +1177,7 @@ const Chair = ({
                 height: "100%",
                 borderRadius: 50,
                 overflow: "hidden",
-                borderWidth: 1.5,
+                borderWidth: 2,
                 borderColor: textColor,
               }}
             >
@@ -1081,29 +1190,20 @@ const Chair = ({
               flexDirection: "row",
               alignItems: "center",
               gap: 4,
-              height: 12,
             }}
           >
             {item?.playerNumber && (
               <Text
                 style={{
-                  color: textColor,
-                  fontWeight: "600",
-                  fontSize: 12,
+                  color: theme.text,
+                  fontWeight: 600,
+                  fontSize: 14,
                   overflow: "hidden",
                 }}
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
                 N{item?.playerNumber}.
-              </Text>
-            )}
-
-            {item?.userId === currentUser._id && (
-              <Text
-                style={{ color: theme.text, fontSize: 12, fontWeight: 600 }}
-              >
-                You
               </Text>
             )}
           </View>
@@ -1127,15 +1227,6 @@ const Chair = ({
               Empty
             </Text>
           </View>
-
-          <View
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: 50,
-              backgroundColor: "transparent",
-            }}
-          />
         </>
       )}
     </Pressable>

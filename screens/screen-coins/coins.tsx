@@ -123,7 +123,7 @@ const Coins = () => {
       contentContainerStyle={{
         paddingTop: 8,
         gap: 16,
-        paddingHorizontal: 16,
+        paddingHorizontal: 12,
         paddingBottom: 100,
       }}
     >
@@ -134,12 +134,12 @@ const Coins = () => {
             style={{
               width: "100%",
               backgroundColor: "rgba(255,255,255,0.05)",
-              height: 180,
+              height: 196,
               borderRadius: 8,
               alignItems: "center",
               justifyContent: "space-between",
-              padding: 12,
-              paddingVertical: 16,
+              padding: 16,
+              paddingVertical: 20,
             }}
           >
             <MaterialCommunityIcons
@@ -176,7 +176,7 @@ const Coins = () => {
                   : "Buy"
               }
               style={{
-                width: "95%",
+                width: "100%",
                 backgroundColor: confirm === c?.size ? "green" : theme.active,
                 color: "white",
               }}

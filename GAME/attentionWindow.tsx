@@ -4,12 +4,14 @@ import { BlurView } from "expo-blur";
 import { useAppContext } from "../context/app";
 import {
   FontAwesome5,
+  FontAwesome6,
   Fontisto,
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
 import { useGameContext } from "../context/game";
 import Img from "../components/image";
+import LottieView from "lottie-react-native";
 
 const AttentionWindow = ({ attention, data }: any) => {
   const { theme } = useAppContext();
@@ -119,17 +121,35 @@ const AttentionWindow = ({ attention, data }: any) => {
     );
   } else if (attention?.value?.includes("Game over")) {
     content = (
-      <View style={{ alignItems: "center", justifyContent: "center", gap: 24 }}>
-        <Text
-          style={{
-            color: theme.text,
-            fontSize: 16,
-            fontWeight: 500,
-            textAlign: "center",
-          }}
+      <View
+        style={{
+          width: "100%",
+          height: "100%",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <LottieView
+          source={require("../assets/animation.json")}
+          autoPlay
+          loop
+          style={{ position: "absolute", width: "100%", height: "100%" }}
+        />
+        <View
+          style={{ alignItems: "center", justifyContent: "center", gap: 16 }}
         >
-          {attention.value}
-        </Text>
+          <FontAwesome6 name="trophy" size={32} color={theme.active} />
+          <Text
+            style={{
+              color: theme.text,
+              fontSize: 18,
+              fontWeight: 600,
+              textAlign: "center",
+            }}
+          >
+            {attention.value}
+          </Text>
+        </View>
       </View>
     );
   } else if (
@@ -137,12 +157,13 @@ const AttentionWindow = ({ attention, data }: any) => {
     attention?.value?.includes("Starting Night")
   ) {
     content = (
-      <View style={{ alignItems: "center", justifyContent: "center", gap: 24 }}>
+      <View style={{ alignItems: "center", justifyContent: "center", gap: 20 }}>
+        <MaterialIcons name="close" color="red" size={40} />
         <Text
           style={{
             color: theme.text,
-            fontSize: 16,
-            fontWeight: 500,
+            fontSize: 18,
+            fontWeight: 600,
             textAlign: "center",
           }}
         >
@@ -152,12 +173,13 @@ const AttentionWindow = ({ attention, data }: any) => {
     );
   } else if (attention?.value?.includes("Room closed")) {
     content = (
-      <View style={{ alignItems: "center", justifyContent: "center", gap: 24 }}>
+      <View style={{ alignItems: "center", justifyContent: "center", gap: 18 }}>
+        <MaterialIcons name="close" color={theme.active} size={40} />
         <Text
           style={{
             color: theme.text,
-            fontSize: 16,
-            fontWeight: 500,
+            fontSize: 18,
+            fontWeight: 600,
             textAlign: "center",
           }}
         >
@@ -201,7 +223,7 @@ const AttentionWindow = ({ attention, data }: any) => {
     content = (
       <View style={{ alignItems: "center", justifyContent: "center", gap: 24 }}>
         <Text style={{ color: theme.text, fontSize: 16, fontWeight: 500 }}>
-          Voteing Again!
+          Voting Again!
         </Text>
         <View style={{ gap: 8 }}>
           {attention?.players

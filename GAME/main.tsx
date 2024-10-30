@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
@@ -10,9 +11,14 @@ import {
   Text,
   View,
 } from "react-native";
+import Button from "../components/button";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
+import { roles } from "../context/rooms";
+import LogsModal from "../screens/screen-logs/logs-modal";
+import Ban from "./room-ban";
+import User from "../screens/screen-user/main";
 import AttentionWindow from "./attentionWindow";
 import DealingCards from "./dealingCards";
 import GameProcess from "./gameProcess";
@@ -20,6 +26,7 @@ import Header from "./header";
 import { findMostFrequentVictim } from "./mostVictims";
 import NominationWindow from "./nominationWindow";
 import PersonalTimeOfDead from "./personalTimeOfDead";
+import Spectators from "./spectators";
 import Table from "./table";
 import CommonTimer from "./timers/commonTimer";
 import useDealingCardsTimer from "./timers/dealingCardsTimer";
@@ -27,13 +34,8 @@ import useGettingKnowsMafias from "./timers/gettingKnowsMafiasTimer";
 import LastWordTimer from "./timers/lastWordTimer";
 import NightTimer from "./timers/nightTimer";
 import SpeechTimer from "./timers/speechTimer";
-import Logs from "../screens/screen-logs/main";
-import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
-import User from "../screens/screen-user/main";
-import Button from "../components/button";
-import { Confirm } from "../components/confirm";
-import { renderBlockButton } from "../functions/blockUser";
-import { roles } from "../context/rooms";
+import Block from "../admin/users/block-user";
+import UserPopup from "./userPopup";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -167,6 +169,25 @@ const Game = () => {
   /**
    * თამაში
    */
+
+  /**
+   * Start play with less users than provided in room mac players
+   */
+  // confirm roles by host before starting playing if less players in room than maximum
+  const [openConfirmRoles, setOpenConfirmRoles] = useState<any>(false);
+  const [confirmedRoles, setConfirmedRoles] = useState<any>([]);
+
+  const StartPlay = () => {
+    if (socket) {
+      socket.emit("startPlay", {
+        roomId: activeRoom?._id,
+        confirmedRoles:
+          confirmedRoles?.length > 0 ? confirmedRoles : activeRoom?.roles,
+      });
+      setConfirmedRoles([]);
+      setOpenConfirmRoles(false);
+    }
+  };
 
   // თამაშის დაწყება
   const { dealingCardsTimer } = useDealingCardsTimer({ socket });
@@ -917,7 +938,7 @@ const Game = () => {
             setDayNumber(1);
             setNightNumber(1);
             setAttention({ active: false, value: "" });
-          }, 3000);
+          }, 7000);
         } else {
           if (exitData?.playerOff) {
             setAttention({
@@ -1216,7 +1237,7 @@ const Game = () => {
           setDayNumber(1);
           setNightNumber(1);
           setAttention({ active: false, value: "" });
-        }, 2000);
+        }, 7000);
       });
       return () => {
         socket.off("gameOver", handleLastWordTimerEnd);
@@ -1233,23 +1254,18 @@ const Game = () => {
    */
   const [openUser, setOpenUser] = useState<any>(null);
 
-  // block user
-  const [confirm, setConfirm] = useState<any>(null);
+  /**
+   * Open / close spectators
+   */
+  const [openSpectators, setOpenSpectators] = useState(false);
 
-  // throw out user from the room
-  const ThrowOut = async (usr: any) => {
-    try {
-      socket.emit("leaveRoom", usr?.roomId, usr?.userId);
-      setConfirm(null);
-      setOpenUser(null);
-    } catch (error: any) {
-      console.log(error.response.data.message);
-    }
-  };
+  // open ban to user
+  const [openBan, setOpenBan] = useState<any>(null);
 
-  // confirm roles by host before starting playing if less players in room than maximum
-  const [openConfirmRoles, setOpenConfirmRoles] = useState<any>(false);
-  const [confirmedRoles, setConfirmedRoles] = useState<any>([]);
+  /**
+   * Block user
+   */
+  const [openBlock, setOpenBlock] = useState<any>(null);
 
   return (
     <BlurView
@@ -1260,6 +1276,19 @@ const Game = () => {
         width: "100%",
       }}
     >
+      {openSpectators && (
+        <Spectators
+          setOpenSpectators={setOpenSpectators}
+          setOpenUser={setOpenUser}
+        />
+      )}
+      {openBan && (
+        <Ban
+          setOpenBan={setOpenBan}
+          openUser={openUser}
+          setOpenUser={setOpenUser}
+        />
+      )}
       {attention.active && (
         <AttentionWindow attention={attention} data={openNominationsWindow} />
       )}
@@ -1271,6 +1300,7 @@ const Game = () => {
           setAttention={setAttention}
           setOpenLogs={setOpenLogs}
           openConfirmRoles={openConfirmRoles}
+          setOpenSpectators={setOpenSpectators}
         />
         {game.value === "Dealing Cards" && (
           <DealingCards
@@ -1352,6 +1382,7 @@ const Game = () => {
             setLoading={setLoading}
             activePlayerToSpeech={activePlayerToSpeech}
             speechTimer={speechTimer}
+            StartPlay={StartPlay}
             changeSpeakerLoading={
               game?.value === "Personal Time Of Death"
                 ? skipLastTimerLoading
@@ -1372,127 +1403,16 @@ const Game = () => {
           />
         </View>
       </Animated.View>
-      {openLogs && (
-        <BlurView
-          intensity={120}
-          tint="dark"
-          style={{
-            position: "absolute",
-            zIndex: 70,
-            height: "100%",
-            paddingTop: 94,
-          }}
-        >
-          <View
-            style={{
-              position: "absolute",
-              top: 56,
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              width: "100%",
-              paddingHorizontal: 16,
-            }}
-          >
-            <Text style={{ color: theme.text, fontSize: 18, fontWeight: 500 }}>
-              Game logs:
-            </Text>
-            <Pressable
-              onPress={() => {
-                if (haptics) {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                }
-                setOpenLogs(false);
-              }}
-            >
-              <MaterialCommunityIcons
-                name="close"
-                size={28}
-                color={theme.active}
-              />
-            </Pressable>
-          </View>
-          <Logs item={activeRoom} />
-        </BlurView>
-      )}
+      <LogsModal openLogs={openLogs} setOpenLogs={setOpenLogs} />
       {openUser && (
-        <BlurView
-          intensity={120}
-          tint="dark"
-          style={{
-            width: "100%",
-            position: "absolute",
-            zIndex: 70,
-            height: "100%",
-            paddingTop: 94,
-          }}
-        >
-          <View
-            style={{
-              position: "absolute",
-              top: 56,
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              width: "100%",
-              paddingHorizontal: 16,
-            }}
-          >
-            <Text style={{ color: theme.text, fontSize: 18, fontWeight: 500 }}>
-              {openUser?.userName}
-            </Text>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 16 }}
-            >
-              {(activeRoom?.admin.founder?._id || activeRoom?.admin.founder) ===
-                currentUser?._id &&
-                openUser?.userId !== currentUser?._id && (
-                  <Pressable
-                    onPress={() => {
-                      if (haptics) {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                      }
-                      setConfirm({
-                        user: openUser,
-                        text: "Are you sure to want to throw out this user from the room?",
-                        confirmText: "Throw out",
-                        confirmAction: () => ThrowOut(openUser),
-                      });
-                    }}
-                  >
-                    <MaterialCommunityIcons
-                      name="logout"
-                      size={23}
-                      color={theme.text}
-                    />
-                  </Pressable>
-                )}
-              {openUser?.userId !== currentUser?._id &&
-                renderBlockButton({
-                  user: openUser,
-                  haptics,
-                  setConfirm,
-                  text: "Are you sure you want to block the user?",
-                })}
-              <Pressable
-                onPress={() => {
-                  if (haptics) {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                  }
-                  setOpenUser(null);
-                }}
-              >
-                <MaterialCommunityIcons
-                  name="close"
-                  size={30}
-                  color={theme.active}
-                />
-              </Pressable>
-            </View>
-          </View>
-          <User userItem={{ ...openUser, _id: openUser?.userId }} />
-        </BlurView>
+        <UserPopup
+          openUser={openUser}
+          setOpenBan={setOpenBan}
+          setOpenBlock={setOpenBlock}
+          setOpenUser={setOpenUser}
+        />
       )}
+
       {openConfirmRoles && (
         <BlurView
           intensity={120}
@@ -1584,11 +1504,20 @@ const Game = () => {
               backgroundColor: theme.active,
               color: "white",
             }}
-            onPressFunction={openConfirmRoles?.function}
+            onPressFunction={StartPlay}
           />
         </BlurView>
       )}
-      <Confirm confirm={confirm} setConfirm={setConfirm} />
+
+      {openBlock && (
+        <Block
+          userId={openUser?.userId}
+          userName={openUser?.name}
+          setOpenBlock={setOpenBlock}
+          setOpenUser={setOpenUser}
+          from={{ state: "room", stateId: activeRoom?._id }}
+        />
+      )}
     </BlurView>
   );
 };

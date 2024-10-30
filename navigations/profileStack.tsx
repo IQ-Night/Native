@@ -1,5 +1,15 @@
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
+import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
+import { Pressable, Text, View } from "react-native";
+import CountryFlag from "react-native-country-flag";
+import { ActivityIndicator } from "react-native-paper";
+import { useAppContext } from "../context/app";
+import { useAuthContext } from "../context/auth";
+import { useInvoicesContext } from "../context/invoices";
+import { useNotificationsContext } from "../context/notifications";
+import { useProfileContext } from "../context/profile";
 import About from "../screens/screen-about/main";
 import Coins from "../screens/screen-coins/coins";
 import Help from "../screens/screen-help/main";
@@ -7,25 +17,12 @@ import BlackList from "../screens/screen-profile/blackList/main";
 import ChangePassword from "../screens/screen-profile/changePassword/main";
 import Gift from "../screens/screen-profile/gifts/main";
 import Invoices from "../screens/screen-profile/invoices/main";
-import Referrals from "../screens/screen-profile/referrals/main";
 import Profile from "../screens/screen-profile/main";
-import { useAppContext } from "../context/app";
-import Notifications from "../screens/screen-profile/notifications/main";
 import Clan from "../screens/screen-profile/myClans/clan-screen";
-import { Pressable, Text, View } from "react-native";
-import CountryFlag from "react-native-country-flag";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { useAuthContext } from "../context/auth";
-import * as Haptics from "expo-haptics";
-import { useProfileContext } from "../context/profile";
 import MyClans from "../screens/screen-profile/myClans/main";
+import Notifications from "../screens/screen-profile/notifications/main";
+import Referrals from "../screens/screen-profile/referrals/main";
 import User from "../screens/screen-user/main";
-import { renderBlockButton } from "../functions/blockUser";
-import { Confirm } from "../components/confirm";
-import axios from "axios";
-import { useNotificationsContext } from "../context/notifications";
-import { ActivityIndicator } from "react-native-paper";
-import { useInvoicesContext } from "../context/invoices";
 
 const ProfileStackNavigator = () => {
   const ProfileStack = createStackNavigator();
@@ -184,17 +181,13 @@ const ProfileStackNavigator = () => {
           component={User}
           options={({ route }: any) => ({
             title: route.params?.item?.name || "User",
-            headerRight:
-              route.params.item?._id !== currentUser?._id
-                ? () =>
-                    renderBlockButton({
-                      user: route.params.item,
-                      haptics,
-                      setConfirm,
-                      text: "Are you sure you want to block the user?",
-                      style: { marginRight: 15 },
-                    })
-                : undefined,
+            headerRight: () => (
+              <MaterialCommunityIcons
+                name="block-helper"
+                size={19}
+                color="red"
+              />
+            ),
           })}
         />
         <ProfileStack.Screen

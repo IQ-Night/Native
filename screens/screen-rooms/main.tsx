@@ -1,4 +1,9 @@
-import { Ionicons } from "@expo/vector-icons";
+import {
+  FontAwesome,
+  Ionicons,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useRef, useState } from "react";
@@ -205,11 +210,12 @@ const Rooms = ({ navigation }: any) => {
         <View style={styles.createIcon}>
           <View
             style={{
-              borderRadius: 8,
+              borderRadius: 50,
               overflow: "hidden",
               justifyContent: "center",
               alignItems: "center",
-              width: "90%",
+              width: 52,
+              aspectRatio: 1,
             }}
           >
             <BlurView
@@ -230,29 +236,31 @@ const Rooms = ({ navigation }: any) => {
                   }
                 }}
                 style={{
-                  borderWidth: 1.5,
-                  borderColor: "rgba(255,255,255,0.05)",
-                  borderRadius: 8,
+                  // borderWidth: 1.5,
+                  // borderColor: "rgba(255,255,255,0.05)",
+
+                  borderRadius: 50,
                   width: "100%",
                   flexDirection: "row",
                   justifyContent: "center",
                   alignItems: "center",
                   height: "100%",
-                  padding: 8,
                   gap: 4,
+                  padding: 4,
                 }}
               >
-                <Ionicons
-                  name="create"
-                  size={24}
-                  color={"orange"}
-                  style={{ position: "relative", left: 1 }}
+                <MaterialCommunityIcons
+                  name="plus"
+                  // style={{ position: "absolute", zIndex: 60, left: 19 }}
+                  size={32}
+                  color={theme.active}
                 />
-                <Text
-                  style={{ fontSize: 16, fontWeight: 500, color: theme.active }}
+
+                {/* <Text
+                  style={{ fontSize: 16, fontWeight: 600, color: theme.active }}
                 >
-                  Create Room
-                </Text>
+                  Create
+                </Text> */}
               </Pressable>
             </BlurView>
           </View>
@@ -299,11 +307,12 @@ export default Rooms;
 
 const styles = StyleSheet.create({
   createIcon: {
-    borderRadius: 10,
+    borderRadius: 50,
     position: "absolute",
+    // right: 14,
+    width: "100%",
     bottom: 90,
     overflow: "hidden",
-    width: "100%",
     alignItems: "center",
   },
   screen: {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Dimensions, StatusBar, StyleSheet, View } from "react-native";
 import Alert from "./components/alert";
 import BgSound from "./components/backgroundMusic";
@@ -6,6 +6,8 @@ import Loading from "./components/loading";
 import { useAppContext } from "./context/app";
 import { useContentContext } from "./context/content";
 import BottomTabNavigator from "./navigations/bottomTabNavigator";
+import { useGameContext } from "./context/game";
+import { useAuthContext } from "./context/auth";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -19,7 +21,24 @@ const Content = () => {
   /**
    * Auth context
    */
-  const { opacityList } = useContentContext();
+  const { GetUser } = useAuthContext();
+
+  // socket
+
+  const { socket } = useGameContext();
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("rerenderedAuthUser", () => {
+        GetUser();
+      });
+
+      // Clean up the listener when component unmounts or socket changes
+      return () => {
+        socket.off("rerenderedAuthUser");
+      };
+    }
+  }, [socket]);
 
   return (
     <View style={styles.background}>
