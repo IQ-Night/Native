@@ -14,6 +14,7 @@ import Img from "../../components/image";
 import { useNavigation } from "@react-navigation/native";
 import { useAuthContext } from "../../context/auth";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 
 interface ItemType {
   id: string;
@@ -34,7 +35,7 @@ const UserItem: React.FC<UserItemProps> = ({ item, index }: any) => {
   /**
    * App context
    */
-  const { theme } = useAppContext();
+  const { theme, haptics } = useAppContext();
 
   const { currentUser } = useAuthContext();
 
@@ -52,7 +53,10 @@ const UserItem: React.FC<UserItemProps> = ({ item, index }: any) => {
       </Text>
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => navigation.navigate("User", { item: item })}
+        onPress={() => {
+          if (haptics) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+          navigation.navigate("User", { item: item });
+        }}
         style={{
           flexDirection: "row",
           alignItems: "center",
@@ -74,7 +78,7 @@ const UserItem: React.FC<UserItemProps> = ({ item, index }: any) => {
           style={{
             color: item?._id === currentUser?._id ? theme.active : theme.text,
             fontSize: 14,
-            fontWeight: 500,
+            fontWeight: 600,
           }}
         >
           {item.name}

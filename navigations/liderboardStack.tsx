@@ -1,16 +1,17 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
+import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import CountryFlag from "react-native-country-flag";
+import Block from "../admin/users/block-user";
+import { Confirm } from "../components/confirm";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import Clan from "../screens/screen-clans/clan-screen";
+import Coins from "../screens/screen-coins/coins";
 import Liderboard from "../screens/screen-liderboard/main";
 import User from "../screens/screen-user/main";
-import { Confirm } from "../components/confirm";
-import { LiderboardContextWrapper } from "../context/liderboard";
-import Coins from "../screens/screen-coins/coins";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const LiderboardStackNavigator = () => {
   /**
@@ -84,13 +85,6 @@ const LiderboardStackNavigator = () => {
           component={User}
           options={({ route }: any) => ({
             title: route.params?.item?.name || "User",
-            headerRight: () => (
-              <MaterialCommunityIcons
-                name="block-helper"
-                size={19}
-                color="red"
-              />
-            ),
           })}
         />
         <LiderboardStack.Screen name="Coins" component={Coins} />

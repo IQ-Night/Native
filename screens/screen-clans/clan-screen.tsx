@@ -26,6 +26,8 @@ import { FormatDate } from "../../functions/formatDate";
 import { useContentContext } from "../../context/content";
 import { useNotificationsContext } from "../../context/notifications";
 import { DefineUserLevel } from "../../functions/userLevelOptimizer";
+import UserPopup from "./userPopup";
+import Block from "../../admin/users/block-user";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -61,9 +63,6 @@ const Clan = ({ route, navigation }: any) => {
    * Management
    */
   const founder = item?.admin?.find((a: any) => a.role === "founder")?.user;
-  const coFounder = item?.admin?.find(
-    (a: any) => a.role === "co-founder"
-  )?.user;
   const directors = item?.admin?.filter(
     (a: any) => a.role === "director"
   )?.user;
@@ -251,6 +250,11 @@ const Clan = ({ route, navigation }: any) => {
   } else {
     userStatus = "Request";
   }
+
+  /**
+   * open user
+   */
+  const [openUser, setOpenUser] = useState<any>(null);
 
   return (
     <View style={{ height: "100%", width: "100%" }}>
@@ -473,7 +477,8 @@ const Clan = ({ route, navigation }: any) => {
                     gap: 8,
                   }}
                 >
-                  <View
+                  <Pressable
+                    onPress={() => setOpenUser(member)}
                     style={{
                       width: 24,
                       aspectRatio: 1,
@@ -482,10 +487,12 @@ const Clan = ({ route, navigation }: any) => {
                     }}
                   >
                     <Img uri={member.cover} />
-                  </View>
-                  <Text style={{ color: "white", fontWeight: 500 }}>
-                    {member.name}
-                  </Text>
+                  </Pressable>
+                  <Pressable onPress={() => setOpenUser(member)}>
+                    <Text style={{ color: "white", fontWeight: 500 }}>
+                      {member.name}
+                    </Text>
+                  </Pressable>
                   <Text style={{ color: theme.active, fontWeight: "500" }}>
                     {(() => {
                       const role = item?.admin.find(
@@ -519,6 +526,7 @@ const Clan = ({ route, navigation }: any) => {
           </View>
         </ScrollView>
       </View>
+      {openUser && <UserPopup openUser={openUser} setOpenUser={setOpenUser} />}
     </View>
   );
 };

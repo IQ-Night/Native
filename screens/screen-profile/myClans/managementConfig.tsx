@@ -20,7 +20,7 @@ const ManagementConfig = ({
   setItem,
 }: any) => {
   const { theme, apiUrl, haptics } = useAppContext();
-  const { GetClans } = useProfileContext();
+  const { GetClans, setConfirm, setClans } = useProfileContext();
   const oldRole = clan?.admin.find(
     (a: any) => a.user._id === openConfig?._id
   )?.role;
@@ -66,6 +66,68 @@ const ManagementConfig = ({
       }
     } catch (error: any) {
       console.log(error.response.data.message);
+    }
+  };
+  console.log(clan.members);
+  const ChangeFounder = async (role: any) => {
+    try {
+      let newRoles = clan?.admin.filter(
+        (a: any) => a.user._id !== openConfig?._id
+      );
+
+      newRoles = newRoles?.map((a: any) => {
+        if (a.role === "founder") {
+          return { ...a, role: "director" };
+        } else {
+          return a;
+        }
+      });
+      newRoles.push({ user: openConfig, role: "founder" });
+
+      const response = await axios.patch(
+        apiUrl + "/api/v1/clans/" + clan?._id,
+        {
+          admin: newRoles?.map((nr: any) => {
+            return { user: nr.user?._id, role: nr.role };
+          }),
+        }
+      );
+      if (response?.data.status === "success") {
+        setItem((prev: any) => ({ ...prev, admin: newRoles }));
+        setClans((prev: any) =>
+          prev?.map((c: any) => {
+            if (c._id === clan._id) {
+              return { ...c, admin: newRoles };
+            } else {
+              return c;
+            }
+          })
+        );
+        setOpenConfig(null);
+        setConfirm(null);
+        clan.members?.map((m: any) => {
+          if (m.userId !== currentUser?._id) {
+            if (m?.userId === openConfig?._id) {
+              return SendNotification({
+                userId: m.userId,
+                type:
+                  "Founder has given you main founder role" +
+                  "' in clan '" +
+                  clan?.title +
+                  "' ",
+              });
+            } else {
+              return SendNotification({
+                userId: m.userId,
+                type:
+                  "Founder has changed " + "' in clan '" + clan?.title + "'",
+              });
+            }
+          }
+        });
+      }
+    } catch (error: any) {
+      console.log(error.response);
     }
   };
 
@@ -153,10 +215,10 @@ const ManagementConfig = ({
                   if (haptics) {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
                   }
-                  if (newRole === "co-founder") {
+                  if (newRole === "founder") {
                     setNewRole(null);
                   } else {
-                    setNewRole("co-founder");
+                    setNewRole("founder");
                   }
                 }}
                 style={{
@@ -164,7 +226,7 @@ const ManagementConfig = ({
                   padding: 12,
                   borderRadius: 8,
                   backgroundColor:
-                    newRole === "co-founder"
+                    newRole === "founder"
                       ? theme.active
                       : "rgba(255,255,255,0.05)",
                 }}
@@ -172,11 +234,11 @@ const ManagementConfig = ({
                 <Text
                   style={{
                     fontWeight: 500,
-                    color: newRole === "co-founder" ? "white" : theme.text,
+                    color: newRole === "founder" ? "white" : theme.text,
                     textAlign: "center",
                   }}
                 >
-                  Co-Founder
+                  Founder
                 </Text>
               </Pressable>
             )}
@@ -281,7 +343,17 @@ const ManagementConfig = ({
               color: "white",
             }}
             title="Save"
-            onPressFunction={SaveRole}
+            onPressFunction={
+              newRole === "founder"
+                ? () =>
+                    setConfirm({
+                      active: true,
+                      text: "After give the founde role to user, you no longer will be founder of this clan. are you sure?",
+                      confirmText: "Change Founder",
+                      confirmAction: () => ChangeFounder(newRole),
+                    })
+                : SaveRole
+            }
             disabled={oldRole === newRole}
             loading={loadingSave}
           />

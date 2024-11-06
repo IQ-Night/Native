@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BlurView } from "expo-blur";
 import { useAppContext } from "../context/app";
 import { useGameContext } from "../context/game";
@@ -7,6 +7,7 @@ import { useAuthContext } from "../context/auth";
 import * as Haptics from "expo-haptics";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import User from "../screens/screen-user/main";
+import axios from "axios";
 
 const UserPopup = ({
   openUser,
@@ -14,9 +15,36 @@ const UserPopup = ({
   setOpenBlock,
   setOpenUser,
 }: any) => {
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, apiUrl } = useAppContext();
   const { activeRoom } = useGameContext();
   const { currentUser } = useAuthContext();
+
+  /**
+   * clan actions
+   */
+  // check if current user is admin in clans where clan admin is member
+  const [usersClans, setUsersClans] = useState([]);
+
+  const CheckClanInfo = async ({ adminId, memberId }: any) => {
+    try {
+      const response = await axios.get(
+        `${apiUrl}/api/v1/checkClanUsers?adminId=${adminId}&memberId=${memberId}&adminInclude=true`
+      );
+      if (response.data.status === "success") {
+        setUsersClans(response.data.data.clans);
+      }
+    } catch (error: any) {
+      console.log(error.response?.data?.message || "An error occurred");
+    }
+  };
+
+  useEffect(() => {
+    CheckClanInfo({
+      adminId: currentUser?._id,
+      memberId: activeRoom?.admin?.founder?._id,
+    });
+  }, []);
+
   return (
     <BlurView
       intensity={120}
@@ -44,10 +72,11 @@ const UserPopup = ({
           {openUser?.userName}
         </Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-          {((activeRoom?.admin.founder?._id || activeRoom?.admin.founder) ===
-            currentUser?._id ||
-            currentUser?.admin?.active) &&
-            openUser?.userId !== currentUser?._id && (
+          {(activeRoom?.admin.founder?._id === currentUser?._id ||
+            currentUser?.admin?.active ||
+            usersClans?.length > 0) &&
+            openUser?.userId !== currentUser?._id &&
+            openUser?.userId !== activeRoom?.admin.founder?._id && (
               <Pressable
                 onPress={() => {
                   if (haptics) {
@@ -64,7 +93,8 @@ const UserPopup = ({
               </Pressable>
             )}
           {currentUser?.admin?.active &&
-            openUser?.userId !== currentUser?._id && (
+            openUser?.userId !== currentUser?._id &&
+            !openUser?.admin?.active && (
               <Pressable
                 onPress={() => {
                   if (haptics) {
@@ -96,7 +126,7 @@ const UserPopup = ({
           </Pressable>
         </View>
       </View>
-      <User userItem={{ ...openUser, _id: openUser?.userId }} />
+      <User userItem={{ ...openUser, _id: openUser?.userId }} from="room" />
     </BlurView>
   );
 };

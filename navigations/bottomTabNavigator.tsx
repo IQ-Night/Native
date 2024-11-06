@@ -14,31 +14,29 @@ import {
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import React, { useEffect } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
+import { Badge } from "react-native-elements";
 import Img from "../components/image";
-import { AdminContextWrapper } from "../context/admin";
+import { useAdminContext } from "../context/admin";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { ClansContextWrapper } from "../context/clans";
 import { useContentContext } from "../context/content";
 import { useGameContext } from "../context/game";
+import { InvoicesContextWrapper } from "../context/invoices";
 import { LiderboardContextWrapper } from "../context/liderboard";
+import { useNotificationsContext } from "../context/notifications";
 import { ProfileContextWrapper } from "../context/profile";
 import { RoomsContextWrapper } from "../context/rooms";
 import { StoreContextWrapper } from "../context/store";
 import Game from "../GAME/main";
-import Liderboard from "../screens/screen-liderboard/main";
-import Store from "../screens/screen-store/main";
 import AdminStackNavigator from "./adminStack";
 import AuthStackNavigator from "./authStack";
 import ClansStackNavigator from "./clanStack";
+import LiderboardStackNavigator from "./liderboardStack";
 import ProfileStackNavigator from "./profileStack";
 import RoomssStackNavigator from "./roomStack";
-import { useNotificationsContext } from "../context/notifications";
-import { Avatar, Badge, Icon, withBadge } from "react-native-elements";
-import LiderboardStackNavigator from "./liderboardStack";
 import StoreStackNavigator from "./storeStack";
-import { InvoicesContextWrapper } from "../context/invoices";
 
 const Tab = createBottomTabNavigator();
 
@@ -74,6 +72,11 @@ const ScreenManager = () => {
    */
 
   const { currentUser, GetUser } = useAuthContext();
+  /**
+   * Admin context
+   */
+
+  const { adminNotifications, GetAdminNotifications } = useAdminContext();
 
   const {
     setRerenderRooms,
@@ -147,6 +150,12 @@ const ScreenManager = () => {
         setRerenderProfile(true);
         setRerenderNotifications((prev: any) => !prev);
       }
+    } else if (focused && tab.includes("Admin")) {
+      console.log(routeName);
+      if (routeName !== "Admin" && routeName !== "Admin-Stack") {
+        return;
+      }
+      GetAdminNotifications();
     }
   };
 
@@ -239,11 +248,26 @@ const ScreenManager = () => {
                   }
                 case "Admin":
                   return (
-                    <MaterialIcons
-                      name="admin-panel-settings"
-                      size={32}
-                      color={iconColor}
-                    />
+                    <View>
+                      {adminNotifications?.length > 0 && (
+                        <Badge
+                          value={adminNotifications?.length}
+                          status="success"
+                          badgeStyle={{ backgroundColor: theme.active }}
+                          containerStyle={{
+                            position: "absolute",
+                            zIndex: 30,
+                            top: -8,
+                            right: -8,
+                          }}
+                        />
+                      )}
+                      <MaterialIcons
+                        name="admin-panel-settings"
+                        size={32}
+                        color={iconColor}
+                      />
+                    </View>
                   );
                 default:
                   return null;
@@ -326,15 +350,13 @@ const ScreenManager = () => {
             </ProfileContextWrapper>
           )}
         </Tab.Screen>
-        {currentUser?.admin?.active && (
+        {currentUser?.admin?.role === "App Admin" && (
           <Tab.Screen name="Admin">
             {() => (
-              <AdminContextWrapper>
-                <CustomComponent
-                  component={AdminStackNavigator}
-                  onMount={() => console.log("Admin tab selected")}
-                />
-              </AdminContextWrapper>
+              <CustomComponent
+                component={AdminStackNavigator}
+                onMount={() => console.log("Admin tab selected")}
+              />
             )}
           </Tab.Screen>
         )}

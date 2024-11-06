@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useAppContext } from "../../context/app";
 import axios from "axios";
 import { MaterialIcons } from "@expo/vector-icons";
+import UserItem from "../users/user-item";
+import UserRole from "../users/userRole";
 
 const Management = () => {
   /**
@@ -29,41 +31,31 @@ const Management = () => {
     GetManagement();
   }, []);
 
-  console.log(management);
-
+  // manage user role
+  const [manageRoles, setManageRoles] = useState<any>(null);
   return (
-    <View style={{ padding: 16 }}>
-      {management?.map((member: any, index: number) => {
-        return (
-          <View
-            key={index}
-            style={{
-              padding: 12,
-              backgroundColor: "rgba(255,255,255,0.05)",
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 4,
-              borderRadius: 8,
-            }}
-          >
-            <Text style={{ color: theme.text, fontSize: 16, fontWeight: 500 }}>
-              {member?.name}
-            </Text>
-            <Text
-              style={{ color: theme.active, fontSize: 16, fontWeight: 500 }}
-            >
-              {member?.admin?.role}
-            </Text>
-            <MaterialIcons
-              style={{ marginLeft: "auto" }}
-              name="edit"
-              color={theme.active}
-              size={20}
+    <>
+      <View style={{ padding: 16 }}>
+        {management?.map((member: any, index: number) => {
+          return (
+            <UserItem
+              key={index}
+              item={member}
+              index={index}
+              setManageRoles={setManageRoles}
             />
-          </View>
-        );
-      })}
-    </View>
+          );
+        })}
+      </View>
+      {manageRoles && (
+        <UserRole
+          userId={manageRoles?._id}
+          manageRoles={manageRoles}
+          setManageRoles={setManageRoles}
+          setUsers={setManagement}
+        />
+      )}
+    </>
   );
 };
 

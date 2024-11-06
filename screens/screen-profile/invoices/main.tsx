@@ -24,8 +24,6 @@ const Invoices = () => {
 
   const { invoices, setInvoices } = useInvoicesContext();
 
-  console.log("invoices: main: " + invoices?.length);
-
   const [loading, setLoading] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
 

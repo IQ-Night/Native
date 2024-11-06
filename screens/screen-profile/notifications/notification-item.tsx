@@ -16,7 +16,6 @@ import GetTimesAgo from "../../../functions/getTimesAgo";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const NotificationItem = ({ item, setDeleteItem }: any) => {
-  console.log(item);
   /**
    * App context
    */
@@ -98,7 +97,7 @@ const NotificationItem = ({ item, setDeleteItem }: any) => {
             <Img uri={item?.sender?.cover} />
           </View>
           <View
-            style={{ maxWidth: "25%", height: 30, justifyContent: "center" }}
+            style={{ maxWidth: "45%", height: 30, justifyContent: "center" }}
           >
             <Text
               style={{

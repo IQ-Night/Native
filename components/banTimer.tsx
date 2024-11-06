@@ -3,11 +3,17 @@ import { StyleSheet, Text } from "react-native";
 
 const BanTimer = ({ duration, createdAt, afterExpire }: any) => {
   const banDuration = duration * 60 * 60 * 1000; // Duration in milliseconds
-  const [remainingTime, setRemainingTime] = useState(banDuration);
-  const [isExpired, setIsExpired] = useState(false);
+  const expirationTime = new Date(createdAt).getTime() + banDuration;
+  const initialTimeLeft = expirationTime - new Date().getTime(); // Calculate remaining time on mount
+  const [remainingTime, setRemainingTime] = useState(initialTimeLeft);
+  const [isExpired, setIsExpired] = useState(initialTimeLeft <= 0);
 
   useEffect(() => {
-    const expirationTime = new Date(createdAt).getTime() + banDuration;
+    if (initialTimeLeft <= 0) {
+      setIsExpired(true);
+      setRemainingTime(0);
+      return; // Don't start interval if the time has already expired
+    }
 
     const timerInterval = setInterval(() => {
       const now = new Date().getTime();
@@ -17,14 +23,16 @@ const BanTimer = ({ duration, createdAt, afterExpire }: any) => {
         clearInterval(timerInterval);
         setIsExpired(true);
         setRemainingTime(0);
-        afterExpire();
+        if (afterExpire) {
+          afterExpire();
+        }
       } else {
         setRemainingTime(timeLeft);
       }
     }, 1000);
 
     return () => clearInterval(timerInterval);
-  }, [banDuration, createdAt]);
+  }, [expirationTime, afterExpire]);
 
   const formatTime = (ms: number) => {
     const seconds = String(Math.floor((ms / 1000) % 60)).padStart(2, "0");

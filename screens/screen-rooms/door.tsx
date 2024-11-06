@@ -1,4 +1,5 @@
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
+import axios from "axios";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
@@ -14,37 +15,13 @@ import {
 import CountryFlag from "react-native-country-flag";
 import Img from "../../components/image";
 import { useAppContext } from "../../context/app";
-import { useGameContext } from "../../context/game";
-import { FormatDate } from "../../functions/formatDate";
-import axios from "axios";
 import { useAuthContext } from "../../context/auth";
-import { DefineUserLevel } from "../../functions/userLevelOptimizer";
-import { checkBanExpired } from "../../functions/checkBan";
-import BanTimer from "../../components/banTimer";
+import { useGameContext } from "../../context/game";
 import { useRoomsContext } from "../../context/rooms";
-
-interface ItemType {
-  _id: string;
-  title: string;
-  admin: any;
-  roles: any;
-  totalPlayers: number;
-  maxTotalPlayers: number;
-  members: any;
-  roomNumber: number;
-  cover: any;
-  rating: number;
-  founder: object;
-  totalPlayedGames: number;
-  price: number;
-  config: ConfigType;
-  createdAt: any;
-  language: string;
-  options: any;
-  private: any;
-  liveMembers: any;
-  spectatorMode: boolean;
-}
+import { checkBanExpired } from "../../functions/checkBan";
+import { FormatDate } from "../../functions/formatDate";
+import { DefineUserLevel } from "../../functions/userLevelOptimizer";
+import { JoinButtonText } from "./joinButton";
 
 interface ConfigType {
   newbes: boolean;
@@ -144,10 +121,21 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
       currentUser?.status?.type === "blocked in app" &&
       !checkBanExpired(currentUser?.status)
     ) {
+      // if current user blocked in app
       roomIsOpen = { status: "close", reason: "blocked in app" };
     } else if (currentUserRating?.current < item?.rating?.min) {
+      // if door rating is more than current user has
       roomIsOpen = { status: "close", reason: "rating" };
+    } else if (item?.bannedUserInfo) {
+      // if current user blocked in clan where admin is member
+      const expired = checkBanExpired(item?.bannedUserInfo);
+      if (expired) {
+        roomIsOpen = { status: "open", reason: "" };
+      } else {
+        roomIsOpen = { status: "close", reason: "clan ban" };
+      }
     } else {
+      // if current user blocked in door
       const expired = checkBanExpired(
         item?.blackList?.find(
           (i: { user: string }) => i?.user === currentUser?._id
@@ -223,12 +211,40 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
                     {FormatDate(item.createdAt, "withTime")}
                   </Text>
                 </View>
-                <View style={{ marginTop: 6, justifyContent: "center" }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    marginTop: 6,
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
                   <Text style={[styles.adminText, { color: theme.text }]}>
                     <FontAwesome5 size={14} color={theme.text} name="users" />{" "}
                     {liveUsers?.filter((u: any) => u.type === "player")?.length}
                     /{item?.options.maxPlayers}
                   </Text>
+                  {item.spectatorMode ? (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <MaterialCommunityIcons
+                        name="eye"
+                        size={16}
+                        color={theme.text}
+                      />
+                    </View>
+                  ) : (
+                    <MaterialCommunityIcons
+                      name="eye-off"
+                      size={16}
+                      color={theme.text}
+                    />
+                  )}
                 </View>
                 <Text
                   style={[
@@ -238,29 +254,7 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
                 >
                   Lvl: {item?.rating.min}
                 </Text>
-                {item.spectatorMode ? (
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 4,
-                      marginTop: 6,
-                    }}
-                  >
-                    <MaterialCommunityIcons
-                      name="eye"
-                      size={18}
-                      color={theme.text}
-                    />
-                  </View>
-                ) : (
-                  <MaterialCommunityIcons
-                    name="eye-off"
-                    size={18}
-                    color={theme.text}
-                    style={{ marginTop: 6 }}
-                  />
-                )}
+
                 <View style={styles.joinButtonContainer}>
                   <Pressable
                     onPress={() => {
@@ -285,92 +279,17 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
                         name="lock"
                       />
                     )}
-                    {gameLevel?.status === "In Play" ? (
-                      <Text style={styles.joinButtonText}>Playing now</Text>
-                    ) : (
-                      <Text
-                        style={[
-                          styles.joinButtonText,
-                          {
-                            color:
-                              roomIsOpen?.status === "open"
-                                ? theme.active
-                                : "#888",
-                            fontWeight: 600,
-                          },
-                        ]}
-                      >
-                        {roomIsOpen?.reason === "rating" && (
-                          <Text>Level does't match</Text>
-                        )}
-                        {currentUser?.status?.type === "blocked in app" &&
-                        !checkBanExpired(currentUser?.status) ? (
-                          <Text style={{ color: "#888", fontSize: 14 }}>
-                            Ban:{" "}
-                            <BanTimer
-                              duration={currentUser?.status?.totalHours}
-                              createdAt={currentUser?.status?.createdAt}
-                              afterExpire={() =>
-                                setCurrentUser((prev: any) => ({
-                                  ...prev,
-                                  status: undefined,
-                                }))
-                              }
-                            />
-                          </Text>
-                        ) : (
-                          <>
-                            {roomIsOpen?.reason === "ban" ? (
-                              <Text style={{ color: "#888", fontSize: 14 }}>
-                                Ban:{" "}
-                                <BanTimer
-                                  duration={
-                                    item?.blackList?.find(
-                                      (i: { user: string }) =>
-                                        i?.user === currentUser?._id
-                                    )?.totalHours
-                                  }
-                                  createdAt={
-                                    item?.blackList?.find(
-                                      (i: { user: string }) =>
-                                        i?.user === currentUser?._id
-                                    )?.createdAt
-                                  }
-                                  afterExpire={() =>
-                                    setRooms((prev: any) =>
-                                      prev.map((r: any) => {
-                                        if (r._id === item?._id) {
-                                          return {
-                                            ...r,
-                                            blackList: r.blackList.filter(
-                                              (b: any) =>
-                                                b.user !== currentUser?._id
-                                            ),
-                                          };
-                                        } else {
-                                          return r;
-                                        }
-                                      })
-                                    )
-                                  }
-                                />
-                              </Text>
-                            ) : (
-                              <Text>
-                                {liveUsers?.find(
-                                  (u: any) =>
-                                    u.userId === item.admin.founder._id
-                                )
-                                  ? "Join"
-                                  : item.admin.founder._id === currentUser._id
-                                  ? "Open Room"
-                                  : "Closed"}
-                              </Text>
-                            )}
-                          </>
-                        )}
-                      </Text>
-                    )}
+
+                    <JoinButtonText
+                      gameLevel={gameLevel}
+                      roomIsOpen={roomIsOpen}
+                      currentUser={currentUser}
+                      theme={theme}
+                      item={item}
+                      liveUsers={liveUsers}
+                      setCurrentUser={setCurrentUser}
+                      setRooms={setRooms}
+                    />
                   </Pressable>
                 </View>
               </View>

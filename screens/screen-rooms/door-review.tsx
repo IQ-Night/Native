@@ -32,6 +32,7 @@ import { useRoomsContext } from "../../context/rooms";
 import { FormatDate } from "../../functions/formatDate";
 import RoleInfo from "./create-room/roleInfo";
 import EditRoom from "./edit-room";
+import BlackList from "./blackList";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -198,7 +199,10 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
 
   const onPressFunction = () => {
     const isGameInPlay = gameLevel?.status === "In Play";
-    if (doorReview?.admin?.founder?._id !== currentUser?._id) {
+    if (
+      doorReview?.admin?.founder?._id !== currentUser?._id &&
+      !currentUser?.admin.active
+    ) {
       const playerCountMismatch =
         liveUsers?.filter((u: any) => u.type === "player").length !==
         doorReview?.options.maxPlayers;
@@ -235,6 +239,11 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
       }
     }
   };
+
+  /**
+   * black list
+   */
+  const [openBlackList, setOpenBlackList] = useState(false);
 
   return (
     <>
@@ -293,6 +302,21 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                   size={26}
                   color={theme.text}
                 />
+                {(currentUser?._id === doorReview?.admin.founder._id ||
+                  currentUser?.admin.active) && (
+                  <MaterialIcons
+                    onPress={() => {
+                      if (haptics) {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                      }
+                      setOpenBlackList(true);
+                    }}
+                    name="format-list-bulleted"
+                    style={{ position: "relative", top: 1 }}
+                    size={26}
+                    color="red"
+                  />
+                )}
 
                 {doorReview.admin.founder._id === currentUser._id && (
                   <MaterialIcons
@@ -574,6 +598,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
               }}
             >
               {doorReview.private.value &&
+                !currentUser?.admin.active &&
                 doorReview?.admin?.founder?._id !== currentUser?._id && (
                   <View style={{ alignItems: "center", gap: 8, width: "100%" }}>
                     <View
@@ -777,6 +802,12 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
             </View>
           </View>
         </BlurView>
+      )}
+      {openBlackList && (
+        <BlackList
+          roomId={doorReview?._id}
+          setOpenBlackList={setOpenBlackList}
+        />
       )}
     </>
   );

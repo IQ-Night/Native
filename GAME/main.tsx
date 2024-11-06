@@ -1512,7 +1512,7 @@ const Game = () => {
       {openBlock && (
         <Block
           userId={openUser?.userId}
-          userName={openUser?.name}
+          userName={openUser?.userName}
           setOpenBlock={setOpenBlock}
           setOpenUser={setOpenUser}
           from={{ state: "room", stateId: activeRoom?._id }}

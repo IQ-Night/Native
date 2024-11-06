@@ -447,6 +447,9 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     },
   ];
 
+  // confirm
+  const [confirm, setConfirm] = useState<any>(null);
+
   return (
     <Profile.Provider
       value={{
@@ -465,6 +468,8 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
         deleteConfirm,
         setDeleteConfirm,
         setLoading,
+        confirm,
+        setConfirm,
       }}
     >
       {children}

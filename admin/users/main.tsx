@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useAppContext } from "../../context/app";
 import axios from "axios";
 import UserItem from "./user-item";
+import UserRole from "./userRole";
 
 const Users = () => {
   /**
@@ -29,15 +30,32 @@ const Users = () => {
     GetUsers();
   }, []);
 
+  // manage user role
+  const [manageRoles, setManageRoles] = useState<any>(null);
   return (
-    <View>
+    <View style={{ height: "100%", width: "100%" }}>
       <ScrollView>
         <View style={styles.row}>
           {users?.map((item: any, index: number) => {
-            return <UserItem key={index} item={item} index={index} />;
+            return (
+              <UserItem
+                key={index}
+                item={item}
+                index={index}
+                setManageRoles={setManageRoles}
+              />
+            );
           })}
         </View>
       </ScrollView>
+      {manageRoles && (
+        <UserRole
+          userId={manageRoles?._id}
+          manageRoles={manageRoles}
+          setManageRoles={setManageRoles}
+          setUsers={setUsers}
+        />
+      )}
     </View>
   );
 };

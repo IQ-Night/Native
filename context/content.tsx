@@ -152,3 +152,84 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
     </Content.Provider>
   );
 };
+
+// warnings
+export const warnings = [
+  {
+    id: 1,
+    value: "offensive_language",
+    en: "Using offensive language",
+    ka: "ბილწ სიტყვაობა",
+    ru: "Использование нецензурной лексики",
+  },
+  {
+    id: 2,
+    value: "insulting_others",
+    en: "Insulting others",
+    ka: "სხვისი შეურაწყოფა",
+    ru: "Оскорбление других",
+  },
+  {
+    id: 3,
+    value: "revealing_roles",
+    en: "Revealing roles, showing cards",
+    ka: "როლის გამოვკენა , კარტის ჩვენება",
+    ru: "Раскрытие ролей, показ карт",
+  },
+  {
+    id: 4,
+    value: "swearing_without_argument",
+    en: "Swearing, oath-taking without arguments",
+    ka: "დაფიცება , დაგინება , ღმერთის ხსენება, დაფიცება, თავის გაწითლება არა არგუმენტებით",
+    ru: "Клятва, упоминание Бога, без аргументов",
+  },
+  {
+    id: 5,
+    value: "clan_member_insult",
+    en: "Insulting or belittling members of other clans",
+    ka: "სხვა კლანში მყოფი ადამიანის დამცირება , ცუდად მოხსენიება , შეურაწყოფა",
+    ru: "Оскорбление членов других кланов",
+  },
+  {
+    id: 6,
+    value: "intentional_exit",
+    en: "Intentional exit from the game",
+    ka: "შუა თამაშიდან განზრახ გასვლა",
+    ru: "Намеренный выход из игры",
+  },
+  {
+    id: 7,
+    value: "harassment_threats",
+    en: "Harassment, threats, blackmail",
+    ka: "ადამიანის შევიწროვება , მუქარა, შანტაჟი",
+    ru: "Преследование, угрозы, шантаж",
+  },
+  {
+    id: 8,
+    value: "foreign_language",
+    en: "Using foreign language not set as room language",
+    ka: "უცხო ენის გამოყენება რომელიც არ არის რუმის ენად მითითებული და გაუგებარია მოთამაშეთათვის",
+    ru: "Использование иностранного языка, непонятного игрокам",
+  },
+  {
+    id: 9,
+    value: "offensive_nickname",
+    en: "Offensive nicknames",
+    ka: "მეტსახელები რომელიც შეიცავს შეურაწყოფას",
+    ru: "Оскорбительные прозвища",
+  },
+  {
+    id: 10,
+    value: "betting_challenge",
+    en: "Betting challenges",
+    ka: "ჩელენჯი ფსონზე , დანინძალევბა",
+    ru: "Челленджи с пари",
+  },
+  {
+    id: 11,
+    value: "ability_abuse",
+    en: "Abuse of abilities, unfair conduct",
+    ka: "შესაძლებლობების ბოროტად გამოყენება , არასამართლიანად",
+    ru: "Злоупотребление возможностями, несправедливое поведение",
+  },
+];

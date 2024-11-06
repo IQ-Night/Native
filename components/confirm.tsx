@@ -55,7 +55,7 @@ export const Confirm = ({ confirm, setConfirm }: any) => {
               }}
             />
             <Button
-              // loading={leaveLoading}
+              loading={confirm?.loading}
               title={confirm?.confirmText}
               style={{
                 backgroundColor: theme.active,

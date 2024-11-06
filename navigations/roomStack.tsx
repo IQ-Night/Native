@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 import React, { useState } from "react";
 import { Text, View } from "react-native";
@@ -55,13 +54,6 @@ const RoomssStackNavigator = () => {
           component={User}
           options={({ route }: any) => ({
             title: route.params?.item?.name || "User",
-            headerRight: () => (
-              <MaterialCommunityIcons
-                name="block-helper"
-                size={19}
-                color="red"
-              />
-            ),
           })}
         />
 

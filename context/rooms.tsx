@@ -36,7 +36,7 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
   /**
    * Auth context
    */
-  const { currentUser } = useAuthContext();
+  const { currentUser, GetUser } = useAuthContext();
   /**
    * Rooms state
    */
@@ -58,7 +58,9 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
           "&search=" +
           search +
           "&language=" +
-          language
+          language +
+          "&currentUser=" +
+          currentUser?._id
       );
       if (response.data.status === "success") {
         setRooms(response.data.data.rooms);
@@ -95,7 +97,11 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
           "&limit=" +
           limit +
           "&search=" +
-          search
+          search +
+          "&language=" +
+          language +
+          "&currentUser=" +
+          currentUser?._id
       );
       if (response.data.status === "success") {
         let roomsList = response.data.data.rooms;
@@ -153,6 +159,35 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
   if (language?.length > 0) {
     filterStatus = true;
   }
+
+  useEffect(() => {
+    if (!socket) return; // Early return if socket is not available
+
+    const handleRerenderedRooms = () => {
+      GetRooms(); // Call the function when the event is triggered
+    };
+
+    socket.on("rerenderedRooms", handleRerenderedRooms); // Listen for the event
+
+    // Cleanup function to remove the event listener
+    return () => {
+      socket.off("rerenderedRooms", handleRerenderedRooms);
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("rerenderedAuthUser", () => {
+        GetUser();
+        GetRooms();
+      });
+
+      // Clean up the listener when component unmounts or socket changes
+      return () => {
+        socket.off("rerenderedAuthUser");
+      };
+    }
+  }, [socket]);
 
   return (
     <Rooms.Provider

@@ -13,7 +13,7 @@ import { useAppContext } from "../../context/app";
 import Img from "../../components/image";
 import { useNavigation } from "@react-navigation/native";
 import { useAuthContext } from "../../context/auth";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 
 interface ItemType {
   id: string;
@@ -25,11 +25,16 @@ interface ItemType {
 interface UserItemProps {
   item: ItemType;
   index: number;
+  setManageRoles?: any;
 }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-const UserItem: React.FC<UserItemProps> = ({ item, index }: any) => {
+const UserItem: React.FC<UserItemProps> = ({
+  item,
+  index,
+  setManageRoles,
+}: any) => {
   const navigation: any = useNavigation();
   /**
    * App context
@@ -84,10 +89,27 @@ const UserItem: React.FC<UserItemProps> = ({ item, index }: any) => {
           size={10}
           style={{
             color: theme.text,
-            marginLeft: "auto",
           }}
         />
+        {item?.admin?.active && (
+          <Text
+            style={{
+              color: theme.active,
+              fontSize: 14,
+              fontWeight: 500,
+            }}
+          >
+            ({item.admin.role})
+          </Text>
+        )}
       </TouchableOpacity>
+      <MaterialIcons
+        name="manage-accounts"
+        size={20}
+        color={theme.active}
+        style={{ marginLeft: "auto" }}
+        onPress={() => setManageRoles(item)}
+      />
     </View>
   );
 };

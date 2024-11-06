@@ -16,8 +16,16 @@ const Menu = ({ navigation }: any) => {
       label: "Users",
     },
     {
+      screen: "Black List",
+      label: "Black List",
+    },
+    {
       screen: "Products",
       label: "Products",
+    },
+    {
+      screen: "Reports",
+      label: "Reports",
     },
   ];
   return (

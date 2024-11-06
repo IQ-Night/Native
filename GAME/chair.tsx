@@ -517,8 +517,6 @@ const Chair = ({
     }
   };
 
-  console.log(item);
-
   return (
     <Pressable
       onPress={() => setOpenUser(item)}

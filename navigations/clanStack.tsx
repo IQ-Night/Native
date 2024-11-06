@@ -1,17 +1,18 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
+import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import CountryFlag from "react-native-country-flag";
+import { Confirm } from "../components/confirm";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
-import { useClansContext } from "../context/clans";
 import Clan from "../screens/screen-clans/clan-screen";
 import Clans from "../screens/screen-clans/main";
 import Members from "../screens/screen-clans/members";
-import User from "../screens/screen-user/main";
-import { Confirm } from "../components/confirm";
 import Coins from "../screens/screen-coins/coins";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import User from "../screens/screen-user/main";
+import Block from "../admin/users/block-user";
 
 const ClansStackNavigator = () => {
   /**
@@ -85,13 +86,6 @@ const ClansStackNavigator = () => {
           component={User}
           options={({ route }: any) => ({
             title: route.params?.item?.name || "User",
-            headerRight: () => (
-              <MaterialCommunityIcons
-                name="block-helper"
-                size={19}
-                color="red"
-              />
-            ),
           })}
         />
         <ClanStack.Screen name="Members" component={Members} />

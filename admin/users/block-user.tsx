@@ -1,16 +1,18 @@
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
+import axios from "axios";
+import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import React, { useEffect, useRef, useState } from "react";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import Button from "../../components/button";
 import { useAppContext } from "../../context/app";
 import { useGameContext } from "../../context/game";
-import * as Haptics from "expo-haptics";
-import Button from "../../components/button";
-import { BlurView } from "expo-blur";
-import { Picker } from "@react-native-picker/picker";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import axios from "axios";
 import { useNotificationsContext } from "../../context/notifications";
-import { FormatDate } from "../../functions/formatDate";
 import { convertDuration } from "../../functions/checkBan";
+import Warnings from "./warnings";
+import { useAuthContext } from "../../context/auth";
+import { warnings } from "../../context/content";
 
 const blocksOptions = [
   { totalHours: 0.0334, label: "2 min" },
@@ -26,8 +28,9 @@ const blocksOptions = [
 ];
 
 const Block = ({ userId, userName, setOpenBlock, setOpenUser, from }: any) => {
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, setAlert } = useAppContext();
   const { socket, activeRoom } = useGameContext();
+  const { currentUser } = useAuthContext();
 
   const slideAnim = useRef(new Animated.Value(500)).current;
   const [selectedDuration, setSelectedDuration] = useState(
@@ -74,6 +77,7 @@ const Block = ({ userId, userName, setOpenBlock, setOpenUser, from }: any) => {
         if (from?.state === "room") {
           socket.emit("leaveRoom", from?.stateId, userId);
         }
+
         socket.emit("rerenderAuthUser", { userId });
         const duration = convertDuration(selectedDuration);
         SendNotification({
@@ -81,7 +85,14 @@ const Block = ({ userId, userName, setOpenBlock, setOpenUser, from }: any) => {
           type: "You'r blocked in app by admin for " + duration + "",
         });
         closeBlock();
-        setOpenUser(null);
+        if (setOpenUser) {
+          setOpenUser(null);
+        }
+        setAlert({
+          active: true,
+          type: "success",
+          text: "Block added successfully!",
+        });
       }
     } catch (error: any) {
       console.error("Error:", error.response?.data?.message || error.message);
@@ -100,7 +111,11 @@ const Block = ({ userId, userName, setOpenBlock, setOpenUser, from }: any) => {
         <Animated.View
           style={[
             styles.animatedView,
-            { transform: [{ translateY: slideAnim }] },
+            {
+              transform: [{ translateY: slideAnim }],
+              position: "relative",
+              bottom: from?.state !== "room" ? 60 : 0,
+            },
           ]}
         >
           <View style={styles.header}>
@@ -128,8 +143,9 @@ const Block = ({ userId, userName, setOpenBlock, setOpenUser, from }: any) => {
               ))}
             </Picker>
           </Pressable>
+
           <Button
-            title="Add Block"
+            title="Block"
             style={{
               backgroundColor: "red",
               width: "100%",
@@ -154,7 +170,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   animatedView: {
-    width: "90%",
+    width: "96%",
     borderRadius: 10,
     paddingVertical: 20,
     paddingHorizontal: 10,

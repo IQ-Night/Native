@@ -18,28 +18,6 @@ const Content = () => {
   const { loading, alert, setAlert, apptheme, theme, haptics } =
     useAppContext();
 
-  /**
-   * Auth context
-   */
-  const { GetUser } = useAuthContext();
-
-  // socket
-
-  const { socket } = useGameContext();
-
-  useEffect(() => {
-    if (socket) {
-      socket.on("rerenderedAuthUser", () => {
-        GetUser();
-      });
-
-      // Clean up the listener when component unmounts or socket changes
-      return () => {
-        socket.off("rerenderedAuthUser");
-      };
-    }
-  }, [socket]);
-
   return (
     <View style={styles.background}>
       <BgSound />

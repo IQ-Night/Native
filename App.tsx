@@ -10,6 +10,7 @@ import {
   Montserrat_700Bold,
 } from "@expo-google-fonts/montserrat";
 import { Text } from "react-native";
+import { AdminContextWrapper } from "./context/admin";
 
 export default function App() {
   // const [fontsLoaded] = useFonts({
@@ -22,7 +23,9 @@ export default function App() {
         <ContentContextWrapper>
           <GameContextWrapper>
             <NotificationsContextWrapper>
-              <Content />
+              <AdminContextWrapper>
+                <Content />
+              </AdminContextWrapper>
             </NotificationsContextWrapper>
           </GameContextWrapper>
         </ContentContextWrapper>

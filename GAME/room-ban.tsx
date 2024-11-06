@@ -119,9 +119,10 @@ const Ban = ({ openUser, setOpenBan, setOpenUser }: any) => {
             { transform: [{ translateY: slideAnim }] },
           ]}
         >
-          {currentUser?.admin?.active &&
-          currentUser?._id !== activeRoom?.admin?.founder?._id &&
-          activeRoom?.admin?.founder?._id === openUser?.userId ? null : (
+          {(currentUser?.admin?.active &&
+            currentUser?._id !== activeRoom?.admin?.founder?._id &&
+            activeRoom?.admin?.founder?._id === openUser?.userId) ||
+          openUser?.admin.active ? null : (
             <>
               <View style={styles.header}>
                 <Text style={[styles.headerText, { color: theme.text }]}>
@@ -164,18 +165,6 @@ const Ban = ({ openUser, setOpenBan, setOpenUser }: any) => {
               />
             </>
           )}
-          {/* {currentUser?.admin?.active &&
-            currentUser?._id !== activeRoom?.founder?._id && 
-            <View style={styles.header}>
-            <Text style={[styles.headerText, { color: theme.text }]}>
-              Add Ban in this room
-            </Text>
-            <MaterialCommunityIcons
-              name="block-helper"
-              size={18}
-              color="red"
-            />
-          </View>} */}
 
           <Button
             title="Simple throw out from this room"

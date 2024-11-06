@@ -23,13 +23,16 @@ import MyClans from "../screens/screen-profile/myClans/main";
 import Notifications from "../screens/screen-profile/notifications/main";
 import Referrals from "../screens/screen-profile/referrals/main";
 import User from "../screens/screen-user/main";
+import Block from "../admin/users/block-user";
+import { Confirm } from "../components/confirm";
 
 const ProfileStackNavigator = () => {
   const ProfileStack = createStackNavigator();
 
   const { apiUrl, theme, haptics } = useAppContext();
   const { currentUser } = useAuthContext();
-  const { setUpdateClanState, setDeleteConfirm } = useProfileContext();
+  const { setUpdateClanState, setDeleteConfirm, confirm, setConfirm } =
+    useProfileContext();
   const {
     setNotifications,
     totalNotifications,
@@ -40,7 +43,6 @@ const ProfileStackNavigator = () => {
     setClearState,
   } = useNotificationsContext();
 
-  const [confirm, setConfirm] = useState<any>(null);
   const {
     invoices,
     setInvoices,
@@ -181,13 +183,6 @@ const ProfileStackNavigator = () => {
           component={User}
           options={({ route }: any) => ({
             title: route.params?.item?.name || "User",
-            headerRight: () => (
-              <MaterialCommunityIcons
-                name="block-helper"
-                size={19}
-                color="red"
-              />
-            ),
           })}
         />
         <ProfileStack.Screen
@@ -314,7 +309,7 @@ const ProfileStackNavigator = () => {
         />
         <ProfileStack.Screen name="Referrals" component={Referrals} />
       </ProfileStack.Navigator>
-      {confirm}
+      <Confirm confirm={confirm} setConfirm={setConfirm} />
     </>
   );
 };

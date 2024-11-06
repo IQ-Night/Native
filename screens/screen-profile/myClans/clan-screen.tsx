@@ -1,4 +1,4 @@
-import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import axios from "axios";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
@@ -25,6 +25,8 @@ import Search from "./searchMember";
 import { useNotificationsContext } from "../../../context/notifications";
 import ManagementConfig from "./managementConfig";
 import { DefineUserLevel } from "../../../functions/userLevelOptimizer";
+import Avatars from "../../../components/avatars";
+import BlackList from "./blackList";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -62,9 +64,6 @@ const Clan = ({ route, navigation }: any) => {
    * Management
    */
   const founder = item?.admin?.find((a: any) => a.role === "founder")?.user;
-  const coFounder = item?.admin?.find(
-    (a: any) => a.role === "co-founder"
-  )?.user;
   const directors = item?.admin?.filter(
     (a: any) => a.role === "director"
   )?.user;
@@ -422,10 +421,51 @@ const Clan = ({ route, navigation }: any) => {
    */
   const [openConfig, setOpenConfig] = useState<any>(null);
 
+  /**
+   * Open popup
+   */
+  const [openPopup, setOpenPopup] = useState("");
+  const [clanState, setClanState] = useState({ cover: item?.cover });
+
+  useEffect(() => {
+    const ChangeCover = async () => {
+      try {
+        const response = await axios.patch(
+          apiUrl + "/api/v1/clans/" + item?._id,
+          {
+            cover: clanState?.cover,
+          }
+        );
+        if (response?.data.status === "success") {
+          setItem((prev: any) => ({ ...prev, cover: clanState?.cover }));
+          setClans((prev: any) =>
+            prev.map((clan: any) => {
+              if (clan?._id === item?._id) {
+                return { ...clan, cover: clanState?.cover };
+              } else {
+                return clan;
+              }
+            })
+          );
+        }
+      } catch (error: any) {
+        console.log(error.response.data.message);
+      }
+    };
+    if (clanState?.cover !== item?.cover) {
+      ChangeCover();
+    }
+  }, [clanState]);
+
   return (
     <View style={{ height: "100%", width: "100%" }}>
       <View style={styles.container}>
-        <View
+        <Pressable
+          onPress={
+            currentUserRole === "founder"
+              ? () => setOpenPopup("avatars")
+              : undefined
+          }
           style={{
             width: "25%",
             aspectRatio: 1,
@@ -433,7 +473,7 @@ const Clan = ({ route, navigation }: any) => {
           }}
         >
           <Img uri={item.cover} />
-        </View>
+        </Pressable>
 
         {/** Content */}
 
@@ -494,8 +534,13 @@ const Clan = ({ route, navigation }: any) => {
           marginBottom: 8,
         }}
       />
-      <View style={{ width: "100%", paddingHorizontal: 12 }}>
-        {currentUserRole?.includes("founder") ||
+      <View
+        style={{
+          width: "100%",
+          paddingHorizontal: 12,
+        }}
+      >
+        {currentUserRole === "founder" ||
         currentUserRole === "director" ||
         currentUserRole === "manager" ||
         currentUserRole === "wiser" ? (
@@ -604,6 +649,29 @@ const Clan = ({ route, navigation }: any) => {
                 }}
               >
                 Add Members
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                setActiveState("blackList");
+                setOpenSearch(false);
+              }}
+              style={{
+                padding: 6,
+                paddingHorizontal: 12,
+                borderRadius: 8,
+                backgroundColor:
+                  activeState === "blackList" ? theme.active : "#333",
+              }}
+            >
+              <Text
+                style={{
+                  color: activeState === "blackList" ? "white" : theme.text,
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              >
+                Black List
               </Text>
             </Pressable>
           </ScrollView>
@@ -763,7 +831,7 @@ const Clan = ({ route, navigation }: any) => {
         )}
 
         <ScrollView>
-          <View style={styles.row}>
+          <View style={[styles.row]}>
             {loadMembers && (
               <ActivityIndicator size={24} color={theme.active} />
             )}
@@ -813,8 +881,18 @@ const Clan = ({ route, navigation }: any) => {
                           }
                         }}
                       >
-                        <Text style={{ color: "white", fontWeight: 500 }}>
-                          {member?.name}
+                        <Text
+                          style={{
+                            color:
+                              member?.userId === currentUser?._id
+                                ? theme.active
+                                : theme.text,
+                            fontWeight: 500,
+                          }}
+                        >
+                          {member?.userId === currentUser?._id
+                            ? "You"
+                            : member?.name}
                         </Text>
                       </Pressable>
                       <Text style={{ color: theme.active, fontWeight: "500" }}>
@@ -844,7 +922,7 @@ const Clan = ({ route, navigation }: any) => {
                         {member?.rating} P.
                       </Text>
 
-                      {(currentUserRole?.includes("founder") ||
+                      {(currentUserRole === "founder" ||
                         currentUserRole === "director") &&
                         member?._id !== founder?._id &&
                         activeState === "members" &&
@@ -882,7 +960,6 @@ const Clan = ({ route, navigation }: any) => {
                           </View>
                         )}
                       {member?._id !== founder?._id &&
-                        member?._id !== coFounder?._id &&
                         activeState === "requests" &&
                         currentUserRole && (
                           <View
@@ -930,6 +1007,9 @@ const Clan = ({ route, navigation }: any) => {
                   );
                 }
               )}
+            {activeState === "blackList" && (
+              <BlackList navigation={navigation} clan={item} />
+            )}
           </View>
         </ScrollView>
       </View>
@@ -1026,6 +1106,41 @@ const Clan = ({ route, navigation }: any) => {
           openConfig={openConfig}
           setItem={setItem}
         />
+      )}
+
+      {openPopup !== "" && (
+        <BlurView
+          intensity={120}
+          tint="dark"
+          style={{
+            position: "absolute",
+            top: 0,
+            zIndex: 50,
+            height: "100%",
+            width: "100%",
+            paddingTop: 12,
+          }}
+        >
+          <FontAwesome
+            name="close"
+            size={32}
+            color={theme.active}
+            style={{ position: "absolute", top: 12, right: 16, zIndex: 60 }}
+            onPress={() => {
+              setOpenPopup("");
+              if (haptics) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              }
+            }}
+          />
+          {openPopup === "avatars" && (
+            <Avatars
+              state={clanState}
+              setState={setClanState}
+              type="clan-avatar"
+            />
+          )}
+        </BlurView>
       )}
     </View>
   );

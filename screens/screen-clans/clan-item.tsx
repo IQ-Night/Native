@@ -29,9 +29,6 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
    * Management
    */
   const founder = item?.admin?.find((a: any) => a.role === "founder")?.user;
-  const coFounder = item?.admin?.find(
-    (a: any) => a.role === "co-founder"
-  )?.user;
   const directors = item?.admin?.filter(
     (a: any) => a.role === "director"
   )?.user;
