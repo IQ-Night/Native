@@ -326,7 +326,11 @@ const Nights = ({ data, players }: any) => {
                                 N{don?.playerNumber} Mafia Don
                               </Text>
                               <MaterialCommunityIcons
-                                name="eye"
+                                name={
+                                  night?.findSherif.findResult?.includes("Yes")
+                                    ? "eye"
+                                    : "eye-off"
+                                }
                                 size={18}
                                 color={
                                   night?.findSherif.findResult?.includes("Yes")
@@ -379,7 +383,11 @@ const Nights = ({ data, players }: any) => {
                                 N{police?.playerNumber} Police
                               </Text>
                               <MaterialCommunityIcons
-                                name="eye"
+                                name={
+                                  night?.findMafia.findResult?.includes("Yes")
+                                    ? "eye"
+                                    : "eye-off"
+                                }
                                 size={18}
                                 color={
                                   night?.findMafia.findResult?.includes("Yes")

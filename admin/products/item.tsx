@@ -9,23 +9,46 @@ import {
   Text,
   View,
 } from "react-native";
+import * as Haptics from "expo-haptics";
+
 import { useAppContext } from "../../context/app";
 import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
 import { FontAwesome5 } from "@expo/vector-icons";
+import Img from "../../components/image";
+import { useNavigation } from "@react-navigation/native";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-const Item = ({ item }: any) => {
+const Item = ({ item, setEditProduct }: any) => {
   /**
    * App context
    */
-  const { theme } = useAppContext();
+  const { theme, haptics } = useAppContext();
 
   const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
   // load img
   const [loadImg, setLoadImg] = useState(true);
 
+  /**
+   * product types
+   */
+  const types = [
+    {
+      value: "profile-avatar",
+      label: "Profile Avatar",
+    },
+    {
+      value: "room-avatar",
+      label: "Room Avatar",
+    },
+    {
+      value: "clan-avatar",
+      label: "Clan Avatar",
+    },
+  ];
+
+  const navigation: any = useNavigation();
   return (
     <View
       style={{
@@ -46,7 +69,15 @@ const Item = ({ item }: any) => {
         }}
       >
         <BlurView intensity={20} tint="dark">
-          <Pressable style={styles.container}>
+          <Pressable
+            style={styles.container}
+            onPress={() => {
+              if (haptics) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              }
+              setEditProduct(item);
+            }}
+          >
             {loadImg && (
               <BlurView
                 intensity={100}
@@ -75,6 +106,43 @@ const Item = ({ item }: any) => {
                 colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.2)", "rgba(0,0,0,0.6)"]}
                 style={styles.wrapper}
               >
+                <View
+                  style={{
+                    shadowColor: "#000",
+                    shadowOffset: { width: 1, height: 1 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 2,
+                    // Elevation for Android
+                    elevation: 4,
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    zIndex: 60,
+                    width: 24,
+                    height: 24,
+                  }}
+                >
+                  <Pressable
+                    onPress={() => {
+                      if (haptics) {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                      }
+                      const founder = item?.founder;
+                      navigation.navigate("User", {
+                        item: { ...founder, _id: founder?.userId },
+                      });
+                    }}
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 100,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Img uri={item.founder.cover} />
+                  </Pressable>
+                </View>
+
                 {/** Content */}
                 <View
                   style={{
@@ -113,19 +181,25 @@ const Item = ({ item }: any) => {
                         >
                           {item?.title}
                         </Text>
-                        <Text
-                          style={{
-                            color: theme.text,
-                            fontSize: 12,
-                            fontWeight: "400",
-                            overflow: "hidden",
-                            width: "100%",
-                          }}
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
-                        >
-                          {item?.type}
-                        </Text>
+
+                        {item?.type?.map((i: any, x: number) => {
+                          return (
+                            <Text
+                              key={x}
+                              style={{
+                                color: theme.text,
+                                fontSize: 12,
+                                fontWeight: "400",
+                                overflow: "hidden",
+                                width: "100%",
+                              }}
+                              numberOfLines={1}
+                              ellipsizeMode="tail"
+                            >
+                              {types?.find((t: any) => t.value === i)?.label}
+                            </Text>
+                          );
+                        })}
                         <View
                           style={{
                             alignItems: "center",

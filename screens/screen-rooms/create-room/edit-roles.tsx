@@ -3,6 +3,7 @@ import React from "react";
 import { roles } from "../../../context/rooms";
 import { FontAwesome5, FontAwesome6, MaterialIcons } from "@expo/vector-icons";
 import { useAppContext } from "../../../context/app";
+import { useAuthContext } from "../../../context/auth";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -11,6 +12,10 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo, oldData }: any) => {
    * App context
    */
   const { theme } = useAppContext();
+  /**
+   * App context
+   */
+  const { currentUser } = useAuthContext();
 
   return (
     <View
@@ -27,17 +32,20 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo, oldData }: any) => {
               if (
                 roomState.roles.find((r: any) => r.value.includes(item.value))
               ) {
-                if (
-                  item.value !== "mafia" ||
-                  (item.value === "mafia" &&
-                    roomState.roles?.find((r: any) => r.value === "mafia-don"))
-                ) {
-                  setRoomState((prev: any) => ({
-                    ...prev,
-                    roles: prev.roles.filter(
-                      (i: any) => i.value !== item.value
-                    ),
-                  }));
+                if (roomState?.options?.maxMafias > 1) {
+                  if (roomState.roles?.find((r: any) => r.value === "mafia")) {
+                    setRoomState((prev: any) => ({
+                      ...prev,
+                      roles: prev.roles.filter(
+                        (i: any) => i.value !== item.value
+                      ),
+                    }));
+                  } else {
+                    setRoomState((prev: any) => ({
+                      ...prev,
+                      roles: [...prev?.roles, item],
+                    }));
+                  }
                 }
               } else {
                 if (
@@ -96,24 +104,23 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo, oldData }: any) => {
               style={{ position: "absolute", top: 8, right: 8 }}
             />
             <Text>{item.label}</Text>
-            {item.price &&
-              !oldData?.roles.find((r: any) => r.value === item.value) && (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 4,
-                    position: "absolute",
-                    bottom: 8,
-                    left: 8,
-                  }}
-                >
-                  <FontAwesome5 name="coins" size={14} color="orange" />
-                  <Text style={{ color: theme.text, fontWeight: 500 }}>
-                    {item.price}
-                  </Text>
-                </View>
-              )}
+            {item.price && !currentUser?.vip?.active && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                  position: "absolute",
+                  bottom: 8,
+                  left: 8,
+                }}
+              >
+                <FontAwesome5 name="coins" size={14} color="orange" />
+                <Text style={{ color: theme.text, fontWeight: 500 }}>
+                  {item.price}
+                </Text>
+              </View>
+            )}
             {roomState.roles.includes(item) && (
               <MaterialIcons
                 name="done"

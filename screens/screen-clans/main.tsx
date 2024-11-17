@@ -1,7 +1,10 @@
+import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, StyleSheet, View } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 import Header from "../../components/header";
+// import { Pagination } from "../../components/pagination";
 import { useAppContext } from "../../context/app";
 import { useClansContext } from "../../context/clans";
 import { useContentContext } from "../../context/content";
@@ -14,7 +17,7 @@ const Clans = ({ navigation }: any) => {
   /**
    * App context
    */
-  const { haptics } = useAppContext();
+  const { haptics, theme } = useAppContext();
   /**
    * Context state
    */
@@ -23,7 +26,25 @@ const Clans = ({ navigation }: any) => {
   /**
    * Clans state
    */
-  const { clans, search, setSearch, totalClans } = useClansContext();
+  const {
+    clans,
+    search,
+    setSearch,
+    totalClans,
+    totalPages,
+    page,
+    GetClans,
+    loadClans,
+  } = useClansContext();
+
+  const debouncedAddClans = (page: number) => {
+    if (totalClans > clans?.length) {
+      if (haptics) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+      }
+      GetClans(page);
+    }
+  };
 
   /**
    * Filter
@@ -142,6 +163,7 @@ const Clans = ({ navigation }: any) => {
             width: 40,
             position: "absolute",
             top: 156,
+            zIndex: 80,
             left: SCREEN_WIDTH / 2 - 20,
           }}
         >

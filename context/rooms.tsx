@@ -29,66 +29,74 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
    * App context
    */
   const { apiUrl, setLoading } = useAppContext();
-  /**
-   * Context context
-   */
-  const { rerenderRooms, setRerenderRooms } = useContentContext();
+
   /**
    * Auth context
    */
   const { currentUser, GetUser } = useAuthContext();
   /**
+   * Content context
+   */
+  const { rerenderRooms, setRerenderRooms } = useContentContext();
+  /**
    * Rooms state
    */
+  const [loadRooms, setLoadRooms] = useState(false);
   const [rooms, setRooms] = useState<any>([]);
   const [totalRooms, setTotalRooms] = useState<any>(null);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(12);
   const [languageTotals, setLanguageTotals] = useState(0);
   //filter
   const [search, setSearch] = useState("");
   const [language, setLanguage] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
 
-  const GetRooms = async () => {
+  const GetRooms = async (pg: number) => {
+    setLoadRooms(true); // Set loading state to true before fetching
     try {
       const response = await axios.get(
-        apiUrl +
-          "/api/v1/rooms?page=1&limit=" +
-          limit +
-          "&search=" +
-          search +
-          "&language=" +
-          language +
-          "&currentUser=" +
-          currentUser?._id
+        `${apiUrl}/api/v1/rooms?page=${pg}&limit=${limit}&search=${search}&language=${language}&currentUser=${currentUser?._id}`
       );
-      if (response.data.status === "success") {
-        setRooms(response.data.data.rooms);
-        setTotalRooms(`${response.data.totalRooms}`);
-        setLanguageTotals(response.data.data.languageTotals);
-        setPage(1);
-        setRerenderRooms(false);
 
-        setTimeout(() => {
-          setLoading(false);
-        }, 500);
+      if (response.data.status === "success") {
+        // Append the new rooms to the existing ones
+        setRooms(response.data.data.rooms);
+
+        // Set additional state values from the response
+        setTotalRooms(response.data.totalRooms);
+        setLanguageTotals(response.data.data.languageTotals);
+        setPage(pg); // Update the current page
+        setTotalPages(response.data.totalPages); // Update total pages
+
+        // Reset loading state
+        setRerenderRooms(false);
+        setLoading(false);
+        setLoadRooms(false);
+      } else {
+        console.error("Failed to fetch rooms: ", response.data.message);
+        setLoadRooms(false); // Stop loading even on failure
       }
     } catch (error: any) {
-      console.log(error.response.data.message);
+      console.error(
+        "API Error: ",
+        error.response?.data?.message || error.message
+      );
+      setLoadRooms(false); // Stop loading on error
     }
   };
 
   useEffect(() => {
     if (currentUser) {
-      GetRooms();
+      GetRooms(1);
     }
   }, [apiUrl, search, currentUser, language, rerenderRooms]);
 
-  const [loadAddRooms, setLoadAddRooms] = useState(false);
+  const [loadMore, setLoadMore] = useState(false);
 
   const AddRooms = async () => {
+    setLoadMore(true);
     const newPage = page + 1;
-    setLoadAddRooms(true);
     try {
       const response = await axios.get(
         apiUrl +
@@ -123,11 +131,13 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
 
           return uniqueRooms;
         });
-        setLoadAddRooms(false);
+        setRooms((prev: any) => [...prev, ...roomsList]);
         setPage(newPage);
+        setLoadMore(false);
       }
     } catch (error: any) {
       console.log(error.response.data.message);
+      setLoadMore(false);
     }
   };
 
@@ -164,7 +174,7 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
     if (!socket) return; // Early return if socket is not available
 
     const handleRerenderedRooms = () => {
-      GetRooms(); // Call the function when the event is triggered
+      GetRooms(1); // Call the function when the event is triggered
     };
 
     socket.on("rerenderedRooms", handleRerenderedRooms); // Listen for the event
@@ -179,7 +189,7 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
     if (socket) {
       socket.on("rerenderedAuthUser", () => {
         GetUser();
-        GetRooms();
+        GetRooms(1);
       });
 
       // Clean up the listener when component unmounts or socket changes
@@ -200,11 +210,12 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
         languageTotals,
         language,
         setLanguage,
+        page,
+        totalPages,
         AddRooms,
-        loadAddRooms,
-        setLoadAddRooms,
-        GetRooms,
         filterStatus,
+        loadRooms,
+        loadMore,
       }}
     >
       {children}
@@ -233,27 +244,25 @@ export const roles = [
     label: "Doctor",
     rules: "",
     img: "",
-    price: 100,
-  },
-  {
-    value: "mafia-don",
-    label: "Mafia Don",
-    rules: "",
-    img: "",
-    price: 100,
   },
   {
     value: "police",
     label: "Police",
     rules: "",
     img: "",
-    price: 100,
   },
   {
     value: "serial-killer",
     label: "Serial Killer",
     rules: "",
     img: "",
-    price: 100,
+    price: 500,
+  },
+  {
+    value: "mafia-don",
+    label: "Mafia Don",
+    rules: "",
+    img: "",
+    price: 1000,
   },
 ];

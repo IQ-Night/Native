@@ -22,23 +22,14 @@ const List = ({ setUserScreen, navigation }: any) => {
 
   return (
     <ScrollView
-      onScroll={({ nativeEvent }) => {
-        setScrollYClans(nativeEvent.contentOffset.y);
-        const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-        const isCloseToBottom =
-          layoutMeasurement.height + contentOffset.y >=
-          contentSize.height - 350;
-        if (isCloseToBottom) {
-          if (totalClans > clans?.length) {
-            AddClans();
-          }
-        }
-      }}
+      onScroll={(event: any) =>
+        setScrollYClans(event.nativeEvent.contentOffset.y)
+      }
       scrollEventThrottle={400}
       ref={scrollViewRefClans}
     >
       <View style={styles.row}>
-        {!totalClans && totalClans !== 0 && (
+        {!totalClans && (
           <View
             style={{
               width: "100%",

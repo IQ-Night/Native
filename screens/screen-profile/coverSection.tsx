@@ -19,38 +19,20 @@ const CoverSection = () => {
   /**
    * App state
    */
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, setAlert } = useAppContext();
 
   /**
    * Auth context
    */
-  const { currentUser, setCurrentUser } = useAuthContext();
-
-  const firstRender = useRef(true);
-  useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
-
-    const ChangeProfileCover = async () => {
-      try {
-        await axios.patch(apiUrl + "/api/v1/users/" + currentUser?._id, {
-          cover: currentUser.cover,
-        });
-      } catch (error: any) {
-        console.log(error.response.data.message);
-      }
-    };
-    if (currentUser.cover) {
-      ChangeProfileCover();
-    }
-  }, [currentUser?.cover]);
+  const { currentUser } = useAuthContext();
 
   /**
    * Profile context
    */
   const { setUpdateState, setLoading } = useProfileContext();
+
+  // upload img from device
+
   return (
     <View
       style={[
@@ -58,26 +40,44 @@ const CoverSection = () => {
         { paddingHorizontal: 8, position: "relative", gap: 16 },
       ]}
     >
-      <Pressable
-        onPress={() => {
-          setUpdateState("Avatars");
-          if (haptics) {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-          }
-        }}
-        style={{ borderRadius: 8, overflow: "hidden" }}
-      >
-        <View
-          style={{
-            width: 70,
-            aspectRatio: 1,
-            borderRadius: 8,
-            backgroundColor: "gray",
+      <View>
+        <Pressable
+          onPress={() => {
+            setUpdateState("Avatars");
+            if (haptics) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+            }
           }}
+          style={{ borderRadius: 8, overflow: "hidden" }}
         >
-          <Img uri={currentUser.cover} onLoad={() => setLoading(false)} />
-        </View>
-      </Pressable>
+          <View
+            style={{
+              width: 70,
+              aspectRatio: 1,
+              borderRadius: 8,
+              backgroundColor: "gray",
+            }}
+          >
+            {!currentUser?.editOptions?.paidForCover && (
+              <Text
+                style={{
+                  position: "absolute",
+                  right: 8,
+                  zIndex: 60,
+                  color: "white",
+                  fontWeight: 600,
+                  marginVertical: 6,
+                  fontSize: 12,
+                }}
+              >
+                1500{" "}
+                <FontAwesome5 name="coins" size={12} color={theme.active} />
+              </Text>
+            )}
+            <Img uri={currentUser.cover} onLoad={() => setLoading(false)} />
+          </View>
+        </Pressable>
+      </View>
 
       <View style={{ gap: 4 }}>
         <View

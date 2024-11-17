@@ -5,11 +5,11 @@ import { useStoreContext } from "../../context/store";
 import { ActivityIndicator } from "react-native-paper";
 import { useAppContext } from "../../context/app";
 
-const List = ({}: any) => {
+const List = ({ setOpenBuyItem, setState }: any) => {
   const { theme } = useAppContext();
   const { products, totalProducts } = useStoreContext();
   return (
-    <ScrollView>
+    <ScrollView style={{ marginTop: 8 }}>
       <View style={styles.row}>
         {!totalProducts && (
           <View
@@ -24,7 +24,14 @@ const List = ({}: any) => {
           </View>
         )}
         {products?.map((item: any, index: number) => {
-          return <Item key={index} item={item} />;
+          return (
+            <Item
+              key={index}
+              item={item}
+              setOpenBuyItem={setOpenBuyItem}
+              setState={setState}
+            />
+          );
         })}
         {totalProducts && products?.length < 1 && (
           <Text

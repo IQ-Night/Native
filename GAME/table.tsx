@@ -1,5 +1,5 @@
 import { BlurView } from "expo-blur";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dimensions,
   ImageBackground,
@@ -26,6 +26,7 @@ const Table = ({
   loadingPlayer,
   loadingReJoin,
   setOpenUser,
+  timeController,
 }: any) => {
   /**
    * App context
@@ -46,15 +47,54 @@ const Table = ({
   );
 
   /**
-   * Find sherif by done indicator
-   */
-
-  const [findingNight, setFindingNight] = useState(0);
-
-  /**
    * Vote to safe by doctor
    */
   const [safePlayer, setSafePlayer] = useState(false);
+
+  // findnight of sherif (this is for when don press to find sherif to disable button in the same night)
+  const [findNight, setFindNight] = useState(null);
+
+  /**
+   * Find sherif by don
+   */
+  const [sherifPlayer, setSherifPlayer] = useState(null);
+
+  // founded mafias
+  const [foundedMafias, setFoundedMafias] = useState([]);
+
+  useEffect(() => {
+    if (activeRoom?.reJoin) {
+      const currentUserRole = activeRoom?.lastGame?.players.find(
+        (player: any) => player.userId === currentUser._id
+      );
+
+      if (currentUserRole?.role?.value === "mafia-don") {
+        if (
+          activeRoom?.lastGame?.nights?.some((n: any) =>
+            n?.findSherif?.findResult?.includes("Yes")
+          )
+        ) {
+          setSherifPlayer(
+            activeRoom?.lastGame?.players?.find(
+              (p: any) => p.role.value === "police"
+            )
+          );
+        }
+      }
+      if (currentUserRole?.role?.value === "police") {
+        const foundedNights = activeRoom?.lastGame?.nights?.filter((n: any) =>
+          n?.findMafia?.findResult?.includes("Yes")
+        );
+        const mafias = foundedNights?.map((fn: any) => {
+          return fn?.findMafia?.findUser;
+        });
+        setFoundedMafias(mafias);
+      }
+    }
+  }, [activeRoom]);
+
+  // serial killer kill
+  const [killBySerialKiller, setKillBySerialKiller] = useState<any>(null);
 
   return (
     <View style={styles.container}>
@@ -136,12 +176,19 @@ const Table = ({
                         speechTimer={speechTimer}
                         nights={nights}
                         nightNumber={nightNumber}
-                        findingNight={findingNight}
-                        setFindingNight={setFindingNight}
                         loadingPlayer={loadingPlayer}
                         safePlayer={safePlayer}
                         setSafePlayer={setSafePlayer}
                         setOpenUser={setOpenUser}
+                        sherifPlayer={sherifPlayer}
+                        setSherifPlayer={setSherifPlayer}
+                        findNight={findNight}
+                        setFindNight={setFindNight}
+                        foundedMafias={foundedMafias}
+                        setFoundedMafias={setFoundedMafias}
+                        killBySerialKiller={killBySerialKiller}
+                        setKillBySerialKiller={setKillBySerialKiller}
+                        timeController={timeController}
                       />
                     );
                   }

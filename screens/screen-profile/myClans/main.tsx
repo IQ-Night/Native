@@ -13,6 +13,9 @@ import { Ionicons } from "@expo/vector-icons";
 import CreateClan from "./createClan";
 import * as Haptics from "expo-haptics";
 import { useAppContext } from "../../../context/app";
+import Button from "../../../components/button";
+import ConfirmAction from "../../../components/confirmAction";
+import { useProfileContext } from "../../../context/profile";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -44,6 +47,7 @@ const MyClans = ({ navigation }: any) => {
       }).start();
     }
   }, [createClan]);
+
   return (
     <View style={{ height: "100%" }}>
       <List navigation={navigation} />
@@ -75,52 +79,23 @@ const MyClans = ({ navigation }: any) => {
               overflow: "hidden",
               justifyContent: "center",
               alignItems: "center",
-              width: "90%",
+              width: "94%",
             }}
           >
-            <BlurView
-              intensity={120}
-              tint="dark"
+            <Button
+              title="Create Clan"
+              onPressFunction={() => {
+                setCreateClan(true);
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+              }}
               style={{
-                gap: 16,
-                justifyContent: "center",
-                alignItems: "center",
+                backgroundColor: theme.active,
+                color: "white",
                 width: "100%",
               }}
-            >
-              <Pressable
-                onPress={() => {
-                  setCreateClan(true);
-                  if (haptics) {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                  }
-                }}
-                style={{
-                  borderWidth: 1.5,
-                  borderColor: "rgba(255,255,255,0.05)",
-                  borderRadius: 8,
-                  width: "100%",
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "100%",
-                  padding: 8,
-                  gap: 4,
-                }}
-              >
-                <Ionicons
-                  name="create"
-                  size={24}
-                  color={"orange"}
-                  style={{ position: "relative", left: 1 }}
-                />
-                <Text
-                  style={{ fontSize: 16, fontWeight: 500, color: theme.active }}
-                >
-                  Create Clan
-                </Text>
-              </Pressable>
-            </BlurView>
+            />
           </View>
         </View>
       </View>

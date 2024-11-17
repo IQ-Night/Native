@@ -42,68 +42,31 @@ export const ClansContextWrapper: React.FC<contextProps> = ({ children }) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(8);
+  const [loadClans, setLoadClans] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const GetClans = async () => {
+  const GetClans = async (page: number) => {
     try {
+      setLoadClans(true);
       const response = await axios.get(
         apiUrl + "/api/v1/clans?page=1&limit=" + limit + "&search=" + search
       );
       if (response.data.status === "success") {
         setClans(response.data.data.clans);
         setTotalClans(response.data.totalClans);
-        setPage(1);
+        setPage(page);
         setRerenderClans(false);
+        setLoadClans(false);
+        setTotalPages(response.data.totalPages);
       }
     } catch (error: any) {
       console.log(error.response.data.message);
+      setLoadClans(false);
     }
   };
   useEffect(() => {
-    GetClans();
+    GetClans(1);
   }, [apiUrl, search, rerenderClans]);
-
-  const [loadAddClans, setLoadAddClans] = useState(false);
-
-  const AddClans = async () => {
-    const newPage = page + 1;
-    setLoadAddClans(true);
-    try {
-      const response = await axios.get(
-        apiUrl +
-          "/api/v1/clans?page=" +
-          newPage +
-          "&limit=" +
-          limit +
-          "&search=" +
-          search
-      );
-      if (response.data.status === "success") {
-        let clansList = response.data.data.clans;
-        setClans((prevClans: any) => {
-          // Create a Map with existing clans using clanId as the key
-          const clanMap = new Map(
-            prevClans.map((clan: any) => [clan._id, clan])
-          );
-
-          // Iterate over new clans and add them to the Map if they don't already exist
-          clansList.forEach((newClan: any) => {
-            if (!clanMap.has(newClan._id)) {
-              clanMap.set(newClan._id, newClan);
-            }
-          });
-
-          // Convert the Map values back to an array
-          const uniqueClans = Array.from(clanMap.values());
-
-          return uniqueClans;
-        });
-        setLoadAddClans(false);
-        setPage(newPage);
-      }
-    } catch (error: any) {
-      console.log(error.response.data.message);
-    }
-  };
 
   // delete clan confirm state
   const [deleteConfirm, setDeleteConfirm] = useState(false);
@@ -122,12 +85,12 @@ export const ClansContextWrapper: React.FC<contextProps> = ({ children }) => {
         setClans,
         search,
         setSearch,
-        AddClans,
-        loadAddClans,
         deleteConfirm,
         setDeleteConfirm,
         updateState,
         setUpdateState,
+        loadClans,
+        totalPages,
       }}
     >
       {children}

@@ -8,6 +8,8 @@ import { useContentContext } from "./context/content";
 import BottomTabNavigator from "./navigations/bottomTabNavigator";
 import { useGameContext } from "./context/game";
 import { useAuthContext } from "./context/auth";
+import PushNotificationsActivation from "./components/pushNotifications";
+import ConfirmAction from "./components/confirmAction";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -17,11 +19,19 @@ const Content = () => {
    */
   const { loading, alert, setAlert, apptheme, theme, haptics } =
     useAppContext();
-
+  /**
+   * Auth context
+   */
+  const { currentUser } = useAuthContext();
+  /**
+   * Content context
+   */
+  const { confirmAction, setConfirmAction } = useContentContext();
+  console.log(confirmAction);
   return (
     <View style={styles.background}>
       <BgSound />
-
+      {currentUser && <PushNotificationsActivation />}
       <StatusBar
         barStyle={apptheme === "light" ? `dark-content` : "light-content"}
       />
@@ -29,6 +39,14 @@ const Content = () => {
       <BottomTabNavigator />
 
       {loading && <Loading />}
+
+      {confirmAction?.active && (
+        <ConfirmAction
+          openState={confirmAction}
+          setOpenState={setConfirmAction}
+          Function={confirmAction?.Function}
+        />
+      )}
 
       {alert.active && (
         <Alert

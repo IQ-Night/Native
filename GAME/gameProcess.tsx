@@ -45,40 +45,6 @@ const GameProcess = ({
   const { spectators, gamePlayers, socket, activeRoom, loadingSpectate } =
     useGameContext();
 
-  /**
-   * Animated opacity for timeController
-   */
-  const opacity = useRef(new Animated.Value(0)).current;
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    if (timeController > 0 && game.value !== "Ready to start") {
-      // Set visibility to true
-      setIsVisible(true);
-    } else {
-      // Trigger fade-out
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 200, // 0.5 seconds fade-out
-        useNativeDriver: true,
-      }).start(() => {
-        // Set visibility to false after fade-out
-        setIsVisible(false);
-      });
-    }
-  }, [timeController, game.value]);
-
-  // Fade-in effect when isVisible changes to true
-  useEffect(() => {
-    if (isVisible) {
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: 200, // 0.5 seconds fade-in
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [isVisible]);
-
   /** Mark the player as ready to start */
   const ReadyToStart = async () => {
     if (socket) {
@@ -108,6 +74,34 @@ const GameProcess = ({
         "player"
       ? "player"
       : null;
+
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  const opacityAnim = React.useRef(new Animated.Value(1)).current;
+
+  React.useEffect(() => {
+    Animated.timing(scaleAnim, {
+      toValue: timeController > 1 ? 1 : 0,
+      duration: 700,
+      useNativeDriver: true,
+    }).start();
+    Animated.timing(opacityAnim, {
+      toValue: timeController > 1 ? 1 : 0,
+      duration: 700,
+      useNativeDriver: true,
+    }).start();
+  }, [timeController]);
+  React.useEffect(() => {
+    Animated.timing(scaleAnim, {
+      toValue: speechTimer > 1 ? 1 : 0,
+      duration: 700,
+      useNativeDriver: true,
+    }).start();
+    Animated.timing(opacityAnim, {
+      toValue: speechTimer > 1 ? 1 : 0,
+      duration: 700,
+      useNativeDriver: true,
+    }).start();
+  }, [speechTimer]);
 
   return (
     <View
@@ -173,8 +167,7 @@ const GameProcess = ({
           )}
         </View>
       )}
-      {(activeRoom?.admin.founder?._id || activeRoom?.admin.founder) ===
-        currentUser?._id &&
+      {activeRoom?.admin.founder?.id === currentUser?._id &&
         game.value === "Ready to start" && (
           <View
             style={{
@@ -237,8 +230,14 @@ const GameProcess = ({
             )}
           </View>
         )}
-      <View style={{ height: 24 }}>
-        {isVisible && timeController > 0 && (
+      {game?.value !== "Ready to start" && (
+        <Animated.View
+          style={{
+            height: 24,
+            transform: [{ scale: scaleAnim }],
+            opacity: opacityAnim,
+          }}
+        >
           <View
             style={{
               minWidth: 64,
@@ -251,13 +250,13 @@ const GameProcess = ({
               justifyContent: "center",
             }}
           >
-            <Animated.View
+            <View
               style={{
                 minWidth: 64,
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
-                opacity,
+
                 paddingHorizontal: 10,
                 gap: 3,
               }}
@@ -276,13 +275,12 @@ const GameProcess = ({
               >
                 {timeController + "s."}
               </Text>
-            </Animated.View>
+            </View>
           </View>
-        )}
-      </View>
+        </Animated.View>
+      )}
       {game.value === "Day" &&
-        activePlayerToSpeech?.userId === currentUser?._id &&
-        speechTimer > 0 && (
+        activePlayerToSpeech?.userId === currentUser?._id && (
           <View style={{ alignItems: "center", marginTop: 16 }}>
             <TouchableOpacity
               activeOpacity={0.8}
@@ -293,17 +291,17 @@ const GameProcess = ({
                 justifyContent: "center",
                 paddingVertical: 6,
                 borderRadius: 50,
-                backgroundColor: theme.active,
-                borderWidth: 1.5,
-                borderColor: "rgba(255,255,255,0.2)",
-                height: 32,
+                backgroundColor: "#181818",
+                borderWidth: 1,
+                borderColor: theme.active,
+                height: 34,
                 position: "relative",
                 bottom: 8,
               }}
             >
-              <Text style={{ color: "white", fontWeight: 600 }}>
+              <Text style={{ color: theme.active, fontWeight: 600 }}>
                 {changeSpeakerLoading ? (
-                  <ActivityIndicator size={16} color="white" />
+                  <ActivityIndicator size={16} color={theme.active} />
                 ) : (
                   "Skip"
                 )}

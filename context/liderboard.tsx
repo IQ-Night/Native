@@ -33,6 +33,7 @@ export const LiderboardContextWrapper: React.FC<contextProps> = ({
   /**
    * Liderboard state
    */
+  const [loadList, setLoadList] = useState(true);
   const [liderboard, setLiderboard] = useState([]);
 
   useEffect(() => {
@@ -42,16 +43,20 @@ export const LiderboardContextWrapper: React.FC<contextProps> = ({
         if (response.data.status === "success") {
           setLiderboard(response.data.data.users);
           setRerenderLiderBoard(false);
+          setLoadList(false);
         }
       } catch (error: any) {
         console.log(error);
         setRerenderLiderBoard(false);
+        setLoadList(false);
       }
     };
     GetUsers();
   }, [rerenderLiderBoard]);
 
   return (
-    <Liderboard.Provider value={{ liderboard }}>{children}</Liderboard.Provider>
+    <Liderboard.Provider value={{ liderboard, loadList }}>
+      {children}
+    </Liderboard.Provider>
   );
 };

@@ -1,4 +1,4 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import {
@@ -223,6 +223,7 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                 </View>
                 <Text
                   style={{
+                    width: "60%",
                     color: theme.text,
                     fontSize: 16,
                     fontWeight: "500",
@@ -233,6 +234,7 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                 >
                   {item?.title}
                 </Text>
+
                 {clansNotifications.find(
                   (clan: any) =>
                     clan._id === item._id &&
@@ -258,13 +260,26 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                     containerStyle={{}}
                   />
                 )}
+
                 <View
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
                     marginLeft: "auto",
+                    gap: 8,
                   }}
                 >
+                  {item?.chat && (
+                    <Text
+                      style={{
+                        color: theme.text,
+                        fontSize: 12,
+                        fontWeight: 500,
+                      }}
+                    >
+                      <MaterialCommunityIcons name="chat" size={18} />{" "}
+                    </Text>
+                  )}
                   <Text
                     style={{
                       color: theme.text,
@@ -281,6 +296,21 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                   </Text>
                 </View>
               </View>
+              {item?.slogan?.length > 0 && (
+                <Text
+                  style={{
+                    color: theme.text,
+                    fontSize: 16,
+                    fontWeight: "500",
+                    overflow: "hidden",
+                    fontStyle: "italic",
+                  }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {item?.slogan}
+                </Text>
+              )}
               <View
                 style={{
                   flexDirection: "row",
@@ -296,7 +326,7 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                   }}
                 >
                   Founder:{" "}
-                  {founder?._id === currentUser?._id ? (
+                  {founder?.id === currentUser?._id ? (
                     <Text style={{ color: theme.active }}>You</Text>
                   ) : (
                     founder?.name

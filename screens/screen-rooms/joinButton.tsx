@@ -122,9 +122,9 @@ export const JoinButtonText = ({
             />
           ) : (
             <Text>
-              {liveUsers?.some((u: any) => u.userId === item.admin.founder._id)
+              {liveUsers?.some((u: any) => u.userId === item.admin.founder.id)
                 ? "Join"
-                : item.admin.founder._id === currentUser._id
+                : item.admin.founder.id === currentUser._id
                 ? "Open Room"
                 : "Closed"}
             </Text>

@@ -2,12 +2,14 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
 import Item from "./item";
 
-const List = ({ products }: any) => {
+const List = ({ products, setEditProduct }: any) => {
   return (
     <ScrollView>
       <View style={styles.row}>
         {products?.map((item: any, index: number) => {
-          return <Item key={index} item={item} />;
+          return (
+            <Item key={index} item={item} setEditProduct={setEditProduct} />
+          );
         })}
         {products?.length < 1 && (
           <Text
@@ -38,5 +40,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
     paddingHorizontal: 12,
+    paddingBottom: 170,
   },
 });

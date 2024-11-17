@@ -34,11 +34,27 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
   /**
    * scrollY
    */
-  const [scrollYRooms, setScrollYRooms] = useState(0);
-  const [scrollYClans, setScrollYClans] = useState(0);
-  const [scrollYStore, setScrollYStore] = useState(0);
-  const [scrollYLiderBoard, setScrollYLiderBoard] = useState(0);
-  const [scrollYProfile, setScrollYProfile] = useState(0);
+  const scrollYRooms = useRef<any>(0);
+  const setScrollYRooms = (y: any) => {
+    scrollYRooms.current = y;
+  };
+  const scrollYClans = useRef<any>(0);
+  const setScrollYClans = (y: any) => {
+    scrollYClans.current = y;
+  };
+  const scrollYStore = useRef<any>(0);
+  const setScrollYStore = (y: any) => {
+    scrollYStore.current = y;
+  };
+  const scrollYLiderBoard = useRef<any>(0);
+  const setScrollYLiderBoard = (y: any) => {
+    scrollYLiderBoard.current = y;
+  };
+
+  const scrollYProfile = useRef<any>(0);
+  const setScrollYProfile = (y: any) => {
+    scrollYProfile.current = y;
+  };
 
   const scrollViewRefRooms = useRef<any>(null);
   const scrollViewRefClans = useRef<any>(null);
@@ -68,6 +84,13 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
           animated: true, // This enables smooth scrolling
         });
       }
+    } else if (screen === "Store") {
+      if (scrollViewRefStore.current) {
+        scrollViewRefStore.current.scrollTo({
+          y: 0,
+          animated: true, // This enables smooth scrolling
+        });
+      }
     } else if (screen === "Profile") {
       if (scrollViewRefProfile.current) {
         scrollViewRefProfile.current.scrollTo({
@@ -87,7 +110,11 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
   useEffect(() => {
     const animationY = Animated.timing(transformListY, {
       toValue:
-        rerenderRooms || rerenderClans || rerenderLiderBoard || rerenderProfile
+        rerenderRooms ||
+        rerenderClans ||
+        rerenderLiderBoard ||
+        rerenderProducts ||
+        rerenderProfile
           ? 40
           : 0,
       duration: 200,
@@ -96,7 +123,11 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
 
     const animationOpacity = Animated.timing(opacityList, {
       toValue:
-        rerenderRooms || rerenderClans || rerenderLiderBoard || rerenderProfile
+        rerenderRooms ||
+        rerenderClans ||
+        rerenderLiderBoard ||
+        rerenderProducts ||
+        rerenderProfile
           ? 1
           : 0,
       duration: 200,
@@ -112,6 +143,9 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
     rerenderLiderBoard,
     rerenderProfile,
   ]);
+
+  // confirm action
+  const [confirmAction, setConfirmAction] = useState({ active: false });
 
   return (
     <Content.Provider
@@ -130,11 +164,11 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
         setRerenderNotifications,
         scrollYClans,
         scrollYRooms,
+        setScrollYRooms,
         scrollYStore,
         scrollYLiderBoard,
         scrollYProfile,
         setScrollYClans,
-        setScrollYRooms,
         setScrollYStore,
         setScrollYLiderBoard,
         setScrollYProfile,
@@ -146,6 +180,8 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
         scrollToTop,
         transformListY,
         opacityList,
+        confirmAction,
+        setConfirmAction,
       }}
     >
       {children}

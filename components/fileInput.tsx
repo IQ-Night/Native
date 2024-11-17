@@ -5,6 +5,7 @@ import * as ImagePicker from "expo-image-picker";
 import React from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import { useAppContext } from "../context/app";
+import Img from "./image";
 
 /**
  * input cover image component on ios
@@ -23,7 +24,7 @@ async function readImageData(uri: any) {
   }
 }
 
-const InputFile = ({ file, setFile }: any) => {
+const InputFile = ({ file, setFile, style }: any) => {
   /**
    * App context
    */
@@ -78,12 +79,33 @@ const InputFile = ({ file, setFile }: any) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        style
+          ? style
+          : {
+              width: 180,
+              height: 180,
+              borderRadius: 10,
+            },
+      ]}
+    >
       {file?.uri ? (
-        <Pressable onPress={selectImage}>
-          <Image
-            style={{ width: 180, height: 180, borderRadius: 10 }}
-            source={{ uri: file.uri }} // Ensure the uri is passed correctly here
+        <Pressable
+          onPress={selectImage}
+          style={
+            style
+              ? { ...style }
+              : {
+                  width: 180,
+                  height: 180,
+                  borderRadius: 10,
+                }
+          }
+        >
+          <Img
+            uri={file.uri} // Ensure the uri is passed correctly here
           />
         </Pressable>
       ) : (
@@ -91,7 +113,7 @@ const InputFile = ({ file, setFile }: any) => {
           onPress={selectImage}
           name="image"
           color={theme.text}
-          size={64}
+          size={style ? style?.width / 2 : 64}
         />
       )}
     </View>
@@ -99,7 +121,7 @@ const InputFile = ({ file, setFile }: any) => {
 };
 
 const styles = StyleSheet.create({
-  container: {},
+  container: { alignItems: "center", justifyContent: "center" },
   button: {
     width: 110,
     height: 110,

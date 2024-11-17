@@ -98,12 +98,7 @@ const ScreenManager = () => {
    */
   const { totalBadge } = useNotificationsContext();
 
-  const handleTabPress = (
-    tab: any,
-    focused: any,
-    route: any,
-    navigation: any
-  ) => {
+  const handleTabPress = (tab: any, focused: any, route: any) => {
     const routeName = getFocusedRouteNameFromRoute(route) || route.name;
 
     if (haptics) {
@@ -113,11 +108,13 @@ const ScreenManager = () => {
       if (routeName !== "Rooms List" && routeName !== "Rooms") {
         return;
       }
-      if (scrollYRooms > 0) {
+      if (scrollYRooms?.current > 0) {
         scrollToTop("Rooms");
       } else {
-        setRerenderRooms(true);
+        console.log("rerender");
+        setRerenderRooms((prev: any) => !prev);
       }
+      scrollToTop("Rooms");
     } else if (focused && tab.includes("Clans")) {
       if (routeName !== "Clans" && routeName !== "Clans List") {
         return;
@@ -151,7 +148,6 @@ const ScreenManager = () => {
         setRerenderNotifications((prev: any) => !prev);
       }
     } else if (focused && tab.includes("Admin")) {
-      console.log(routeName);
       if (routeName !== "Admin" && routeName !== "Admin-Stack") {
         return;
       }
@@ -280,8 +276,7 @@ const ScreenManager = () => {
                   handleTabPress(
                     props.accessibilityLabel,
                     props.accessibilityState.selected,
-                    route,
-                    navigation
+                    route
                   );
                   props.onPress?.();
                 }}
@@ -350,7 +345,7 @@ const ScreenManager = () => {
             </ProfileContextWrapper>
           )}
         </Tab.Screen>
-        {currentUser?.admin?.role === "App Admin" && (
+        {currentUser?.admin && (
           <Tab.Screen name="Admin">
             {() => (
               <CustomComponent

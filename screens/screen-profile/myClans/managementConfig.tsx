@@ -1,17 +1,15 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
-import { BlurView } from "expo-blur";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useAppContext } from "../../../context/app";
-import Img from "../../../components/image";
-import Button from "../../../components/button";
-import { useProfileContext } from "../../../context/profile";
 import axios from "axios";
+import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import { useContentContext } from "../../../context/content";
-import { useClansContext } from "../../../context/clans";
-import { useNotificationsContext } from "../../../context/notifications";
+import React, { useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import Button from "../../../components/button";
+import Img from "../../../components/image";
+import { useAppContext } from "../../../context/app";
 import { useAuthContext } from "../../../context/auth";
+import { useNotificationsContext } from "../../../context/notifications";
+import { useProfileContext } from "../../../context/profile";
 
 const ManagementConfig = ({
   clan,
@@ -22,12 +20,12 @@ const ManagementConfig = ({
   const { theme, apiUrl, haptics } = useAppContext();
   const { GetClans, setConfirm, setClans } = useProfileContext();
   const oldRole = clan?.admin.find(
-    (a: any) => a.user._id === openConfig?._id
+    (a: any) => a.user.id === openConfig?._id
   )?.role;
   const [newRole, setNewRole] = useState<any>(null);
   useEffect(() => {
     setNewRole(
-      clan?.admin.find((a: any) => a.user._id === openConfig?._id)?.role
+      clan?.admin.find((a: any) => a.user.id === openConfig?._id)?.role
     );
   }, [oldRole]);
 
@@ -46,7 +44,7 @@ const ManagementConfig = ({
       const response = await axios.patch(
         apiUrl + "/api/v1/clans/" + clan?._id + "/addRole",
         {
-          user: openConfig?._id,
+          user: { id: openConfig?._id, name: openConfig?.name },
           role: newRole,
         }
       );
@@ -68,11 +66,11 @@ const ManagementConfig = ({
       console.log(error.response.data.message);
     }
   };
-  console.log(clan.members);
+
   const ChangeFounder = async (role: any) => {
     try {
       let newRoles = clan?.admin.filter(
-        (a: any) => a.user._id !== openConfig?._id
+        (a: any) => a.user.id !== openConfig?._id
       );
 
       newRoles = newRoles?.map((a: any) => {
@@ -82,13 +80,19 @@ const ManagementConfig = ({
           return a;
         }
       });
-      newRoles.push({ user: openConfig, role: "founder" });
+      newRoles.push({
+        user: { id: openConfig?._id, name: openConfig?.name },
+        role: "founder",
+      });
 
       const response = await axios.patch(
         apiUrl + "/api/v1/clans/" + clan?._id,
         {
           admin: newRoles?.map((nr: any) => {
-            return { user: nr.user?._id, role: nr.role };
+            return {
+              user: { id: nr.user?.id, name: nr.user?.name },
+              role: nr.role,
+            };
           }),
         }
       );
@@ -208,7 +212,7 @@ const ManagementConfig = ({
             Give a role to user:
           </Text>
           <View style={{ gap: 8, alignItems: "center" }}>
-            {clan?.admin.find((a: any) => a.role === "founder")?.user._id ===
+            {clan?.admin.find((a: any) => a.role === "founder")?.user.id ===
               currentUser?._id && (
               <Pressable
                 onPress={() => {

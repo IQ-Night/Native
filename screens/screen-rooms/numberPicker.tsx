@@ -45,7 +45,7 @@ const NumberPicker = ({
         height: SCREEN_HEIGHT - 60,
         width: "100%",
         position: "absolute",
-        zIndex: 60,
+        zIndex: 90,
         top: 0,
         justifyContent: "center",
         alignItems: "center",

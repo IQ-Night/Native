@@ -1,28 +1,29 @@
-import axios from "axios";
-import { BlurView } from "expo-blur";
-import React, { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { ActivityIndicator } from "react-native-paper";
-import Img from "../../components/image";
-import { useAppContext } from "../../context/app";
-import { useAuthContext } from "../../context/auth";
-import { DefineUserLevel } from "../../functions/userLevelOptimizer";
 import {
   FontAwesome,
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import Warnings from "./warnings";
-import SendWarnings from "../../admin/users/warnings";
+import axios from "axios";
+import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
+import { useEffect, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
 import Block from "../../admin/users/block-user";
 import Reports from "../../admin/users/reports";
+import SendWarnings from "../../admin/users/warnings";
+import Img from "../../components/image";
+import { useAppContext } from "../../context/app";
+import { useAuthContext } from "../../context/auth";
 import { warnings } from "../../context/content";
-import { useNotificationsContext } from "../../context/notifications";
 import { useGameContext } from "../../context/game";
+import { useNotificationsContext } from "../../context/notifications";
+import { DefineUserLevel } from "../../functions/userLevelOptimizer";
 import Ban from "../screen-clans/clan-ban";
 import Actions from "./actions";
-import * as Haptics from "expo-haptics";
+import SendGift from "./sendGift";
 import Statistics from "./statistics";
+import Warnings from "./warnings";
 
 const User = ({ route, navigation, userItem, from }: any) => {
   let item: any = route?.params?.item || userItem;
@@ -185,7 +186,10 @@ const User = ({ route, navigation, userItem, from }: any) => {
     }
   }, [user]);
 
-  console.log(statistics);
+  /**
+   * Send gift to user
+   */
+  const [openGifts, setOpenGifts] = useState(false);
 
   return (
     <>
@@ -232,17 +236,43 @@ const User = ({ route, navigation, userItem, from }: any) => {
           >
             <Img uri={item?.cover || item?.userCover} onLoad={UpdateUser} />
           </View>
-          <FontAwesome
-            onPress={() => {
-              setOpenActions((prev: boolean) => !prev);
-              if (haptics)
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 8,
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              gap: 16,
+              height: 30,
+              width: 60,
             }}
-            style={{ position: "absolute", top: 8, right: 8 }}
-            name={openActions ? "close" : "exclamation-triangle"}
-            size={openActions ? 24 : 20}
-            color={theme.active}
-          />
+          >
+            {user?._id !== currentUser?._id && (
+              <MaterialCommunityIcons
+                onPress={() => {
+                  setOpenGifts(true);
+                  if (haptics)
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }}
+                name="gift"
+                size={21}
+                color={theme.text}
+                style={{ position: "relative", bottom: 1 }}
+              />
+            )}
+            <FontAwesome
+              onPress={() => {
+                setOpenActions((prev: boolean) => !prev);
+                if (haptics)
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              }}
+              name={openActions ? "close" : "exclamation-triangle"}
+              size={openActions ? 30 : 20}
+              color={theme.active}
+            />
+          </View>
           <View style={{ gap: 16 }}>
             {user?.admin?.active && (
               <Text
@@ -303,6 +333,7 @@ const User = ({ route, navigation, userItem, from }: any) => {
                   Clans
                 </Text>
               </Pressable>
+
               {currentUser?.admin?.active && user?.warnings?.length > 0 && (
                 <Pressable
                   style={{
@@ -450,6 +481,13 @@ const User = ({ route, navigation, userItem, from }: any) => {
           setUsersClans={setUsersClans}
           openUser={user}
           setOpenBan={setOpenClanBan}
+        />
+      )}
+      {openGifts && (
+        <SendGift
+          openState={openGifts}
+          setOpenState={setOpenGifts}
+          user={user}
         />
       )}
     </>

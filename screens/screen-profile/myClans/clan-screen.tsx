@@ -6,9 +6,11 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -27,6 +29,8 @@ import ManagementConfig from "./managementConfig";
 import { DefineUserLevel } from "../../../functions/userLevelOptimizer";
 import Avatars from "../../../components/avatars";
 import BlackList from "./blackList";
+import { useContentContext } from "../../../context/content";
+import EditSlogan from "./popup-editSlogan";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -40,21 +44,31 @@ const Clan = ({ route, navigation }: any) => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, setAlert } = useAppContext();
   /**
    * Auth context
    */
-  const { currentUser } = useAuthContext();
+  const { currentUser, GetUser } = useAuthContext();
   /**
    * Game context
    */
-  const { socket } = useGameContext();
+  const { socket, activeRoom } = useGameContext();
+  /**
+   * Content context
+   */
+  const { setConfirmAction } = useContentContext();
 
   /**
    * Profile context
    */
-  const { clans, setClans, updateClanState, deleteConfirm, setDeleteConfirm } =
-    useProfileContext();
+  const {
+    clans,
+    setClans,
+    updateClanState,
+    setUpdateClanState,
+    deleteConfirm,
+    setDeleteConfirm,
+  } = useProfileContext();
   /**
    * Notifications context
    */
@@ -70,7 +84,7 @@ const Clan = ({ route, navigation }: any) => {
   const managers = item?.admin?.filter((a: any) => a.role === "manager")?.user;
   const wisers = item?.admin?.filter((a: any) => a.role === "wiser")?.user;
   const currentUserRole = item?.admin.find(
-    (a: any) => a.user?._id === currentUser?._id
+    (a: any) => a.user?.id === currentUser?._id
   )?.role;
 
   /**
@@ -183,7 +197,7 @@ const Clan = ({ route, navigation }: any) => {
 
   // players list
   const [loadPlayers, setLoadPlayers] = useState(false);
-  const [players, setPlayers] = useState([]);
+  const [players, setPlayers] = useState<any>(null);
 
   useEffect(() => {
     const GetPlayers = async () => {
@@ -263,7 +277,7 @@ const Clan = ({ route, navigation }: any) => {
         navigation.navigate("My Clans");
         item?.admin?.map((a: any) => {
           return SendNotification({
-            userId: a?.user?._id,
+            userId: a?.user?.id,
             type: "Left clan",
           });
         });
@@ -424,52 +438,127 @@ const Clan = ({ route, navigation }: any) => {
   /**
    * Open popup
    */
-  const [openPopup, setOpenPopup] = useState("");
-  const [clanState, setClanState] = useState({ cover: item?.cover });
+  const [openPopup, setOpenPopup] = useState<any>(null);
+
+  // open state
+  const translateYState = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   useEffect(() => {
-    const ChangeCover = async () => {
-      try {
-        const response = await axios.patch(
-          apiUrl + "/api/v1/clans/" + item?._id,
-          {
-            cover: clanState?.cover,
-          }
-        );
-        if (response?.data.status === "success") {
-          setItem((prev: any) => ({ ...prev, cover: clanState?.cover }));
-          setClans((prev: any) =>
-            prev.map((clan: any) => {
-              if (clan?._id === item?._id) {
-                return { ...clan, cover: clanState?.cover };
-              } else {
-                return clan;
-              }
-            })
-          );
-        }
-      } catch (error: any) {
-        console.log(error.response.data.message);
-      }
-    };
-    if (clanState?.cover !== item?.cover) {
-      ChangeCover();
+    if (openPopup) {
+      Animated.timing(translateYState, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
     }
-  }, [clanState]);
+  }, [openPopup]);
+
+  const closeState = () => {
+    if (haptics) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+    }
+    Animated.timing(translateYState, {
+      toValue: SCREEN_HEIGHT,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      // Once the animation is complete, update the state
+      setOpenPopup("");
+    });
+  };
+  const [changeLoading, setChangeLoading] = useState(false);
+  const ChangeCover = async (coverItem: any) => {
+    const needToPay = item.price.cover < 1;
+    if (needToPay) {
+      setChangeLoading(true);
+    }
+    try {
+      const response = await axios.patch(
+        apiUrl + "/api/v1/clans/" + item?._id + "?type=cover&paid=" + needToPay,
+        {
+          cover: coverItem,
+        }
+      );
+      if (response?.data.status === "success") {
+        setItem((prev: any) => ({
+          ...prev,
+          cover: coverItem,
+          price: needToPay ? { ...item.price, cover: 2000 } : item.price,
+        }));
+        GetUser();
+        setChangeLoading(false);
+      }
+    } catch (error: any) {
+      console.log(error.response.data.message);
+    }
+  };
+
+  const ActiveChat = async (chatValue: any) => {
+    const needToPay = item.price.chat < 1;
+    if (needToPay) {
+      setChangeLoading(true);
+    }
+    try {
+      const response = await axios.patch(
+        apiUrl + "/api/v1/clans/" + item?._id + "?type=chat&paid=" + needToPay,
+        {
+          chat: chatValue,
+        }
+      );
+      if (response?.data.status === "success") {
+        setItem((prev: any) => ({
+          ...prev,
+          chat: chatValue,
+          price: needToPay ? { ...item.price, chat: 1500 } : item.price,
+        }));
+        // GetUser();
+        setChangeLoading(false);
+      }
+    } catch (error: any) {
+      console.log(error.response.data.message);
+    }
+  };
+
+  /** Upload Avatar */
+  const [file, setFile] = useState<any>(null);
 
   return (
     <View style={{ height: "100%", width: "100%" }}>
+      {changeLoading && (
+        <BlurView
+          intensity={20}
+          tint="dark"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            zIndex: 90,
+            width: "100%",
+            height: "100%",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {" "}
+          <ActivityIndicator color="orange" size="small" />
+        </BlurView>
+      )}
       <View style={styles.container}>
         <Pressable
-          onPress={
-            currentUserRole === "founder"
-              ? () => setOpenPopup("avatars")
-              : undefined
-          }
+          onPress={() => {
+            if (currentUserRole === "founder") {
+              if (haptics) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              }
+
+              setOpenPopup("avatars");
+            }
+          }}
           style={{
             width: "25%",
             aspectRatio: 1,
             overflow: "hidden",
+            borderRadius: 8,
           }}
         >
           <Img uri={item.cover} />
@@ -485,6 +574,39 @@ const Clan = ({ route, navigation }: any) => {
             width: "100%",
           }}
         >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Text
+              style={{
+                color: theme.text,
+                fontSize: 14,
+                fontWeight: 500,
+                fontStyle: "italic",
+                maxWidth: "60%",
+              }}
+            >
+              {item?.slogan
+                ? item?.slogan
+                : item?.admin?.find((a: any) => a.role === "founder").user
+                    .id === currentUser?._id
+                ? "Slogan: "
+                : ""}
+            </Text>
+            {item?.admin?.find((a: any) => a.role === "founder").user.id ===
+              currentUser?._id && (
+              <MaterialIcons
+                onPress={() => {
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                  setUpdateClanState("Edit Slogan");
+                }}
+                name="edit"
+                size={20}
+                color={theme.active}
+              />
+            )}
+          </View>
+
           <Text
             style={{
               color: theme.text,
@@ -494,7 +616,58 @@ const Clan = ({ route, navigation }: any) => {
           >
             Founded At: {FormatDate(item.createdAt, "onlyDate")}
           </Text>
-          {currentUser._id !== founder?._id && (
+          {item?.admin?.find((a: any) => a.role === "founder").user.id ===
+            currentUser?._id && (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text
+                style={{
+                  color: theme.text,
+                  fontSize: 12,
+                  fontWeight: 500,
+                }}
+              >
+                Chat:
+              </Text>
+              {Platform.OS === "ios" ? (
+                <Switch
+                  trackColor={{ false: theme.background2, true: theme.active }}
+                  value={item?.chat}
+                  style={{
+                    transform: [{ scaleX: 0.6 }, { scaleY: 0.6 }],
+                  }}
+                  onValueChange={async () => {
+                    const needToPay = item.price.chat < 1;
+                    if (!item?.chat) {
+                      if (needToPay) {
+                        setConfirmAction({
+                          active: true,
+                          text: "Are you sure to want turn on chat?",
+                          Function: () => ActiveChat(true),
+                          price: 1500,
+                        });
+                      } else {
+                        ActiveChat(true);
+                      }
+                    } else {
+                      ActiveChat(false);
+                    }
+                  }}
+                />
+              ) : (
+                <Pressable
+                  onPress={async () => {
+                    setItem((prev: any) => ({ ...prev, chat: !prev.chat }));
+                  }}
+                >
+                  <Text style={{ color: theme.active }}>
+                    Turned {item?.chat ? "on" : "off"}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          )}
+
+          {currentUser._id !== founder?.id && (
             <TouchableOpacity
               onPress={() => LeaveClan({ userId: currentUser._id })}
               activeOpacity={0.8}
@@ -526,6 +699,7 @@ const Clan = ({ route, navigation }: any) => {
           )}
         </View>
       </View>
+
       <View
         style={{
           height: 1,
@@ -555,9 +729,13 @@ const Clan = ({ route, navigation }: any) => {
           >
             <Pressable
               onPress={() => {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
                 setActiveState("members");
                 setOpenSearch(false);
                 GetMembers({ status: "member" });
+                setPlayers(null);
               }}
               style={{
                 padding: 6,
@@ -586,9 +764,13 @@ const Clan = ({ route, navigation }: any) => {
 
             <Pressable
               onPress={() => {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
                 setActiveState("requests");
                 setOpenSearch(false);
                 GetMembers({ status: "pending" });
+                setPlayers(null);
               }}
               style={{
                 padding: 6,
@@ -632,12 +814,12 @@ const Clan = ({ route, navigation }: any) => {
                   openSearch && activeState === "add" ? theme.active : "#333",
               }}
               onPress={() => {
-                setOpenSearch(true);
-                setSearch("");
-                setActiveState("add");
                 if (haptics) {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
                 }
+                setOpenSearch(true);
+                setSearch("");
+                setActiveState("add");
               }}
             >
               <Text
@@ -653,8 +835,12 @@ const Clan = ({ route, navigation }: any) => {
             </Pressable>
             <Pressable
               onPress={() => {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
                 setActiveState("blackList");
                 setOpenSearch(false);
+                setPlayers(null);
               }}
               style={{
                 padding: 6,
@@ -716,7 +902,7 @@ const Clan = ({ route, navigation }: any) => {
                   {loadPlayers && (
                     <ActivityIndicator size={24} color={theme.active} />
                   )}
-                  {players?.length < 1 && !loadPlayers && (
+                  {!loadPlayers && players?.length < 1 && (
                     <Text
                       style={{
                         color: "rgba(255,255,255,0.3)",
@@ -790,6 +976,11 @@ const Clan = ({ route, navigation }: any) => {
                                       }
                                     : (e) => {
                                         e.stopPropagation();
+                                        if (haptics) {
+                                          Haptics.impactAsync(
+                                            Haptics.ImpactFeedbackStyle.Soft
+                                          );
+                                        }
                                         JoinClan({
                                           title: item.title,
                                           userId: member?._id,
@@ -924,7 +1115,7 @@ const Clan = ({ route, navigation }: any) => {
 
                       {(currentUserRole === "founder" ||
                         currentUserRole === "director") &&
-                        member?._id !== founder?._id &&
+                        member?._id !== founder?.id &&
                         activeState === "members" &&
                         member?._id !== currentUser?._id && (
                           <View
@@ -959,7 +1150,7 @@ const Clan = ({ route, navigation }: any) => {
                             </Pressable>
                           </View>
                         )}
-                      {member?._id !== founder?._id &&
+                      {member?._id !== founder?.id &&
                         activeState === "requests" &&
                         currentUserRole && (
                           <View
@@ -1015,6 +1206,9 @@ const Clan = ({ route, navigation }: any) => {
       </View>
       {updateClanState === "Edit Title" && (
         <EditTitle navigation={navigation} item={item} setItem={setItem} />
+      )}
+      {updateClanState === "Edit Slogan" && (
+        <EditSlogan navigation={navigation} item={item} setItem={setItem} />
       )}
 
       {deleteConfirm && (
@@ -1107,39 +1301,41 @@ const Clan = ({ route, navigation }: any) => {
           setItem={setItem}
         />
       )}
+      {openPopup && (
+        <BlurView intensity={120} tint="dark" style={styles.blurContainer}>
+          <View style={styles.popupContainer}>
+            <Animated.View
+              style={{
+                transform: [{ translateY: translateYState }],
+                width: "100%",
+                height: "100%",
+                alignItems: "center",
+              }}
+            >
+              <Pressable
+                onPress={() => {
+                  closeState();
+                }}
+              >
+                <MaterialIcons
+                  name="arrow-drop-down"
+                  size={42}
+                  color={theme.active}
+                />
+              </Pressable>
 
-      {openPopup !== "" && (
-        <BlurView
-          intensity={120}
-          tint="dark"
-          style={{
-            position: "absolute",
-            top: 0,
-            zIndex: 50,
-            height: "100%",
-            width: "100%",
-            paddingTop: 12,
-          }}
-        >
-          <FontAwesome
-            name="close"
-            size={32}
-            color={theme.active}
-            style={{ position: "absolute", top: 12, right: 16, zIndex: 60 }}
-            onPress={() => {
-              setOpenPopup("");
-              if (haptics) {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-              }
-            }}
-          />
-          {openPopup === "avatars" && (
-            <Avatars
-              state={clanState}
-              setState={setClanState}
-              type="clan-avatar"
-            />
-          )}
+              {openPopup === "avatars" && (
+                <Avatars
+                  state={{ cover: item?.cover }}
+                  onChange={ChangeCover}
+                  type="clan-avatar"
+                  file={file}
+                  setFile={setFile}
+                  item={item}
+                />
+              )}
+            </Animated.View>
+          </View>
         </BlurView>
       )}
     </View>
@@ -1172,5 +1368,32 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 50,
     paddingBottom: 96,
+  },
+  popupContainer: {
+    height: "100%",
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  blurContainer: {
+    position: "absolute",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    top: 0,
+    left: 0,
+    height: "100%",
+    width: "100%",
+    zIndex: 10,
+    paddingTop: 12,
+  },
+  blurContainer2: {
+    position: "absolute",
+    zIndex: 20,
+    top: 0,
+    left: 0,
+    right: 0,
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

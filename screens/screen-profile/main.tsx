@@ -1,5 +1,8 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import axios from "axios";
 import { BlurView } from "expo-blur";
-import React, { useState } from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import { useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -9,22 +12,20 @@ import {
   Text,
   View,
 } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
 import Avatars from "../../components/avatars";
 import Header from "../../components/header";
 import ChoiceLanguage from "../../components/popup-languages";
 import { useAppContext } from "../../context/app";
 import { useAuthContext } from "../../context/auth";
+import { useContentContext } from "../../context/content";
 import { useProfileContext } from "../../context/profile";
+import { DefineUserLevel } from "../../functions/userLevelOptimizer";
 import CoverSection from "./coverSection";
 import Item from "./item";
 import BirthdayWindow from "./popup-birthday";
 import EditCountry from "./popup-country";
 import EditNameWindow from "./popup-editName";
-import { useContentContext } from "../../context/content";
-import { ActivityIndicator } from "react-native-paper";
-import Img from "../../components/image";
-import { DefineUserLevel } from "../../functions/userLevelOptimizer";
-import { LinearGradient } from "expo-linear-gradient";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -32,8 +33,15 @@ const Profile = ({ navigation }: any) => {
   /**
    * App state
    */
-  const { theme, activeLanguage, language, setLanguage, haptics } =
-    useAppContext();
+  const {
+    apiUrl,
+    setAlert,
+    theme,
+    activeLanguage,
+    language,
+    setLanguage,
+    haptics,
+  } = useAppContext();
 
   /**
    * Auth context
@@ -52,13 +60,60 @@ const Profile = ({ navigation }: any) => {
   /**
    * Profile context
    */
-  const { updateState, setUpdateState, translateYState, updateLoading, items } =
+  const { updateState, setUpdateState, translateYState, closeState, items } =
     useProfileContext();
 
   /**
    * Define user level
    */
   let level = DefineUserLevel({ user: currentUser });
+
+  // on confirm upload avatar
+  /** Upload Avatar */
+  const [file, setFile] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  const ChangeProfileCover = async (cover: any) => {
+    if (
+      !currentUser?.editOptions?.paidForCover &&
+      currentUser?.coins?.total < 1500
+    ) {
+      return setAlert({
+        active: true,
+        text: "You don't have enough coins to change cover!",
+        type: "error",
+      });
+    }
+    setLoading(true);
+    try {
+      const response = await axios.patch(
+        apiUrl + "/api/v1/users/" + currentUser?._id + "?editType=cover",
+        {
+          cover: cover,
+        }
+      );
+      if (response.data.status === "success") {
+        if (!currentUser?.editOptions?.paidForCover) {
+          setCurrentUser((prev: any) => ({
+            ...prev,
+            cover: cover,
+            coins: { ...prev.coins, total: prev.coins.total - 1500 },
+            editOptions: { ...prev.editOptions, paidForCover: true },
+          }));
+        } else {
+          setCurrentUser((prev: any) => ({
+            ...prev,
+            cover: cover,
+          }));
+        }
+        setTimeout(() => {
+          setLoading(false);
+        }, 200);
+      }
+    } catch (error: any) {
+      console.log(error.response.data.message);
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -77,6 +132,25 @@ const Profile = ({ navigation }: any) => {
       >
         <ActivityIndicator color="orange" size="small" />
       </Animated.View>
+      {loading && (
+        <BlurView
+          intensity={20}
+          tint="dark"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            zIndex: 90,
+            width: "100%",
+            height: "100%",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {" "}
+          <ActivityIndicator color="orange" size="small" />
+        </BlurView>
+      )}
       {/** Items */}
       <ScrollView
         style={{
@@ -190,10 +264,7 @@ const Profile = ({ navigation }: any) => {
       {/** Popup Screen */}
       {updateState !== "" && (
         <BlurView intensity={120} tint="dark" style={styles.blurContainer}>
-          <Pressable
-            onPress={() => setUpdateState("")}
-            style={styles.popupPressableContainer}
-          >
+          <View style={styles.popupContainer}>
             <Animated.View
               style={{
                 transform: [{ translateY: translateYState }],
@@ -203,11 +274,25 @@ const Profile = ({ navigation }: any) => {
                 paddingTop: 48,
               }}
             >
+              <Pressable
+                style={{ margin: 12, marginBottom: 0 }}
+                onPress={() => {
+                  closeState();
+                }}
+              >
+                <MaterialIcons
+                  name="arrow-drop-down"
+                  size={42}
+                  color={theme.active}
+                />
+              </Pressable>
               {updateState === "Avatars" && (
                 <Avatars
                   state={currentUser}
-                  setState={setCurrentUser}
+                  onChange={ChangeProfileCover}
                   type="profile-avatar"
+                  file={file}
+                  setFile={setFile}
                 />
               )}
               {updateState === "Edit Name" && <EditNameWindow />}
@@ -221,7 +306,7 @@ const Profile = ({ navigation }: any) => {
               )}
               {updateState === "Birthday" && <BirthdayWindow />}
             </Animated.View>
-          </Pressable>
+          </View>
         </BlurView>
       )}
     </View>
@@ -268,7 +353,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  popupPressableContainer: {
+  popupContainer: {
     height: "100%",
     width: "100%",
     alignItems: "center",

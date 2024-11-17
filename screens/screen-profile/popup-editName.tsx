@@ -5,6 +5,7 @@ import Button from "../../components/button";
 import { useAppContext } from "../../context/app";
 import { useAuthContext } from "../../context/auth";
 import { useProfileContext } from "../../context/profile";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -18,7 +19,6 @@ const EditNameWindow = () => {
    * Auth context
    */
   const { currentUser } = useAuthContext();
-
   /**
    * Profile context
    */
@@ -31,10 +31,9 @@ const EditNameWindow = () => {
   return (
     <View
       style={{
-        flex: 1,
         justifyContent: "center",
         position: "relative",
-        bottom: 40,
+        height: "80%",
       }}
     >
       <Pressable
@@ -46,23 +45,43 @@ const EditNameWindow = () => {
           gap: 10,
         }}
       >
+        {currentUser?.editOptions?.totalFreeEditName > 0 && (
+          <Text
+            style={{
+              color: theme.active,
+              fontWeight: 600,
+              fontSize: 14,
+              textAlign: "center",
+            }}
+          >
+            {currentUser?.editOptions?.totalFreeEditName} free changes left!
+          </Text>
+        )}
         <Input
           placeholder={activeLanguage.fullName}
           onChangeText={(text: string) => setInput(text)}
           type="text"
-          onSubmitEditing={() => UpdateUser({ name: input })}
-          returnKeyType="go"
           value={input}
         />
         <Button
           style={{
             width: (SCREEN_WIDTH / 100) * 90,
-            color: theme.text,
+            color: "white",
             backgroundColor: theme.active,
           }}
           disabled={input === currentUser?.name}
-          icon=""
-          title={activeLanguage.changeName}
+          title={
+            <Text>
+              {activeLanguage.changeName}
+
+              {currentUser?.editOptions?.totalFreeEditName === 0 && (
+                <>
+                  {"  150 "}
+                  <FontAwesome5 name="coins" size={14} />
+                </>
+              )}
+            </Text>
+          }
           loading={updateLoading}
           onPressFunction={() => UpdateUser({ name: input })}
         />

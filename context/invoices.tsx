@@ -40,6 +40,7 @@ export const InvoicesContextWrapper: React.FC<contextProps> = ({
   /**
    * Invoices state
    */
+  const [loading, setLoading] = useState(true);
   const [totalInvoices, setTotalInvoices] = useState<any>(null);
   const [invoices, setInvoices] = useState<any>([]);
   const [page, setPage] = useState(1);
@@ -54,9 +55,13 @@ export const InvoicesContextWrapper: React.FC<contextProps> = ({
           setInvoices(response.data.data.invoices);
           setTotalInvoices(response.data.total);
           setPage(1);
+          setTimeout(() => {
+            setLoading(false);
+          }, 200);
         }
       } catch (error: any) {
         console.log(error.response.data.message);
+        setLoading(false);
       }
     };
     if (currentUser) {
@@ -70,6 +75,7 @@ export const InvoicesContextWrapper: React.FC<contextProps> = ({
 
   const AddInvoices = async () => {
     const newPage = page + 1;
+
     try {
       const response = await axios.get(
         apiUrl +
@@ -79,25 +85,23 @@ export const InvoicesContextWrapper: React.FC<contextProps> = ({
           newPage
       );
       if (response.data.status === "success") {
-        let InvoicesList = response.data.data.invoices;
+        const invoicesList = response.data.data.invoices;
 
-        setInvoices((prevInvoices: any) => {
-          // Create a Map with existing Invoices using notificationId as the key
-          const InvoicesMap = new Map(
-            prevInvoices.map((invoice: any) => [invoice.id, invoice])
+        setInvoices((prevInvoices: any[]) => {
+          // Create a Map with existing Invoices using invoice.id as the key
+          const invoicesMap = new Map(
+            prevInvoices.map((invoice) => [invoice.id, invoice])
           );
 
-          // Iterate over new Invoices and add them to the Map if they don't already exist
-          InvoicesList.forEach((newInvoice: any) => {
-            if (!InvoicesMap.has(newInvoice.id)) {
-              InvoicesMap.set(newInvoice.id, newInvoice);
+          // Iterate over new invoices and add them to the Map if they don't already exist
+          invoicesList.forEach((newInvoice: any) => {
+            if (!invoicesMap.has(newInvoice.id)) {
+              invoicesMap.set(newInvoice.id, newInvoice);
             }
           });
 
           // Convert the Map values back to an array
-          const uniqueInvoices = Array.from(InvoicesMap.values());
-
-          return uniqueInvoices;
+          return Array.from(invoicesMap.values());
         });
 
         setTotalInvoices(response.data.total);
@@ -107,6 +111,10 @@ export const InvoicesContextWrapper: React.FC<contextProps> = ({
       console.log(error.response.data.message);
     }
   };
+
+  console.log(page);
+
+  console.log("total: " + invoices?.length);
 
   // clear Invoices
   const [loadingClearInvoices, setLoadingClearInvoices] = useState<any>(null);
@@ -133,6 +141,7 @@ export const InvoicesContextWrapper: React.FC<contextProps> = ({
   return (
     <Invoices.Provider
       value={{
+        loading,
         invoices,
         setInvoices,
         AddInvoices,

@@ -17,24 +17,32 @@ const Coins = () => {
 
   const coins = [
     {
-      size: 500,
+      size: 100,
       price: 5,
     },
     {
-      size: 1000,
-      price: 9,
+      size: 200,
+      price: 8,
     },
     {
-      size: 2000,
+      size: 500,
+      price: 12,
+    },
+    {
+      size: 1000,
       price: 17,
     },
     {
-      size: 3000,
-      price: 24,
+      size: 1500,
+      price: 23,
     },
     {
-      size: 5000,
-      price: 32,
+      size: 2000,
+      price: 30,
+    },
+    {
+      size: 3500,
+      price: 45,
     },
   ];
 

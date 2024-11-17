@@ -27,7 +27,7 @@ export const BackDrop = ({ loading, setLoading }: any) => {
             }}
           >
             <BlurView intensity={60} tint="dark" style={styles.loaderContainer}>
-              <ActivityIndicator size="large" color={theme.active} />
+              <ActivityIndicator size={32} color={theme.active} />
             </BlurView>
           </View>
         </BlurView>

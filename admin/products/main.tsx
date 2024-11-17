@@ -7,6 +7,7 @@ import List from "./list";
 import CreateProduct from "./createProduct";
 import axios from "axios";
 import { ActivityIndicator } from "react-native-paper";
+import EditProduct from "./editProduct";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -62,6 +63,33 @@ const Products = () => {
     }).start(() => {});
   }, [createProduct, translateYCreateProduct]);
 
+  /**
+   * Edit product
+   */
+  const [editProduct, setEditProduct] = useState(null);
+
+  const translateYEditProduct = useRef(
+    new Animated.Value(SCREEN_HEIGHT)
+  ).current;
+
+  useEffect(() => {
+    if (editProduct) {
+      Animated.timing(translateYEditProduct, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {});
+    }
+  }, [editProduct, translateYEditProduct]);
+
+  const closePopup = () => {
+    Animated.timing(translateYEditProduct, {
+      toValue: SCREEN_HEIGHT,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => setEditProduct(null));
+  };
+
   return (
     <View style={{ flex: 1, width: "100%" }}>
       <View>
@@ -74,7 +102,7 @@ const Products = () => {
           style={{ marginTop: 48 }}
         />
       ) : (
-        <List products={products} />
+        <List products={products} setEditProduct={setEditProduct} />
       )}
       <View
         style={{
@@ -106,6 +134,20 @@ const Products = () => {
         <CreateProduct
           setCreateProduct={setCreateProduct}
           setProducts={setProducts}
+        />
+      </Animated.View>
+      <Animated.View
+        style={[
+          styles.screen,
+          {
+            transform: [{ translateY: translateYEditProduct }],
+          },
+        ]}
+      >
+        <EditProduct
+          closePopup={closePopup}
+          setProducts={setProducts}
+          item={editProduct}
         />
       </Animated.View>
     </View>

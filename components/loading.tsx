@@ -14,7 +14,7 @@ const Loading = () => {
   return (
     <View style={styles.container}>
       <Text>
-        <ActivityIndicator size="large" color={theme.active} />
+        <ActivityIndicator size={32} color={theme.active} />
       </Text>
     </View>
   );

@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAppContext } from "../../../context/app";
 import * as Haptics from "expo-haptics";
 
@@ -8,6 +8,8 @@ const MaxMafias = ({ setNumericPopup, setRoomState, roomState }: any) => {
    * App context
    */
   const { theme, haptics } = useAppContext();
+
+  const [maxValue, setMaxValue] = useState(6);
 
   useEffect(() => {
     if (roomState?.options.maxPlayers) {
@@ -30,6 +32,8 @@ const MaxMafias = ({ setNumericPopup, setRoomState, roomState }: any) => {
       } else {
         maxMafias = 6;
       }
+
+      setMaxValue(maxMafias);
 
       if (maxMafias === 1) {
         let don = roomState?.roles.find((r: any) => r.value === "mafia-don");
@@ -59,6 +63,18 @@ const MaxMafias = ({ setNumericPopup, setRoomState, roomState }: any) => {
     }
   }, [roomState?.options.maxPlayers, setRoomState]);
 
+  useEffect(() => {
+    if (parseInt(roomState?.options?.maxMafias) === 1) {
+      let don = roomState?.roles.find((r: any) => r.value === "mafia-don");
+      if (don) {
+        setRoomState((prev: any) => ({
+          ...prev,
+          roles: prev.roles?.filter((r: any) => r.value !== "mafia"),
+        }));
+      }
+    }
+  }, [roomState?.options?.maxMafias]);
+
   // styles
   const styles = createStyles(theme);
   return (
@@ -70,7 +86,7 @@ const MaxMafias = ({ setNumericPopup, setRoomState, roomState }: any) => {
           setNumericPopup({
             title: "Max Mafias",
             min: 1,
-            max: roomState.options.maxMafias,
+            max: maxValue,
             selectedValue: roomState.options.maxMafias,
             step: 1,
             active: true,

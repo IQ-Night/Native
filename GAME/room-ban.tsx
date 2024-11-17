@@ -120,8 +120,8 @@ const Ban = ({ openUser, setOpenBan, setOpenUser }: any) => {
           ]}
         >
           {(currentUser?.admin?.active &&
-            currentUser?._id !== activeRoom?.admin?.founder?._id &&
-            activeRoom?.admin?.founder?._id === openUser?.userId) ||
+            currentUser?._id !== activeRoom?.admin?.founder?.id &&
+            activeRoom?.admin?.founder?.id === openUser?.userId) ||
           openUser?.admin.active ? null : (
             <>
               <View style={styles.header}>

@@ -1,4 +1,4 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import React from "react";
 import {
@@ -68,19 +68,54 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
         >
           <Img uri={item.cover} />
         </View>
-
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginLeft: "auto",
+            gap: 8,
+            position: "absolute",
+            right: 8,
+            top: 8,
+          }}
+        >
+          {item?.chat && (
+            <Text
+              style={{
+                color: theme.text,
+                fontSize: 12,
+                fontWeight: 500,
+              }}
+            >
+              <MaterialCommunityIcons name="chat" size={18} />{" "}
+            </Text>
+          )}
+          <Text
+            style={{
+              color: theme.text,
+              fontSize: 12,
+              fontWeight: 500,
+            }}
+          >
+            <FontAwesome5 size={14} color={theme.text} name="users" />{" "}
+            {
+              item.members.filter((memb: any) => memb.status === "member")
+                .length
+            }
+          </Text>
+        </View>
         {/** Content */}
         <View
           style={{
             overflow: "hidden",
             flex: 1,
             width: "100%",
+            paddingVertical: 12,
           }}
         >
           <View
             style={{
-              padding: 12,
-              flexDirection: "row",
+              paddingHorizontal: 12,
               gap: 12,
               width: "100%",
             }}
@@ -107,8 +142,10 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                     }}
                   />
                 </View>
+
                 <Text
                   style={{
+                    width: "60%",
                     color: theme.text,
                     fontSize: 16,
                     fontWeight: "500",
@@ -120,6 +157,21 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                   {item?.title}
                 </Text>
               </View>
+              {item?.slogan?.length > 0 && (
+                <Text
+                  style={{
+                    color: theme.text,
+                    fontSize: 16,
+                    fontWeight: "500",
+                    overflow: "hidden",
+                    fontStyle: "italic",
+                  }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {item?.slogan}
+                </Text>
+              )}
               <View
                 style={{
                   flexDirection: "row",
@@ -135,32 +187,11 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                   }}
                 >
                   Founder:{" "}
-                  {founder._id === currentUser?._id ? (
+                  {founder.id === currentUser?._id ? (
                     <Text style={{ color: theme.active }}>You</Text>
                   ) : (
                     founder.name
                   )}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: 4,
-                }}
-              >
-                <Text
-                  style={{
-                    color: theme.text,
-                    fontSize: 12,
-                    fontWeight: 500,
-                  }}
-                >
-                  <FontAwesome5 size={14} color={theme.text} name="users" />{" "}
-                  {
-                    item.members.filter((memb: any) => memb.status === "member")
-                      .length
-                  }
                 </Text>
               </View>
             </View>
@@ -178,7 +209,7 @@ const styles = StyleSheet.create({
     width: "100%",
     overflow: "hidden",
     flexDirection: "row",
-    alignItems: "center",
+    // alignItems: "center",
     borderRadius: 4,
   },
 });

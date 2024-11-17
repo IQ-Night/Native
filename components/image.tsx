@@ -10,11 +10,20 @@ const Img = ({ uri, onLoad }: any) => {
   const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
   const [loadImg, setLoadImg] = useState(true);
   const { theme } = useAppContext();
+
   useEffect(() => {
     if (uri?.length < 1) {
-      setLoadImg(false);
+      setLoadImg(false); // If there's no uri, stop showing shimmer
     }
-  }, []);
+  }, [uri]);
+
+  // Handle image load event
+  const handleImageLoad = () => {
+    setLoadImg(false);
+    if (onLoad) {
+      onLoad();
+    }
+  };
 
   return (
     <>
@@ -30,15 +39,17 @@ const Img = ({ uri, onLoad }: any) => {
           transform: [{ scale: loadImg ? 1 : 0 }],
         }}
       >
-        <ShimmerPlaceholder
-          height="100%"
-          shimmerColors={[
-            "rgba(255,255,255,0.1)",
-            "rgba(255,255,255,0.2)",
-            "rgba(255,255,255,0)",
-          ]}
-          duration={1500}
-        />
+        {loadImg && (
+          <ShimmerPlaceholder
+            height="100%"
+            shimmerColors={[
+              "rgba(255,255,255,0.1)",
+              "rgba(255,255,255,0.2)",
+              "rgba(255,255,255,0)",
+            ]}
+            duration={1500}
+          />
+        )}
       </BlurView>
 
       <BlurView
@@ -48,12 +59,7 @@ const Img = ({ uri, onLoad }: any) => {
       >
         {uri?.length > 0 ? (
           <Image
-            onLoad={() => {
-              setLoadImg(false);
-              if (onLoad) {
-                onLoad();
-              }
-            }}
+            onLoad={handleImageLoad} // Trigger once when the image is loaded
             source={{ uri: uri }}
             style={[styles.image]}
           />
@@ -71,7 +77,6 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
-    resizeMode: "cover", // Ensures the image covers the entire grid item
-    // borderRadius: 8,
+    resizeMode: "cover",
   },
 });

@@ -3,8 +3,9 @@ import React from "react";
 import Input from "../../../components/input";
 import { useAppContext } from "../../../context/app";
 import { Switch } from "react-native-paper";
+import { FontAwesome5 } from "@expo/vector-icons";
 
-const Private = ({ roomState, setRoomState }: any) => {
+const Private = ({ roomState, setRoomState, totalPrice }: any) => {
   /**
    * App context
    */
@@ -61,19 +62,41 @@ const Private = ({ roomState, setRoomState }: any) => {
       </View>
 
       {roomState.private.value && (
-        <View style={{ width: "70%" }}>
-          <Input
-            value={roomState.private.code}
-            placeholder="Code*"
-            maxLength={8}
-            type="numeric"
-            onChangeText={(e: string) =>
-              setRoomState((prev: any) => ({
-                ...prev,
-                private: { ...roomState.private, code: e },
-              }))
-            }
-          />
+        <View
+          style={{
+            width: "100%",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <View style={{ width: "50%" }}>
+            <Input
+              value={roomState.private.code}
+              placeholder="Code*"
+              maxLength={8}
+              type="numeric"
+              onChangeText={(e: string) =>
+                setRoomState((prev: any) => ({
+                  ...prev,
+                  private: { ...roomState.private, code: e },
+                }))
+              }
+            />
+          </View>
+
+          {totalPrice?.private > 0 && roomState?.private?.active && (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <FontAwesome5 name="coins" size={14} color={theme.active} />{" "}
+              <Text style={{ fontWeight: 500, color: theme.text }}>4</Text>
+            </View>
+          )}
         </View>
       )}
     </View>
@@ -88,6 +111,7 @@ const createStyles = (theme: any) =>
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
+      width: "100%",
     },
     title: {
       color: theme.text,

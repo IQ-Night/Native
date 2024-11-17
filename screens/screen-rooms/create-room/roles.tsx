@@ -3,6 +3,7 @@ import React from "react";
 import { roles } from "../../../context/rooms";
 import { FontAwesome5, FontAwesome6, MaterialIcons } from "@expo/vector-icons";
 import { useAppContext } from "../../../context/app";
+import { useAuthContext } from "../../../context/auth";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -11,6 +12,10 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo }: any) => {
    * App context
    */
   const { theme } = useAppContext();
+  /**
+   * Auth context
+   */
+  const { currentUser } = useAuthContext();
 
   return (
     <View
@@ -32,18 +37,31 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo }: any) => {
                   (item.value === "mafia" &&
                     roomState.roles?.find((r: any) => r.value === "mafia-don"))
                 ) {
-                  setRoomState((prev: any) => ({
-                    ...prev,
-                    roles: prev.roles.filter(
-                      (i: any) => i.value !== item.value
-                    ),
-                  }));
+                  if (roomState?.options?.maxMafias > 1) {
+                    if (
+                      roomState.roles?.find((r: any) => r.value === "mafia")
+                    ) {
+                      setRoomState((prev: any) => ({
+                        ...prev,
+                        roles: prev.roles.filter(
+                          (i: any) => i.value !== item.value
+                        ),
+                      }));
+                    } else {
+                      setRoomState((prev: any) => ({
+                        ...prev,
+                        roles: [...prev?.roles, item],
+                      }));
+                    }
+                  }
                 }
               } else {
+                console.log("run");
                 if (
                   roomState?.options?.maxMafias === 1 &&
                   item?.value === "mafia-don"
                 ) {
+                  console.log("run");
                   const updatedRoles = roomState?.roles?.filter(
                     (r: any) => r.value !== "mafia"
                   );
@@ -56,6 +74,7 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo }: any) => {
                   roomState?.options?.maxMafias === 1 &&
                   item?.value === "mafia"
                 ) {
+                  console.log("run");
                   const updatedRoles = roomState?.roles?.filter(
                     (r: any) => r.value !== "mafia-don"
                   );
@@ -96,7 +115,7 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo }: any) => {
               style={{ position: "absolute", top: 8, right: 8 }}
             />
             <Text>{item.label}</Text>
-            {item.price && (
+            {item.price && !currentUser?.vip?.active && (
               <View
                 style={{
                   flexDirection: "row",

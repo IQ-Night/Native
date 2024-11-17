@@ -12,19 +12,46 @@ import {
 import { useAppContext } from "../../context/app";
 import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
 import { FontAwesome5 } from "@expo/vector-icons";
+import { useAuthContext } from "../../context/auth";
+import Img from "../../components/image";
+import { useNavigation } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-const Item = ({ item }: any) => {
+const Item = ({ item, setState, setOpenBuyItem }: any) => {
+  const navigation: any = useNavigation();
   /**
    * App context
    */
-  const { theme } = useAppContext();
+  const { theme, haptics } = useAppContext();
+  /**
+   * Auth context
+   */
+  const { currentUser } = useAuthContext();
 
   const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
   // load img
   const [loadImg, setLoadImg] = useState(true);
+
+  /**
+   * product types
+   */
+  const types = [
+    {
+      value: "profile-avatar",
+      label: "Profile Avatar",
+    },
+    {
+      value: "room-avatar",
+      label: "Room Avatar",
+    },
+    {
+      value: "clan-avatar",
+      label: "Clan Avatar",
+    },
+  ];
 
   return (
     <View
@@ -45,7 +72,20 @@ const Item = ({ item }: any) => {
         }}
       >
         <BlurView intensity={20} tint="dark">
-          <Pressable style={styles.container}>
+          <Pressable
+            style={styles.container}
+            onPress={() => {
+              if (
+                !item?.owners?.find((o: any) => o === currentUser?._id) &&
+                item?.price > 0
+              ) {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+                setOpenBuyItem(item);
+              }
+            }}
+          >
             {loadImg && (
               <BlurView
                 intensity={100}
@@ -74,8 +114,6 @@ const Item = ({ item }: any) => {
                 colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.5)", "rgba(0,0,0,0.8)"]}
                 style={styles.wrapper}
               >
-                {/** Content */}
-
                 <View
                   style={{
                     overflow: "hidden",
@@ -92,6 +130,46 @@ const Item = ({ item }: any) => {
                       width: "100%",
                     }}
                   >
+                    {item?.founder?.userId !== currentUser?._id && (
+                      <View
+                        style={{
+                          shadowColor: "#000",
+                          shadowOffset: { width: 1, height: 1 },
+                          shadowOpacity: 0.4,
+                          shadowRadius: 2,
+                          // Elevation for Android
+                          elevation: 4,
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          zIndex: 60,
+                          width: 24,
+                          height: 24,
+                        }}
+                      >
+                        <Pressable
+                          onPress={() => {
+                            if (haptics) {
+                              Haptics.impactAsync(
+                                Haptics.ImpactFeedbackStyle.Soft
+                              );
+                            }
+                            const founder = item?.founder;
+                            navigation.navigate("User", {
+                              item: { ...founder, _id: founder?.userId },
+                            });
+                          }}
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 100,
+                            overflow: "hidden",
+                          }}
+                        >
+                          <Img uri={item.founder.cover} />
+                        </Pressable>
+                      </View>
+                    )}
                     <View style={{ justifyContent: "center", gap: 4 }}>
                       <View
                         style={{
@@ -100,35 +178,38 @@ const Item = ({ item }: any) => {
                           height: "100%",
                         }}
                       >
-                        {item?.price > 0 && (
-                          <View
-                            style={{
-                              alignItems: "center",
-                              gap: 4,
-                              flexDirection: "row",
-                              marginBottom: 2,
-                            }}
-                          >
-                            <FontAwesome5
-                              name="coins"
-                              size={14}
-                              color={theme.active}
-                            />
-                            <Text
+                        {item.price > 0 &&
+                          !item?.owners?.find(
+                            (o: any) => o === currentUser?._id
+                          ) && (
+                            <View
                               style={{
-                                color: theme.text,
-                                fontSize: 12,
-                                fontWeight: "500",
-                                overflow: "hidden",
-                                width: "100%",
+                                alignItems: "center",
+                                gap: 4,
+                                flexDirection: "row",
+                                marginBottom: 2,
                               }}
-                              numberOfLines={1}
-                              ellipsizeMode="tail"
                             >
-                              {item.price > 0 ? item.price : "Free"}
-                            </Text>
-                          </View>
-                        )}
+                              <FontAwesome5
+                                name="coins"
+                                size={14}
+                                color={theme.active}
+                              />
+                              <Text
+                                style={{
+                                  color: theme.text,
+                                  fontSize: 12,
+                                  fontWeight: "500",
+                                  overflow: "hidden",
+                                  width: "100%",
+                                }}
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                              >
+                                {item.price > 0 ? item.price : "Free"}
+                              </Text>
+                            </View>
+                          )}
                         <Text
                           style={{
                             color: theme.text,
@@ -142,19 +223,24 @@ const Item = ({ item }: any) => {
                         >
                           {item?.title}
                         </Text>
-                        <Text
-                          style={{
-                            color: theme.text,
-                            fontSize: 12,
-                            fontWeight: "400",
-                            overflow: "hidden",
-                            width: "100%",
-                          }}
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
-                        >
-                          {item?.type}
-                        </Text>
+                        {item?.type?.map((i: any, x: number) => {
+                          return (
+                            <Text
+                              key={x}
+                              style={{
+                                color: theme.text,
+                                fontSize: 10,
+                                fontWeight: "400",
+                                overflow: "hidden",
+                                width: "100%",
+                              }}
+                              numberOfLines={1}
+                              ellipsizeMode="tail"
+                            >
+                              - {types?.find((t: any) => t.value === i)?.label}
+                            </Text>
+                          );
+                        })}
                       </View>
                     </View>
                   </View>

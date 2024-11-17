@@ -11,7 +11,7 @@ interface ButtonProps {
     color: string;
     backgroundColor: string;
   };
-  title?: string;
+  title?: any;
   icon?: any;
   onPressFunction: () => void;
   loading?: boolean;

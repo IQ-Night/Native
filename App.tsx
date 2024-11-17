@@ -1,16 +1,11 @@
-import { useFonts } from "expo-font";
 import Content from "./content";
+import { AdminContextWrapper } from "./context/admin";
 import { AppContextWrapper } from "./context/app";
 import { AuthContextWrapper } from "./context/auth";
 import { ContentContextWrapper } from "./context/content";
 import { GameContextWrapper } from "./context/game";
 import { NotificationsContextWrapper } from "./context/notifications";
-import {
-  Montserrat_400Regular,
-  Montserrat_700Bold,
-} from "@expo-google-fonts/montserrat";
-import { Text } from "react-native";
-import { AdminContextWrapper } from "./context/admin";
+import { PushNotificationsProvider } from "./context/pushNotifications";
 
 export default function App() {
   // const [fontsLoaded] = useFonts({
@@ -22,11 +17,13 @@ export default function App() {
       <AuthContextWrapper>
         <ContentContextWrapper>
           <GameContextWrapper>
-            <NotificationsContextWrapper>
-              <AdminContextWrapper>
-                <Content />
-              </AdminContextWrapper>
-            </NotificationsContextWrapper>
+            <PushNotificationsProvider>
+              <NotificationsContextWrapper>
+                <AdminContextWrapper>
+                  <Content />
+                </AdminContextWrapper>
+              </NotificationsContextWrapper>
+            </PushNotificationsProvider>
           </GameContextWrapper>
         </ContentContextWrapper>
       </AuthContextWrapper>

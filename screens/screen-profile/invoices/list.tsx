@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useInvoicesContext } from "../../../context/invoices";
 import InvoiceItem from "./invoice-item";
+import { ActivityIndicator } from "react-native-paper";
+import { useAppContext } from "../../../context/app";
 
-const List = ({ setDeleteItem, invoices }: any) => {
-  const { totalInvoices, AddInvoices } = useInvoicesContext();
-
+const List = ({ setDeleteItem }: any) => {
+  const { invoices, totalInvoices, AddInvoices, loading } =
+    useInvoicesContext();
+  const { theme } = useAppContext();
   return (
     <ScrollView
       onScroll={({ nativeEvent }) => {
@@ -13,16 +16,25 @@ const List = ({ setDeleteItem, invoices }: any) => {
         const isCloseToBottom =
           layoutMeasurement.height + contentOffset.y >=
           contentSize.height - 350;
-        // if (isCloseToBottom) {
-        //   if (totalInvoices > invoices?.length) {
-        //     AddInvoices();
-        //   }
-        // }
+
+        if (isCloseToBottom) {
+          console.log("run");
+          console.log("total: " + totalInvoices);
+          console.log(invoices?.length);
+          if (totalInvoices > invoices?.length) {
+            AddInvoices();
+          }
+        }
       }}
       scrollEventThrottle={400}
       // ref={scrollViewRefRooms}
     >
       <View style={styles.row}>
+        {loading && (
+          <View style={{ flex: 1, marginVertical: 48 }}>
+            <ActivityIndicator size={32} color={theme.active} />
+          </View>
+        )}
         {invoices?.length < 1 && totalInvoices !== null && (
           <Text
             style={{
@@ -36,15 +48,16 @@ const List = ({ setDeleteItem, invoices }: any) => {
             Not Found!
           </Text>
         )}
-        {invoices?.map((item: any, index: number) => {
-          return (
-            <InvoiceItem
-              key={index}
-              item={item}
-              setDeleteItem={setDeleteItem}
-            />
-          );
-        })}
+        {!loading &&
+          invoices?.map((item: any, index: number) => {
+            return (
+              <InvoiceItem
+                key={index}
+                item={item}
+                setDeleteItem={setDeleteItem}
+              />
+            );
+          })}
       </View>
     </ScrollView>
   );

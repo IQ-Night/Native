@@ -12,6 +12,7 @@ import Clan from "../screens/screen-clans/clan-screen";
 import Coins from "../screens/screen-coins/coins";
 import Liderboard from "../screens/screen-liderboard/main";
 import User from "../screens/screen-user/main";
+import Vip from "../screens/screen-VIP/main";
 
 const LiderboardStackNavigator = () => {
   /**
@@ -73,7 +74,11 @@ const LiderboardStackNavigator = () => {
                     size={16} // Adjust the size as needed
                   />
                 </View>
-                <Text style={{ color: theme.text, fontSize: 18 }}>
+                <Text
+                  style={{ color: theme.text, fontSize: 18, maxWidth: "80%" }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
                   {route.params?.item?.title || "Clan"}
                 </Text>
               </View>
@@ -88,6 +93,7 @@ const LiderboardStackNavigator = () => {
           })}
         />
         <LiderboardStack.Screen name="Coins" component={Coins} />
+        <LiderboardStack.Screen name="Vip" component={Vip} />
       </LiderboardStack.Navigator>
       <Confirm confirm={confirm} setConfirm={setConfirm} />
     </>

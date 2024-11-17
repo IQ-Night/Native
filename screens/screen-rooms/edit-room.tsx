@@ -55,7 +55,7 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
   /**
    * Auth context
    */
-  const { currentUser } = useAuthContext();
+  const { setCurrentUser, currentUser } = useAuthContext();
   /**
    * Content context
    */
@@ -71,26 +71,11 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
    */
   const [oldData, setOldData] = useState({
     ...editRoom,
-    title: editRoom?.price.title > 0 ? editRoom?.title : "",
-    admin: {
-      founder: editRoom?.admin.founder?._id,
-      type: editRoom?.admin?.type,
-    },
-    roles: editRoom?.roles?.map(({ price, ...rest }: any) => ({
-      ...rest, // spread all properties except 'price'
-    })),
   });
 
   const [roomState, setRoomState] = useState<any>({
     ...editRoom,
-    title: editRoom?.price.title > 0 ? editRoom?.title : "",
-    admin: {
-      founder: editRoom?.admin.founder?._id,
-      type: editRoom?.admin?.type,
-    },
-    roles: editRoom?.roles?.map(({ price, ...rest }: any) => ({
-      ...rest, // spread all properties except 'price'
-    })),
+    title: editRoom?.price?.title > 0 ? editRoom?.title : "",
   });
 
   /**
@@ -99,34 +84,64 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
   const [openRoleInfo, setOpenRoleInfo] = useState({ value: null });
 
   /**
-   * Total price of create room
+   * Total price of edit room
    */
   const [totalPrice, setTotalPrice] = useState<any>({
     all: 0,
     roles: 0,
     title: 0,
-    room: 0,
     cover: 0,
+    private: 0,
   });
 
   useEffect(() => {
-    const rolesPrice =
+    const newRolesPrice =
       roomState.roles
         .filter((i: any) => i.price) // Filter items that have a price
         .reduce((acc: number, curr: any) => acc + curr.price, 0) || 0; // Sum up the prices
-    const titlePrice =
-      roomState?.title?.length > 0 &&
-      roomState?.title !== oldData?.title &&
-      oldData?.price?.title === 0
-        ? 100
-        : 0;
-    const total = rolesPrice + titlePrice + totalPrice?.cover;
+    let rolesPrice;
+    if (currentUser?.vip?.active) {
+      rolesPrice = 0;
+    } else {
+      if (oldData?.price?.roles > newRolesPrice) {
+        rolesPrice = oldData?.price?.roles;
+      } else {
+        rolesPrice = newRolesPrice;
+      }
+    }
+    let titlePrice;
+    if (oldData?.price.title > 0) {
+      titlePrice = oldData?.price.title;
+    } else {
+      titlePrice = roomState?.title?.length > 0 ? 500 : 0;
+    }
+    let coverPrice;
+    if (oldData?.price.cover > 0) {
+      coverPrice = oldData?.price.cover;
+    } else {
+      coverPrice = roomState?.cover !== oldData?.cover ? 800 : 0;
+    }
+    let privatePrice;
+    if (oldData?.price.private > 0) {
+      if (!currentUser?.vip?.active) {
+        privatePrice = oldData?.price.private;
+      } else {
+        privatePrice = 0;
+      }
+    } else {
+      if (!currentUser?.vip?.active) {
+        privatePrice = roomState?.private?.value ? 4 : 0;
+      } else {
+        privatePrice = 0;
+      }
+    }
+    const total = rolesPrice + titlePrice + coverPrice + privatePrice;
     setTotalPrice({
       all: total,
       roles: rolesPrice,
       title: titlePrice,
-      cover: totalPrice.cover,
-      room: 0,
+      cover: coverPrice,
+      private: privatePrice,
     });
   }, [roomState]);
 
@@ -150,10 +165,13 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
    * Creat room
    */
   const [loading, setLoading] = useState(false);
-  const { setRooms } = useRoomsContext();
   const HandleEditRoom = async () => {
     if (roomState.private.value && roomState.private.code < 4) {
-      return;
+      return setAlert({
+        active: true,
+        type: "error",
+        text: "Pin code is not defined!",
+      });
     }
 
     try {
@@ -164,21 +182,21 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
         {
           ...roomState,
           title: roomState?.title?.length > 0 ? roomState?.title : randomTitle,
-          price: {
-            all: oldData?.price?.all + totalPrice?.all,
-            room: oldData?.price?.room + totalPrice?.room,
-            roles: oldData?.price?.roles + totalPrice?.roles,
-            title: oldData?.price?.title + totalPrice?.title,
-            cover: oldData?.price?.cover + totalPrice?.cover,
-          },
-          // roles,
+          price: totalPrice,
         }
       );
       if (response.data.status === "success") {
         setRerenderRooms(true);
         setLoading(false);
         setEditRoom(false);
-        setDoorReview(null);
+        setDoorReview();
+        if (totalPrice?.all > oldData?.price.all) {
+          let newTotal = totalPrice?.all - oldData?.price.all;
+          setCurrentUser((prev: any) => ({
+            ...prev,
+            coins: { ...prev.coins, total: prev.coins.total - newTotal },
+          }));
+        }
       }
     } catch (error: any) {
       setAlert({
@@ -195,6 +213,8 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
    * Open popup
    */
   const [openPopup, setOpenPopup] = useState("");
+  console.log(oldData?.price);
+  console.log(totalPrice);
 
   return (
     <View style={{ flex: 1, width: "100%" }}>
@@ -218,7 +238,12 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
             '
           </Text>
           <Ionicons
-            onPress={() => setEditRoom(false)}
+            onPress={() => {
+              if (haptics) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              }
+              setEditRoom(false);
+            }}
             name="caret-down-outline"
             color={theme.text}
             size={24}
@@ -234,20 +259,6 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
               style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
             >
               <Text style={styles.title}>Cover</Text>
-              {totalPrice?.cover > 0 && (
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <FontAwesome5 name="coins" size={14} color={theme.active} />
-                  <Text
-                    style={{
-                      color: theme.text,
-                      marginLeft: 4,
-                      fontWeight: 500,
-                    }}
-                  >
-                    {totalPrice?.cover}
-                  </Text>
-                </View>
-              )}
             </View>
             <Pressable
               onPress={() => {
@@ -258,12 +269,46 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
               }}
               style={{ flexDirection: "row", alignItems: "center", gap: 16 }}
             >
-              <View style={{ borderRadius: 8, overflow: "hidden" }}>
-                <BlurView intensity={10} tint="light" style={{ padding: 4 }}>
+              <View
+                style={{
+                  borderRadius: 8,
+                  overflow: "hidden",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <BlurView
+                  intensity={10}
+                  tint="light"
+                  style={{
+                    padding: 4,
+                  }}
+                >
                   <View style={styles.image}>
                     <Img uri={roomState.cover} />
                   </View>
                 </BlurView>
+                {totalPrice?.cover > oldData?.price?.cover && (
+                  <View style={{ gap: 16 }}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <FontAwesome5
+                        name="coins"
+                        size={14}
+                        color={theme.active}
+                      />{" "}
+                      <Text style={{ fontWeight: 500, color: theme.text }}>
+                        800
+                      </Text>
+                    </View>
+                  </View>
+                )}
               </View>
             </Pressable>
           </View>
@@ -271,11 +316,11 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
             <Text style={styles.title}>
               {activeLanguage.title}
               {"  "}
-              {oldData?.price.title < 1 && (
+              {totalPrice?.title > oldData?.price.title && (
                 <>
                   <FontAwesome5 name="coins" size={14} color={theme.active} />{" "}
                   <Text style={{ fontWeight: 500, color: theme.text }}>
-                    100
+                    500
                   </Text>
                 </>
               )}
@@ -417,14 +462,14 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
           </View>
           <Button
             icon={
-              totalPrice.all > 0 &&
+              totalPrice.all > oldData?.price?.all &&
               !_.isEqual(oldData, roomState) && (
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <FontAwesome5 name="coins" size={14} color="white" />
                   <Text
                     style={{ color: "white", marginLeft: 4, fontWeight: 500 }}
                   >
-                    {totalPrice.all}
+                    {totalPrice.all - oldData?.price?.all}
                   </Text>
                 </View>
               )

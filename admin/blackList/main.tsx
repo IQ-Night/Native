@@ -45,6 +45,9 @@ const BlackList = ({}: any) => {
     GetList();
   }, []);
 
+  /**
+   * Delete
+   */
   const [deleteConfirm, setDeleteConfirm] = useState<any>(null);
 
   // Animation for confirmation popup

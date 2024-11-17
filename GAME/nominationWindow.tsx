@@ -232,7 +232,7 @@ const NominationWindow = ({
       (v: any) => v.votedBy === currentUser?._id && v.voteFor === playerId
     );
     try {
-      await axios.patch(
+      const response = await axios.patch(
         apiUrl + "/api/v1/rooms/" + activeRoom._id + "/lastVote",
         {
           vote: {
@@ -241,242 +241,253 @@ const NominationWindow = ({
           },
         }
       );
-
-      let voted: any;
-      if (alreadyVoted) {
-        voted = "Cancel";
-      } else if (
-        votes?.find(
-          (v: any) => v.votedBy === currentUser?._id && v.voteFor !== playerId
-        )
-      ) {
-        voted = "Already voted to another player";
-      } else if (!votes?.find((v: any) => v.votedBy === currentUser?._id)) {
-        voted = "No";
-      }
-
-      let victim = gamePlayers?.find((p: any) => p.userId === playerId).role
-        ?.value;
-      let currentUserRole = gamePlayers?.find(
-        (p: any) => p.userId === currentUser?._id
-      ).role?.value;
-
-      if (voted === "Cancel") {
-        AddRating({ points: 0, scenario: "Cancel", removeOld: true });
-      } else if (voted === "Already voted to another player") {
-        if (currentUserRole === "serial-killer") {
-          if (victim === "citizen") {
-            AddRating({
-              points: 1,
-              scenario:
-                "Vote to citizen by serial-killer to leave in first nomination",
-              removeOld: true,
-            });
-          } else if (victim === "doctor") {
-            AddRating({
-              points: 2,
-              scenario:
-                "Vote to doctor by serial-killer to leave in first nomination",
-              removeOld: true,
-            });
-          } else if (victim === "police") {
-            AddRating({
-              points: 2,
-              scenario:
-                "Vote to police by serial-killer to leave in first nomination",
-              removeOld: true,
-            });
-          } else if (victim?.includes("mafia")) {
-            AddRating({
-              points: 4,
-              scenario:
-                "Vote to mafia by serial-killer to leave in first nomination",
-              removeOld: true,
-            });
-          }
-        } else if (currentUserRole === "doctor") {
-          if (victim === "serial-killer") {
-            AddRating({
-              points: 2,
-              scenario:
-                "Vote to serial-killer by doctor to leave in first nomination",
-              removeOld: true,
-            });
-          } else if (victim?.includes("don")) {
-            AddRating({
-              points: 2,
-              scenario: "Vote to don by doctor to leave in first nomination",
-              removeOld: true,
-            });
-          } else if (victim?.includes("mafia") && !victim?.includes("don")) {
-            AddRating({
-              points: 4,
-              scenario: "Vote to mafia by doctor to leave in first nomination",
-              removeOld: true,
-            });
-          }
-        } else if (currentUserRole === "police") {
-          if (victim === "serial-killer") {
-            AddRating({
-              points: 2,
-              scenario:
-                "Vote to serial-killer by police to leave in first nomination",
-              removeOld: true,
-            });
-          } else if (victim?.includes("don")) {
-            AddRating({
-              points: 4,
-              scenario: "Vote to don by police to leave in first nomination",
-              removeOld: true,
-            });
-          } else if (victim?.includes("mafia") && !victim?.includes("don")) {
-            AddRating({
-              points: 4,
-              scenario: "Vote to mafia by police to leave in first nomination",
-              removeOld: true,
-            });
-          }
-        } else if (currentUserRole?.includes("mafia")) {
-          if (victim === "serial-killer") {
-            AddRating({
-              points: 2,
-              scenario:
-                "Vote to serial-killer by mafia to leave in first nomination",
-              removeOld: true,
-            });
-          } else if (victim === "police") {
-            AddRating({
-              points: 4,
-              scenario: "Vote to police by mafia to leave in first nomination",
-              removeOld: true,
-            });
-          } else if (victim === "doctor") {
-            AddRating({
-              points: 4,
-              scenario: "Vote to doctor by mafia to leave in first nomination",
-              removeOld: true,
-            });
-          }
-        } else if (currentUserRole === "citizen") {
-          if (victim === "serial-killer") {
-            AddRating({
-              points: 2,
-              scenario:
-                "Vote to serial-killer by citizen to leave in first nomination",
-              removeOld: true,
-            });
-          } else if (victim?.includes("don")) {
-            AddRating({
-              points: 4,
-              scenario: "Vote to don by citizen to leave in first nomination",
-              removeOld: true,
-            });
-          } else if (victim?.includes("mafia") && !victim?.includes("don")) {
-            AddRating({
-              points: 4,
-              scenario: "Vote to mafia by citizen to leave in first nomination",
-              removeOld: true,
-            });
-          }
+      if (response.data.status === "success") {
+        let voted: any;
+        if (alreadyVoted) {
+          voted = "Cancel";
+        } else if (
+          votes?.find(
+            (v: any) => v.votedBy === currentUser?._id && v.voteFor !== playerId
+          )
+        ) {
+          voted = "Already voted to another player";
+        } else if (!votes?.find((v: any) => v.votedBy === currentUser?._id)) {
+          voted = "No";
         }
-      } else if (voted === "No") {
-        if (currentUserRole === "serial-killer") {
-          if (victim === "citizen") {
-            AddRating({
-              points: 1,
-              scenario:
-                "Vote to citizen by serial-killer to leave in first nomination",
-            });
-          } else if (victim === "doctor") {
-            AddRating({
-              points: 2,
-              scenario:
-                "Vote to doctor by serial-killer to leave in first nomination",
-            });
-          } else if (victim === "police") {
-            AddRating({
-              points: 2,
-              scenario:
-                "Vote to police by serial-killer to leave in first nomination",
-            });
-          } else if (victim?.includes("mafia")) {
-            AddRating({
-              points: 4,
-              scenario:
-                "Vote to mafia by serial-killer to leave in first nomination",
-            });
+
+        let victim = gamePlayers?.find((p: any) => p.userId === playerId).role
+          ?.value;
+        let currentUserRole = gamePlayers?.find(
+          (p: any) => p.userId === currentUser?._id
+        ).role?.value;
+
+        if (voted === "Cancel") {
+          AddRating({ points: 0, scenario: "Cancel", removeOld: true });
+        } else if (voted === "Already voted to another player") {
+          if (currentUserRole === "serial-killer") {
+            if (victim === "citizen") {
+              AddRating({
+                points: 1,
+                scenario:
+                  "Vote to citizen by serial-killer to leave in first nomination",
+                removeOld: true,
+              });
+            } else if (victim === "doctor") {
+              AddRating({
+                points: 2,
+                scenario:
+                  "Vote to doctor by serial-killer to leave in first nomination",
+                removeOld: true,
+              });
+            } else if (victim === "police") {
+              AddRating({
+                points: 2,
+                scenario:
+                  "Vote to police by serial-killer to leave in first nomination",
+                removeOld: true,
+              });
+            } else if (victim?.includes("mafia")) {
+              AddRating({
+                points: 4,
+                scenario:
+                  "Vote to mafia by serial-killer to leave in first nomination",
+                removeOld: true,
+              });
+            }
+          } else if (currentUserRole === "doctor") {
+            if (victim === "serial-killer") {
+              AddRating({
+                points: 2,
+                scenario:
+                  "Vote to serial-killer by doctor to leave in first nomination",
+                removeOld: true,
+              });
+            } else if (victim?.includes("don")) {
+              AddRating({
+                points: 2,
+                scenario: "Vote to don by doctor to leave in first nomination",
+                removeOld: true,
+              });
+            } else if (victim?.includes("mafia") && !victim?.includes("don")) {
+              AddRating({
+                points: 4,
+                scenario:
+                  "Vote to mafia by doctor to leave in first nomination",
+                removeOld: true,
+              });
+            }
+          } else if (currentUserRole === "police") {
+            if (victim === "serial-killer") {
+              AddRating({
+                points: 2,
+                scenario:
+                  "Vote to serial-killer by police to leave in first nomination",
+                removeOld: true,
+              });
+            } else if (victim?.includes("don")) {
+              AddRating({
+                points: 4,
+                scenario: "Vote to don by police to leave in first nomination",
+                removeOld: true,
+              });
+            } else if (victim?.includes("mafia") && !victim?.includes("don")) {
+              AddRating({
+                points: 4,
+                scenario:
+                  "Vote to mafia by police to leave in first nomination",
+                removeOld: true,
+              });
+            }
+          } else if (currentUserRole?.includes("mafia")) {
+            if (victim === "serial-killer") {
+              AddRating({
+                points: 2,
+                scenario:
+                  "Vote to serial-killer by mafia to leave in first nomination",
+                removeOld: true,
+              });
+            } else if (victim === "police") {
+              AddRating({
+                points: 4,
+                scenario:
+                  "Vote to police by mafia to leave in first nomination",
+                removeOld: true,
+              });
+            } else if (victim === "doctor") {
+              AddRating({
+                points: 4,
+                scenario:
+                  "Vote to doctor by mafia to leave in first nomination",
+                removeOld: true,
+              });
+            }
+          } else if (currentUserRole === "citizen") {
+            if (victim === "serial-killer") {
+              AddRating({
+                points: 2,
+                scenario:
+                  "Vote to serial-killer by citizen to leave in first nomination",
+                removeOld: true,
+              });
+            } else if (victim?.includes("don")) {
+              AddRating({
+                points: 4,
+                scenario: "Vote to don by citizen to leave in first nomination",
+                removeOld: true,
+              });
+            } else if (victim?.includes("mafia") && !victim?.includes("don")) {
+              AddRating({
+                points: 4,
+                scenario:
+                  "Vote to mafia by citizen to leave in first nomination",
+                removeOld: true,
+              });
+            }
           }
-        } else if (currentUserRole === "doctor") {
-          if (victim === "serial-killer") {
-            AddRating({
-              points: 2,
-              scenario:
-                "Vote to serial-killer by doctor to leave in first nomination",
-            });
-          } else if (victim?.includes("don")) {
-            AddRating({
-              points: 2,
-              scenario: "Vote to don by doctor to leave in first nomination",
-            });
-          } else if (victim?.includes("mafia") && !victim?.includes("don")) {
-            AddRating({
-              points: 4,
-              scenario: "Vote to mafia by doctor to leave in first nomination",
-            });
-          }
-        } else if (currentUserRole === "police") {
-          if (victim === "serial-killer") {
-            AddRating({
-              points: 2,
-              scenario:
-                "Vote to serial-killer by police to leave in first nomination",
-            });
-          } else if (victim?.includes("don")) {
-            AddRating({
-              points: 4,
-              scenario: "Vote to don by police to leave in first nomination",
-            });
-          } else if (victim?.includes("mafia") && !victim?.includes("don")) {
-            AddRating({
-              points: 4,
-              scenario: "Vote to mafia by police to leave in first nomination",
-            });
-          }
-        } else if (currentUserRole?.includes("mafia")) {
-          if (victim === "serial-killer") {
-            AddRating({
-              points: 2,
-              scenario:
-                "Vote to serial-killer by mafia to leave in first nomination",
-            });
-          } else if (victim === "police") {
-            AddRating({
-              points: 4,
-              scenario: "Vote to police by mafia to leave in first nomination",
-            });
-          } else if (victim === "doctor") {
-            AddRating({
-              points: 4,
-              scenario: "Vote to doctor by mafia to leave in first nomination",
-            });
-          }
-        } else if (currentUserRole === "citizen") {
-          if (victim === "serial-killer") {
-            AddRating({
-              points: 2,
-              scenario:
-                "Vote to serial-killer by citizen to leave in first nomination",
-            });
-          } else if (victim?.includes("don")) {
-            AddRating({
-              points: 4,
-              scenario: "Vote to don by citizen to leave in first nomination",
-            });
-          } else if (victim?.includes("mafia") && !victim?.includes("don")) {
-            AddRating({
-              points: 4,
-              scenario: "Vote to mafia by citizen to leave in first nomination",
-            });
+        } else if (voted === "No") {
+          if (currentUserRole === "serial-killer") {
+            if (victim === "citizen") {
+              AddRating({
+                points: 1,
+                scenario:
+                  "Vote to citizen by serial-killer to leave in first nomination",
+              });
+            } else if (victim === "doctor") {
+              AddRating({
+                points: 2,
+                scenario:
+                  "Vote to doctor by serial-killer to leave in first nomination",
+              });
+            } else if (victim === "police") {
+              AddRating({
+                points: 2,
+                scenario:
+                  "Vote to police by serial-killer to leave in first nomination",
+              });
+            } else if (victim?.includes("mafia")) {
+              AddRating({
+                points: 4,
+                scenario:
+                  "Vote to mafia by serial-killer to leave in first nomination",
+              });
+            }
+          } else if (currentUserRole === "doctor") {
+            if (victim === "serial-killer") {
+              AddRating({
+                points: 2,
+                scenario:
+                  "Vote to serial-killer by doctor to leave in first nomination",
+              });
+            } else if (victim?.includes("don")) {
+              AddRating({
+                points: 2,
+                scenario: "Vote to don by doctor to leave in first nomination",
+              });
+            } else if (victim?.includes("mafia") && !victim?.includes("don")) {
+              AddRating({
+                points: 4,
+                scenario:
+                  "Vote to mafia by doctor to leave in first nomination",
+              });
+            }
+          } else if (currentUserRole === "police") {
+            if (victim === "serial-killer") {
+              AddRating({
+                points: 2,
+                scenario:
+                  "Vote to serial-killer by police to leave in first nomination",
+              });
+            } else if (victim?.includes("don")) {
+              AddRating({
+                points: 4,
+                scenario: "Vote to don by police to leave in first nomination",
+              });
+            } else if (victim?.includes("mafia") && !victim?.includes("don")) {
+              AddRating({
+                points: 4,
+                scenario:
+                  "Vote to mafia by police to leave in first nomination",
+              });
+            }
+          } else if (currentUserRole?.includes("mafia")) {
+            if (victim === "serial-killer") {
+              AddRating({
+                points: 2,
+                scenario:
+                  "Vote to serial-killer by mafia to leave in first nomination",
+              });
+            } else if (victim === "police") {
+              AddRating({
+                points: 4,
+                scenario:
+                  "Vote to police by mafia to leave in first nomination",
+              });
+            } else if (victim === "doctor") {
+              AddRating({
+                points: 4,
+                scenario:
+                  "Vote to doctor by mafia to leave in first nomination",
+              });
+            }
+          } else if (currentUserRole === "citizen") {
+            if (victim === "serial-killer") {
+              AddRating({
+                points: 2,
+                scenario:
+                  "Vote to serial-killer by citizen to leave in first nomination",
+              });
+            } else if (victim?.includes("don")) {
+              AddRating({
+                points: 4,
+                scenario: "Vote to don by citizen to leave in first nomination",
+              });
+            } else if (victim?.includes("mafia") && !victim?.includes("don")) {
+              AddRating({
+                points: 4,
+                scenario:
+                  "Vote to mafia by citizen to leave in first nomination",
+              });
+            }
           }
         }
       }
@@ -1369,7 +1380,8 @@ const NominationWindow = ({
                   <Text style={{ color: theme.active, fontWeight: 500 }}>
                     N{player?.playerNumber}
                   </Text>
-                  {voting && (
+                  {((voting === 1 && votingTimer > 1) ||
+                    (voting === 2 && votingTimer2 > 1)) && (
                     <Pressable
                       onPress={
                         voting === 1 && !currentPlayerInRoom?.death

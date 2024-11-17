@@ -41,7 +41,7 @@ const UserPopup = ({
   useEffect(() => {
     CheckClanInfo({
       adminId: currentUser?._id,
-      memberId: activeRoom?.admin?.founder?._id,
+      memberId: activeRoom?.admin?.founder?.id,
     });
   }, []);
 
@@ -72,11 +72,11 @@ const UserPopup = ({
           {openUser?.userName}
         </Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-          {(activeRoom?.admin.founder?._id === currentUser?._id ||
+          {(activeRoom?.admin.founder?.id === currentUser?._id ||
             currentUser?.admin?.active ||
             usersClans?.length > 0) &&
             openUser?.userId !== currentUser?._id &&
-            openUser?.userId !== activeRoom?.admin.founder?._id && (
+            openUser?.userId !== activeRoom?.admin.founder?.id && (
               <Pressable
                 onPress={() => {
                   if (haptics) {

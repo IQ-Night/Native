@@ -112,9 +112,9 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
 
   let roomIsOpen = { status: "close", reason: "empty" };
   if (
-    item.admin.founder._id === currentUser?._id ||
+    item.admin.founder.id === currentUser?._id ||
     liveUsers?.some(
-      (u: { userId: string }) => u.userId === item.admin.founder._id
+      (u: { userId: string }) => u.userId === item.admin.founder.id
     )
   ) {
     if (
@@ -190,7 +190,13 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
                 <TouchableOpacity
                   activeOpacity={0.5}
                   onPress={() => {
-                    navigation.navigate("User", { item: item.admin.founder });
+                    console.log(item.admin.founder);
+                    navigation.navigate("User", {
+                      item: {
+                        _id: item.admin.founder.id,
+                        cover: item.admin.founder?.cover,
+                      },
+                    });
                     if (haptics) {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
                     }

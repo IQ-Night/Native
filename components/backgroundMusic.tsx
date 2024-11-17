@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Audio, AVPlaybackStatus } from "expo-av";
-import { View, Text } from "react-native";
+import { Audio } from "expo-av";
+import { View } from "react-native";
 
 const BgSound = () => {
-  const [sound, setSound] = useState<any>(null);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
 
   // Load and play the background sound when the BgSound starts
   const playBackgroundSound = async () => {
@@ -17,7 +17,7 @@ const BgSound = () => {
       );
 
       setSound(sound);
-      await sound.setVolumeAsync(0.1);
+      await sound.setVolumeAsync(0.1); // Set the volume (optional)
       await sound.playAsync(); // Play the sound
     } catch (error) {
       console.log("Error loading or playing sound", error);
@@ -36,15 +36,17 @@ const BgSound = () => {
     }
   };
 
-  // useEffect(() => {
-  //   playBackgroundSound();
+  useEffect(() => {
+    playBackgroundSound();
 
-  //   // Cleanup the sound on component unmount
-  //   return () => {
-  //     stopBackgroundSound();
-  //   };
-  // }, []);
-  return;
+    // Cleanup the sound on component unmount
+    return () => {
+      stopBackgroundSound();
+    };
+  }, []); // Empty dependency array to run only once on mount/unmount
+
+  // Return an empty view or null since this component only handles audio
+  return <View />; // Or you could return null if you don't want to render anything
 };
 
 export default BgSound;

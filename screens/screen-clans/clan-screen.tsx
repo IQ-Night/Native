@@ -125,8 +125,8 @@ const Clan = ({ route, navigation }: any) => {
         }));
 
         item?.admin.map((a: any) => {
-          if (a?.user?._id !== currentUser?._id) {
-            return socket.emit("notifications", { userId: a.user._id });
+          if (a?.user?.id !== currentUser?._id) {
+            return socket.emit("notifications", { userId: a.user.id });
           }
         });
       }
@@ -168,10 +168,10 @@ const Clan = ({ route, navigation }: any) => {
         }));
 
         item?.admin.map((a: any) => {
-          if (a?.user?._id !== currentUser?._id) {
+          if (a?.user?.id !== currentUser?._id) {
             return SendNotification({
-              userId: founder?._id,
-              type: "join to clan confirmed",
+              userId: a?.user?.id,
+              type: `User ${currentUser?.name} has joined to clan ${item?.title}`,
             });
           }
         });
@@ -215,7 +215,7 @@ const Clan = ({ route, navigation }: any) => {
         item?.admin.map((a: any) => {
           if (a?.user?._id !== currentUser?._id) {
             return SendNotification({
-              userId: a.user._id,
+              userId: a.user.id,
               type: "Left clan",
             });
           }
@@ -255,7 +255,6 @@ const Clan = ({ route, navigation }: any) => {
    * open user
    */
   const [openUser, setOpenUser] = useState<any>(null);
-
   return (
     <View style={{ height: "100%", width: "100%" }}>
       <View style={styles.container}>
@@ -264,6 +263,7 @@ const Clan = ({ route, navigation }: any) => {
             width: "25%",
             aspectRatio: 1,
             overflow: "hidden",
+            borderRadius: 8,
           }}
         >
           <Img uri={item.cover} />

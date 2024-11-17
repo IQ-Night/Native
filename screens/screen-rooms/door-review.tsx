@@ -38,13 +38,43 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
   /**
+   * open component with anim
+   */
+  /**
+   * Edit room
+   */
+
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (doorReview) {
+      // Define the animation for opening and closing the room
+      Animated.timing(scaleAnim, {
+        toValue: 1, // 0 to open, SCREEN_HEIGHT to close
+        duration: 250,
+        easing: Easing.inOut(Easing.ease), // Smooth easing for in-out effect
+        useNativeDriver: true, // For smoother and better performance
+      }).start();
+    }
+  }, [doorReview]);
+
+  const closeReview = () => {
+    // Define the animation for opening and closing the room
+    Animated.timing(scaleAnim, {
+      toValue: 0, // 0 to open, SCREEN_HEIGHT to close
+      duration: 250,
+      easing: Easing.inOut(Easing.ease), // Smooth easing for in-out effect
+      useNativeDriver: true, // For smoother and better performance
+    }).start(() => setDoorReview(null));
+  };
+  /**
    * App context
    */
   const { apiUrl, theme, haptics, setAlert } = useAppContext();
   /**
    * Auth context
    */
-  const { currentUser } = useAuthContext();
+  const { currentUser, setCurrentUser } = useAuthContext();
   /**
    * Rooms context
    */
@@ -77,7 +107,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
         if (response?.usersInRoom) {
           setLiveUsers(response.usersInRoom);
           if (response?.usersInRoom?.length < 1) {
-            setDoorReview(null);
+            closeReview();
           }
         }
         if (response?.gameLevel) {
@@ -104,7 +134,29 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
    * Delete room
    */
   const [loading, setLoading] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<any>(null);
+
+  // Animation for confirmation popup
+  const slideAnim = useRef(new Animated.Value(300)).current; // Start off-screen
+
+  const openDeleteConfirm = () => {
+    setDeleteConfirm(true);
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeDeleteConfirm = () => {
+    Animated.timing(slideAnim, {
+      toValue: 300, // Slide back down
+      duration: 300,
+      easing: Easing.in(Easing.ease),
+      useNativeDriver: true,
+    }).start(() => setDeleteConfirm(false));
+  };
 
   const DeleteRoom = async () => {
     try {
@@ -116,7 +168,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
         setRooms((prev: any) =>
           prev.filter((room: any) => room._id !== doorReview._id)
         );
-        setDoorReview(null);
+        closeReview();
         setLoading(false);
       }
     } catch (error: any) {
@@ -143,14 +195,26 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
         } else {
           setActiveRoom(doorReview);
         }
+        // define if need to pay before open room
+        let payid =
+          doorReview?.admin.founder.id === currentUser?._id &&
+          !currentUser?.vip?.active;
+
         // Join the room
         socket.emit(
           "joinRoom",
           doorReview._id,
           doorReview.roomName,
           currentUser._id,
-          type
+          type,
+          payid
         );
+        if (payid) {
+          setCurrentUser((prev: any) => ({
+            ...prev,
+            coins: { ...prev.coins, total: prev.coins.total - 2 },
+          }));
+        }
       } else {
         setAlert({
           active: true,
@@ -160,7 +224,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
         setRooms((prev: any) =>
           prev.filter((room: any) => room._id !== doorReview._id)
         );
-        setDoorReview(null);
+        closeReview();
       }
       if (type === "spectator") {
         setLoadingSpectator(false);
@@ -200,7 +264,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
   const onPressFunction = () => {
     const isGameInPlay = gameLevel?.status === "In Play";
     if (
-      doorReview?.admin?.founder?._id !== currentUser?._id &&
+      doorReview?.admin?.founder?.id !== currentUser?._id &&
       !currentUser?.admin.active
     ) {
       const playerCountMismatch =
@@ -258,7 +322,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
         <EditRoom
           editRoom={doorReview}
           setEditRoom={setEditRoom}
-          setDoorReview={setDoorReview}
+          setDoorReview={closeReview}
         />
       </Animated.View>
       <BlurView intensity={120} tint="dark" style={styles.container}>
@@ -267,12 +331,14 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
         >
-          <View
+          <Animated.View
             style={{
               height: "100%",
               width: "100%",
               justifyContent: "space-between",
               paddingBottom: 108,
+              opacity: scaleAnim,
+              transform: [{ scale: scaleAnim }],
             }}
           >
             <View style={styles.header}>
@@ -302,7 +368,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                   size={26}
                   color={theme.text}
                 />
-                {(currentUser?._id === doorReview?.admin.founder._id ||
+                {(currentUser?._id === doorReview?.admin.founder.id ||
                   currentUser?.admin.active) && (
                   <MaterialIcons
                     onPress={() => {
@@ -318,7 +384,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                   />
                 )}
 
-                {doorReview.admin.founder._id === currentUser._id && (
+                {doorReview.admin.founder.id === currentUser._id && (
                   <MaterialIcons
                     onPress={() => {
                       if (haptics) {
@@ -333,13 +399,13 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                   />
                 )}
 
-                {doorReview.admin.founder._id === currentUser._id && (
+                {doorReview.admin.founder.id === currentUser._id && (
                   <MaterialCommunityIcons
                     onPress={() => {
                       if (haptics) {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
                       }
-                      setDeleteConfirm(true);
+                      openDeleteConfirm();
                     }}
                     name="delete"
                     style={{ position: "relative", top: 1 }}
@@ -349,7 +415,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                 )}
                 <FontAwesome
                   onPress={() => {
-                    setDoorReview(null);
+                    closeReview();
                     if (haptics) {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
                     }
@@ -599,7 +665,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
             >
               {doorReview.private.value &&
                 !currentUser?.admin.active &&
-                doorReview?.admin?.founder?._id !== currentUser?._id && (
+                doorReview?.admin?.founder?.id !== currentUser?._id && (
                   <View style={{ alignItems: "center", gap: 8, width: "100%" }}>
                     <View
                       style={{
@@ -640,15 +706,32 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                 )}
 
               <Button
-                title={
-                  gameLevel?.status === "In Play"
-                    ? "Playing now"
-                    : gameLevel?.status !== "In Play" &&
+                title={(() => {
+                  if (currentUser?._id !== doorReview?.admin.founder.id) {
+                    if (gameLevel?.status === "In Play") {
+                      return "Playing now";
+                    } else if (
+                      gameLevel?.status !== "In Play" &&
                       liveUsers?.filter((u: any) => u.type === "player")
                         .length === doorReview?.options.maxPlayers
-                    ? "Room is full"
-                    : "Join as a Player"
-                }
+                    ) {
+                      return "Room is full";
+                    } else {
+                      return "Join as a Player";
+                    }
+                  } else {
+                    if (currentUser?.vip?.active) {
+                      return <Text>Open Room</Text>;
+                    } else {
+                      return (
+                        <Text>
+                          Open Room 2{" "}
+                          <FontAwesome5 name="coins" size={14} color="white" />
+                        </Text>
+                      );
+                    }
+                  }
+                })()}
                 style={{
                   backgroundColor: theme.active,
                   color: "white",
@@ -663,37 +746,38 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                 onPressFunction={onPressFunction}
               />
 
-              {doorReview?.spectatorMode && (
-                <Button
-                  title="Join as a Spectator"
-                  style={{
-                    backgroundColor: theme.text,
-                    color: "white",
-                    width: "100%",
-                  }}
-                  loading={loadingSpectator}
-                  onPressFunction={() => {
-                    if (
-                      doorReview?.admin?.founder?._id !== currentUser?._id &&
-                      !currentUser?.admin.active
-                    ) {
+              {doorReview?.spectatorMode &&
+                doorReview?.admin.founder.id !== currentUser?._id && (
+                  <Button
+                    title="Join as a Spectator"
+                    style={{
+                      backgroundColor: theme.text,
+                      color: "white",
+                      width: "100%",
+                    }}
+                    loading={loadingSpectator}
+                    onPressFunction={() => {
                       if (
-                        (doorReview?.private.value &&
-                          pinCodeInput === doorReview?.private.code) ||
-                        !doorReview?.private.value
+                        doorReview?.admin?.founder?.id !== currentUser?._id &&
+                        !currentUser?.admin.active
                       ) {
-                        CheckRoom("spectator", "");
+                        if (
+                          (doorReview?.private.value &&
+                            pinCodeInput === doorReview?.private.code) ||
+                          !doorReview?.private.value
+                        ) {
+                          CheckRoom("spectator", "");
+                        } else {
+                          alert("Wrong Pin Code");
+                        }
                       } else {
-                        alert("Wrong Pin Code");
+                        CheckRoom("spectator", "");
                       }
-                    } else {
-                      CheckRoom("spectator", "");
-                    }
-                  }}
-                />
-              )}
+                    }}
+                  />
+                )}
             </View>
-          </View>
+          </Animated.View>
         </KeyboardAvoidingView>
       </BlurView>
       {openRoleInfo.value && (
@@ -728,79 +812,56 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
           />
         </BlurView>
       )}
+
       {deleteConfirm && (
         <BlurView
-          intensity={120}
+          intensity={20}
           tint="dark"
           style={{
+            width: "100%",
+            height: "100%",
             position: "absolute",
             top: 0,
-            zIndex: 50,
-            height: "100%",
-            width: "100%",
-            justifyContent: "center",
+            zIndex: 90,
           }}
         >
-          <View style={{ paddingHorizontal: 24, gap: 16 }}>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: 500,
-                textAlign: "center",
-                color: theme.text,
-              }}
+          <Pressable
+            onPress={closeDeleteConfirm}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <Animated.View
+              style={[
+                styles.confirmPopup,
+                { transform: [{ translateY: slideAnim }] },
+              ]}
             >
-              Are you sure to want to delete this room?
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                width: "100%",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
-            >
-              <Pressable
-                onPress={() => setDeleteConfirm(false)}
-                style={{
-                  paddingVertical: 12,
-                  paddingHorizontal: 8,
-                  borderRadius: 12,
-                  backgroundColor: "#888",
-                  width: "48%",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: 40,
-                }}
-              >
-                <Text style={{ fontWeight: "bold", color: theme.text }}>
-                  Cancel
+              <BlurView intensity={120} tint="dark" style={styles.confirmBlur}>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 500,
+                    textAlign: "center",
+                    color: theme.text,
+                  }}
+                >
+                  Are you sure to want to delete this room?
                 </Text>
-              </Pressable>
-              <Pressable
-                onPress={DeleteRoom}
-                style={{
-                  paddingVertical: 12,
-                  paddingHorizontal: 8,
-                  borderRadius: 12,
-                  backgroundColor: theme.active,
-                  width: "48%",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: 40,
-                }}
-              >
-                {loading ? (
-                  <ActivityIndicator size={22} color="white" />
-                ) : (
-                  <Text style={{ fontWeight: "bold", color: "white" }}>
-                    Confirm
-                  </Text>
-                )}
-              </Pressable>
-            </View>
-          </View>
+                <View style={styles.confirmButtons}>
+                  <Button
+                    title="Cancel"
+                    style={styles.cancelButton}
+                    onPressFunction={closeDeleteConfirm}
+                  />
+                  <Button
+                    loading={loading}
+                    title="Remove"
+                    style={styles.removeButton}
+                    onPressFunction={DeleteRoom}
+                  />
+                </View>
+              </BlurView>
+            </Animated.View>
+          </Pressable>
         </BlurView>
       )}
       {openBlackList && (
@@ -859,5 +920,46 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 80,
     paddingBottom: 96,
+  },
+  confirmPopup: {
+    height: 300,
+    zIndex: 90,
+    position: "absolute",
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.8)",
+    width: "100%",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: "hidden",
+  },
+  confirmBlur: {
+    width: "100%",
+    height: 300,
+    padding: 24,
+    paddingTop: 48,
+    gap: 32,
+  },
+  confirmText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: 28,
+  },
+  confirmButtons: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+  },
+  cancelButton: {
+    width: "45%",
+    backgroundColor: "#888",
+    color: "white",
+  },
+  removeButton: {
+    width: "45%",
+    backgroundColor: "red",
+    color: "white",
   },
 });

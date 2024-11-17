@@ -22,7 +22,7 @@ const Invoices = () => {
    */
   const { currentUser } = useAuthContext();
 
-  const { invoices, setInvoices } = useInvoicesContext();
+  const { setInvoices } = useInvoicesContext();
 
   const [loading, setLoading] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
@@ -47,7 +47,7 @@ const Invoices = () => {
   return (
     <InvoicesContextWrapper>
       <View style={{ minHeight: "100%" }}>
-        <List setDeleteItem={setDeleteItem} invoices={invoices} />
+        <List setDeleteItem={setDeleteItem} />
         {deleteItem && (
           <BlurView
             intensity={120}

@@ -1,15 +1,17 @@
 import { createStackNavigator } from "@react-navigation/stack";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Text, View } from "react-native";
 import CountryFlag from "react-native-country-flag";
 import { Confirm } from "../components/confirm";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
+import Chats from "../screens/screen-chat/main";
 import Clan from "../screens/screen-clans/clan-screen";
 import Coins from "../screens/screen-coins/coins";
 import Logs from "../screens/screen-logs/main";
 import Rooms from "../screens/screen-rooms/main";
 import User from "../screens/screen-user/main";
+import Vip from "../screens/screen-VIP/main";
 
 const RoomssStackNavigator = () => {
   /**
@@ -65,6 +67,8 @@ const RoomssStackNavigator = () => {
           })}
         />
         <RoomStack.Screen name="Coins" component={Coins} />
+        <RoomStack.Screen name="Vip" component={Vip} />
+        <RoomStack.Screen name="Chats" component={Chats} />
         <RoomStack.Screen
           name="Clan"
           component={Clan}
@@ -88,7 +92,11 @@ const RoomssStackNavigator = () => {
                     size={16} // Adjust the size as needed
                   />
                 </View>
-                <Text style={{ color: theme.text, fontSize: 18 }}>
+                <Text
+                  style={{ color: theme.text, fontSize: 18, maxWidth: "80%" }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
                   {route.params?.item?.title || "Clan"}
                 </Text>
               </View>

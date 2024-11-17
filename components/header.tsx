@@ -1,4 +1,8 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import {
+  FontAwesome5,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useRef } from "react";
@@ -9,6 +13,7 @@ import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
 import { useNavigation } from "@react-navigation/native";
+import { Badge } from "react-native-elements";
 
 const Header = ({
   list,
@@ -64,29 +69,24 @@ const Header = ({
   }, [open]);
 
   const { connectionStatus, reconnectAttempts } = useGameContext();
+  console.log(currentUser);
   return (
     <View style={styles.headerContainer}>
       <BlurView intensity={120} tint="dark" style={styles.blurContainer}>
         <View style={styles.titleContainer}>
-          <Text style={[styles.titleText, { color: theme.text }]}>{tab}</Text>
-          <View>
-            <Text style={{ color: theme.text }}>
-              Status: {connectionStatus}
-            </Text>
-          </View>
-          <View
-            style={{
-              width: 8,
-              height: 8,
-              backgroundColor:
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <Text style={[styles.titleText, { color: theme.text }]}>{tab}</Text>
+            <Badge
+              status={
                 connectionStatus === "online"
-                  ? "green"
+                  ? "success"
                   : connectionStatus === "reconnecting"
-                  ? "orange"
-                  : "red",
-              borderRadius: 50,
-            }}
-          />
+                  ? "warning"
+                  : "error"
+              }
+            />
+          </View>
+
           <View style={styles.icons}>
             <Pressable
               onPress={() => {
@@ -101,6 +101,48 @@ const Header = ({
                 {currentUser?.coins?.total}
               </Text>
               <FontAwesome5 name="coins" size={18} color="orange" />
+            </Pressable>
+
+            <Pressable
+              onPress={() => {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+                navigation.navigate("Vip");
+              }}
+              style={{ position: "relative", top: 1 }}
+            >
+              <MaterialIcons
+                name="diamond"
+                size={24}
+                color={currentUser?.vip?.active ? theme.active : theme.text}
+              />
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+                navigation.navigate("Chats");
+              }}
+            >
+              {/* {unreadMessages && ( */}
+              <Badge
+                status="success"
+                badgeStyle={{
+                  backgroundColor: theme.active,
+                  position: "absolute",
+                  zIndex: 50,
+                  right: 0,
+                  top: 0,
+                }}
+              />
+              {/* )} */}
+              <MaterialCommunityIcons
+                name="chat"
+                size={24}
+                color={theme.text}
+              />
             </Pressable>
           </View>
         </View>
@@ -200,7 +242,14 @@ const styles = StyleSheet.create({
   icons: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     gap: 16,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    padding: 4,
+    borderRadius: 50,
+    paddingHorizontal: 20,
+    position: "relative",
+    top: 2,
   },
   coinsButton: {
     flexDirection: "row",

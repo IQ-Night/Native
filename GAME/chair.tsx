@@ -12,24 +12,33 @@ import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
 import * as Haptics from "expo-haptics";
 import { BlurView } from "expo-blur";
+import { roles } from "../context/rooms";
+import { ActivityIndicator } from "react-native-paper";
+import ChaitActions from "./chairActions";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const Chair = ({
   item,
-  index,
   game,
   activePlayerToSpeech,
   dayNumber,
   days,
   nightNumber,
   nights,
-  speechTimer,
-  findingNight,
-  setFindingNight,
   safePlayer,
   setSafePlayer,
   setOpenUser,
+  sherifPlayer,
+  setSherifPlayer,
+  findNight,
+  setFindNight,
+  foundedMafias,
+  setFoundedMafias,
+  killBySerialKiller,
+  setKillBySerialKiller,
+  timeController,
+  speechTimer,
 }: any) => {
   /**
    * App context
@@ -138,52 +147,30 @@ const Chair = ({
   /**
    * Serial killer kill during night
    */
-  // first defines if serial killer can to kill
-  const serialKillerKill =
-    activeRoom?.totalGames > 0 &&
-    activeRoom?.lastGame?.players?.find(
-      (player: any) => player?.role?.value === "serial-killer"
-    );
-
-  const [killBySerialKiller, setKillBySerialKiller] = useState(false);
 
   const KillPlayerBySerialKiller = async () => {
-    if (game.value !== "Night") {
-      return;
-    }
+    try {
+      if (item?.userId === killBySerialKiller) {
+        setKillBySerialKiller(null);
 
-    if (currentUserRole !== "serial-killer") {
-      return;
-    }
-
-    if (serialKillerKill.totalKills < 1) {
-      return;
-    }
-
-    setKillBySerialKiller((prev: boolean) => !prev);
-
-    let rating = 0;
-
-    if (item?.role?.value === "citizen") {
-      rating = 5;
-    } else if (item?.role?.value === "police") {
-      rating = 7;
-    } else if (item?.role?.value === "doctor") {
-      rating = 7;
-    } else if (item?.role?.value?.includes("mafia")) {
-      rating = 10;
-    }
-
-    const response = await axios.patch(
-      apiUrl + "/api/v1/rooms/" + activeRoom._id + "/serialKillerKill",
-      {
-        value: killBySerialKiller ? false : true,
-        playerId: item?.userId,
-        rating: rating,
+        await axios.patch(
+          apiUrl + "/api/v1/rooms/" + activeRoom._id + "/serialKillerKill",
+          {
+            value: false,
+          }
+        );
+      } else {
+        setKillBySerialKiller(item?.userId);
+        await axios.patch(
+          apiUrl + "/api/v1/rooms/" + activeRoom._id + "/serialKillerKill",
+          {
+            value: true,
+            playerId: item?.userId,
+          }
+        );
       }
-    );
-    if (response.data.status !== "success") {
-      setKillBySerialKiller(killBySerialKiller);
+    } catch (error: any) {
+      console.log(error.response.data.message);
     }
   };
 
@@ -208,6 +195,7 @@ const Chair = ({
   /**
    * Voice to player by any player during speech
    */
+  const [voteLoading, setVoteLoading] = useState(false);
   const VoiceToLeave = () => {
     if (game.value !== "Day") {
       return;
@@ -220,6 +208,8 @@ const Chair = ({
     if (item?.userId === currentUser?._id) {
       return;
     }
+
+    setVoteLoading(true);
 
     if (activePlayerToSpeech.userId === currentUser._id) {
       if (socket) {
@@ -339,30 +329,31 @@ const Chair = ({
         });
       }
     }
+    setTimeout(() => {
+      setVoteLoading(false);
+    }, 200);
   };
 
-  const alreadySafedOnce =
-    activeRoom?.totalGames > 0 &&
-    activeRoom?.lastGame?.nights?.some(
-      (night: any) =>
-        night?.safePlayer?.playerId === item?.userId &&
-        night?.safePlayer?.status
-    );
+  let alreadySafedOnce;
+  if (activeRoom?.totalGames > 0) {
+    alreadySafedOnce =
+      activeRoom?.lastGame?.nights?.filter(
+        (night: any) => night?.safePlayer?.status
+      ) || [];
+  }
 
   const VoteToSafe = async (userId: any) => {
-    if (currentUserRole === "doctor" && !alreadySafedOnce) {
-      setSafePlayer(userId);
+    setSafePlayer(userId);
 
-      const response = await axios.patch(
-        apiUrl + "/api/v1/rooms/" + activeRoom._id + "/doctorAction",
-        {
-          safePlayer: safePlayer ? false : true,
-          playerId: userId,
-        }
-      );
-      if (response.data.status !== "success") {
-        setSafePlayer(safePlayer);
+    const response = await axios.patch(
+      apiUrl + "/api/v1/rooms/" + activeRoom._id + "/doctorAction",
+      {
+        safePlayer: safePlayer ? false : true,
+        playerId: userId,
       }
+    );
+    if (response.data.status !== "success") {
+      setSafePlayer(safePlayer);
     }
   };
   // clean safe state after night
@@ -370,6 +361,10 @@ const Chair = ({
     if (safePlayer && game.value !== "Night") {
       setSafePlayer(false);
     }
+    if (killBySerialKiller && game?.value !== "Night") {
+      setKillBySerialKiller(null);
+    }
+    setFindNight(null);
   }, [game]);
 
   // clean states if game end
@@ -378,44 +373,45 @@ const Chair = ({
       setSafePlayer(false);
       setDailyVotes(0);
       setNightVotes(0);
-      setKillBySerialKiller(false);
+      setKillBySerialKiller(null);
+      setFindNight(null);
+      setSafePlayer(null);
+      setFoundedMafias([]);
     }
   }, [game]);
-
-  /**
-   * Find sherif by don
-   */
 
   const FindSherif = () => {
     if (haptics) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     }
-    if (currentUserRole === "mafia-don") {
-      if (findingNight !== nightNumber) {
-        alert(item.role.value === "police" ? "Sherif - Yes" : "Sherif - No");
-        const SaveFinding = async () => {
-          try {
-            await axios.patch(
-              apiUrl + "/api/v1/rooms/" + activeRoom?._id + "/findSherif",
-              {
-                findUser: item?.userId,
-                findResult:
-                  item.role.value === "police" ? "Sherif - Yes" : "Sherif - No",
-              }
-            );
-          } catch (error: any) {
-            console.log(error.response.data.message);
+
+    setFindNight(nightNumber);
+    alert(item.role.value === "police" ? "Sherif - Yes" : "Sherif - No");
+    const SaveFinding = async () => {
+      try {
+        const response = await axios.patch(
+          apiUrl + "/api/v1/rooms/" + activeRoom?._id + "/findSherif",
+          {
+            findUser: item?.userId,
+            findResult:
+              item.role.value === "police" ? "Sherif - Yes" : "Sherif - No",
           }
-        };
-        SaveFinding();
-        if (item.role.value === "police") {
-          AddRating({
-            points: 15,
-            scenario: "Found Police",
-          });
+        );
+        if (response.data.status === "success") {
+          if (item.role.value === "police") {
+            setSherifPlayer(item);
+          }
         }
-        setFindingNight(nightNumber);
+      } catch (error: any) {
+        console.log(error.response.data.message);
       }
+    };
+    SaveFinding();
+    if (item.role.value === "police") {
+      AddRating({
+        points: 15,
+        scenario: "Found Police",
+      });
     }
   };
   /**
@@ -423,69 +419,74 @@ const Chair = ({
    */
 
   const FindMafia = () => {
-    if (currentUserRole === "police") {
-      if (haptics) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+    if (haptics) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+    }
+    setFindNight(nightNumber);
+    if (
+      gamePlayers
+        ?.filter((u: any) => !u.death)
+        ?.find((user: any) => user.role.value.includes("mafia"))
+    ) {
+      alert(item.role.value.includes("mafia") ? "Yes - Mafia" : "No - Mafia");
+      if (item.role.value.includes("mafia")) {
+        AddRating({
+          points: 12,
+          scenario: item.role.value.includes("don")
+            ? "Found Mafia-Don"
+            : "Found Mafia",
+        });
       }
-      if (findingNight !== nightNumber) {
-        if (
-          gamePlayers
-            ?.filter((u: any) => !u.death)
-            ?.find((user: any) => user.role.value.includes("mafia"))
-        ) {
-          alert(
-            item.role.value.includes("mafia") ? "Yes - Mafia" : "No - Mafia"
-          );
-          if (item.role.value.includes("mafia")) {
-            AddRating({
-              points: 12,
-              scenario: item.role.value.includes("don")
-                ? "Found Mafia-Don"
-                : "Found Mafia",
-            });
-          }
-          const SaveFinding = async () => {
-            try {
-              await axios.patch(
-                apiUrl + "/api/v1/rooms/" + activeRoom?._id + "/findMafia",
-                {
-                  findUser: item?.userId,
-                  findResult: item.role.value.includes("mafia")
-                    ? "Yes - Mafia"
-                    : "No - Mafia",
-                }
-              );
-            } catch (error: any) {
-              console.log(error.response.data.message);
+      const SaveFinding = async () => {
+        try {
+          const response = await axios.patch(
+            apiUrl + "/api/v1/rooms/" + activeRoom?._id + "/findMafia",
+            {
+              findUser: item?.userId,
+              findResult: item.role.value.includes("mafia")
+                ? "Yes - Mafia"
+                : "No - Mafia",
             }
-          };
-          SaveFinding();
-        } else {
-          if (item.role.value === "serial-killer") {
-            const SaveFinding = async () => {
-              try {
-                await axios.patch(
-                  apiUrl + "/api/v1/rooms/" + activeRoom?._id + "/findMafia",
-                  {
-                    findUser: item?.userId,
-                    findResult: "Serial-Killer",
-                  }
-                );
-              } catch (error: any) {
-                console.log(error.response.data.message);
-              }
-            };
-            SaveFinding();
-            alert("Serial-Killer");
-            AddRating({
-              points: 15,
-              scenario: "Found Serial-Killer",
-            });
-          } else {
-            alert("No - Mafia");
+          );
+          if (response?.data?.status === "success") {
+            if (item.role.value.includes("mafia")) {
+              setFoundedMafias((prev: any) => {
+                const newId = item?.userId;
+                if (newId && !prev.includes(newId)) {
+                  return [...prev, newId];
+                }
+                return prev;
+              });
+            }
           }
+        } catch (error: any) {
+          console.log(error.response.data.message);
         }
-        setFindingNight(nightNumber);
+      };
+      SaveFinding();
+    } else {
+      if (item.role.value === "serial-killer") {
+        const SaveFinding = async () => {
+          try {
+            await axios.patch(
+              apiUrl + "/api/v1/rooms/" + activeRoom?._id + "/findMafia",
+              {
+                findUser: item?.userId,
+                findResult: "Serial-Killer",
+              }
+            );
+          } catch (error: any) {
+            console.log(error.response.data.message);
+          }
+        };
+        SaveFinding();
+        alert("Serial-Killer");
+        AddRating({
+          points: 15,
+          scenario: "Found Serial-Killer",
+        });
+      } else {
+        alert("No - Mafia");
       }
     }
   };
@@ -566,8 +567,7 @@ const Chair = ({
         </View>
       )}
 
-      {(item?.userId === activeRoom?.admin?.founder?._id ||
-        item?.userId === activeRoom?.admin?.founder) && (
+      {item && item?.userId === activeRoom?.admin?.founder?.id && (
         <View
           style={{
             borderRadius: 50,
@@ -678,497 +678,36 @@ const Chair = ({
                 borderColor: "#111",
               }}
             />
-            {game?.value === "Night" &&
-              currentUserRole?.includes("mafia") &&
-              !item?.role?.value.includes("mafia") && (
-                <BlurView
-                  tint="dark"
-                  intensity={40}
-                  style={{
-                    position: "absolute",
-                    zIndex: 50,
-                    width: "100%",
-                    height: "100%",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: 100,
-                    overflow: "hidden",
-                    gap: 4,
-                  }}
-                >
-                  {!userInPlay?.death &&
-                    currentUserRole === "mafia-don" &&
-                    game.value === "Night" &&
-                    item.role.value !== "mafia" &&
-                    currentUser?._id !== item.userId &&
-                    gamePlayers?.some(
-                      (user: any) => user.role.value === "police"
-                    ) &&
-                    findingNight !== nightNumber && (
-                      <Pressable
-                        onPress={(e: any) => {
-                          if (!userInPlay?.death && !userSpectator) {
-                            if (haptics) {
-                              Haptics.impactAsync(
-                                Haptics.ImpactFeedbackStyle.Soft
-                              );
-                            }
-
-                            e.stopPropagation();
-                            FindSherif();
-                          }
-                        }}
-                        style={{
-                          width: "70%",
-                          height: "33%",
-                          borderRadius: 100,
-                          backgroundColor: "rgba(0,0,0,0.7)",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          borderWidth: 1,
-                          borderColor: "rgba(255,255,255,0.5)",
-                          flexDirection: "row",
-                          gap: 4,
-                        }}
-                      >
-                        <MaterialIcons
-                          name="local-police"
-                          size={16}
-                          color={theme.active}
-                        />
-                        {/* <Text style={{ color: theme.active }}>?</Text> */}
-                      </Pressable>
-                    )}
-                  <Pressable
-                    onPress={(e) => {
-                      if (!userInPlay?.death && !userSpectator) {
-                        if (haptics) {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                        }
-                        e.stopPropagation();
-                        KillPlayer();
-                      }
-                    }}
-                    style={{
-                      width: "70%",
-                      height: "33%",
-                      borderRadius: 100,
-                      backgroundColor: "rgba(0,0,0,0.7)",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderWidth: 1,
-                      borderColor: "rgba(255,255,255,0.5)",
-                      flexDirection: "row",
-                      gap: 4,
-                    }}
-                  >
-                    <MaterialCommunityIcons
-                      name="skull"
-                      color="white"
-                      size={16}
-                    />
-
-                    {nightVotes > 0 &&
-                      currentUserRole?.includes("mafia") &&
-                      game.value === "Night" && (
-                        <Pressable
-                          style={{
-                            alignItems: "center",
-                            justifyContent: "center",
-
-                            zIndex: 60,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: "red",
-                              fontWeight: 600,
-                              fontSize: 14,
-                              position: "relative",
-                              bottom: 0.5,
-                            }}
-                          >
-                            {nightVotes}
-                          </Text>
-                        </Pressable>
-                      )}
-                  </Pressable>
-                </BlurView>
-              )}
-            {game?.value === "Night" &&
-              currentUserRole === "doctor" &&
-              !alreadySafedOnce && (
-                <BlurView
-                  tint="dark"
-                  intensity={40}
-                  style={{
-                    position: "absolute",
-                    zIndex: 50,
-                    width: "100%",
-                    height: "100%",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: 100,
-                    overflow: "hidden",
-                    gap: 4,
-                  }}
-                >
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      if (haptics) {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                      }
-                      VoteToSafe(
-                        safePlayer === item?.userId ? undefined : item?.userId
-                      );
-                    }}
-                    style={{
-                      width: "70%",
-                      height: "33%",
-                      borderRadius: 100,
-                      backgroundColor: "rgba(0,0,0,0.7)",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderWidth: 1,
-                      borderColor: "rgba(255,255,255,0.5)",
-                      flexDirection: "row",
-                      gap: 2,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 600,
-                        color: "red",
-                      }}
-                    >
-                      {safePlayer === item?.userId ? "-" : "+"}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: theme.text,
-                      }}
-                    >
-                      {safePlayer === item?.userId ? "" : "Safe"}
-                    </Text>
-                  </Pressable>
-                </BlurView>
-              )}
-            {!userInPlay?.death &&
-              currentUserRole === "police" &&
-              findingNight !== nightNumber &&
-              game.value === "Night" &&
-              currentUser?._id !== item.userId && (
-                <BlurView
-                  tint="dark"
-                  intensity={40}
-                  style={{
-                    position: "absolute",
-                    zIndex: 50,
-                    width: "100%",
-                    height: "100%",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: 100,
-                    overflow: "hidden",
-                  }}
-                >
-                  <Pressable
-                    onPress={() => {
-                      if (!userInPlay?.death && !userSpectator) {
-                        if (haptics) {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                        }
-                        FindMafia();
-                      }
-                    }}
-                    style={{
-                      width: "90%",
-                      height: "35%",
-                      borderRadius: 100,
-                      backgroundColor: "rgba(0,0,0,0.7)",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderWidth: 1,
-                      borderColor: "rgba(255,255,255,0.5)",
-                      flexDirection: "row",
-                      gap: 4,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: theme.active,
-                        fontWeight: 600,
-                        fontSize: 12,
-                      }}
-                    >
-                      Mafia?
-                    </Text>
-                    {dailyVotes > 0 && (
-                      <Pressable
-                        style={{
-                          alignItems: "center",
-                          justifyContent: "center",
-
-                          zIndex: 60,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: theme.text,
-                            fontWeight: 600,
-                            fontSize: 12,
-                            position: "relative",
-                            bottom: 0.5,
-                          }}
-                        >
-                          {dailyVotes}
-                        </Text>
-                      </Pressable>
-                    )}
-                  </Pressable>
-                </BlurView>
-              )}
-            {game?.value === "Night" &&
-              currentUserRole?.includes("serial") &&
-              !item?.role?.value.includes("serial") && (
-                <BlurView
-                  tint="dark"
-                  intensity={40}
-                  style={{
-                    position: "absolute",
-                    zIndex: 50,
-                    width: "100%",
-                    height: "100%",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: 100,
-                    overflow: "hidden",
-                  }}
-                >
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      if (!userInPlay?.death && !userSpectator) {
-                        if (haptics) {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                        }
-
-                        KillPlayerBySerialKiller();
-                      }
-                    }}
-                    style={{
-                      width: "90%",
-                      height: "30%",
-                      borderRadius: 100,
-                      backgroundColor: "rgba(0,0,0,0.7)",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderWidth: 1,
-                      borderColor: "rgba(255,255,255,0.5)",
-                      flexDirection: "row",
-                      gap: 4,
-                    }}
-                  >
-                    <MaterialCommunityIcons
-                      name="skull"
-                      color="red"
-                      size={12}
-                    />
-                    <Text
-                      style={{
-                        color: "red",
-                        fontWeight: 600,
-                        fontSize: 12,
-                      }}
-                    >
-                      Kill
-                    </Text>
-                    {nightVotes > 0 &&
-                      currentUserRole?.includes("mafia") &&
-                      game.value === "Night" && (
-                        <View
-                          style={{
-                            alignItems: "center",
-                            justifyContent: "center",
-
-                            zIndex: 60,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: "red",
-                              fontWeight: 600,
-                              fontSize: 14,
-                              position: "relative",
-                              bottom: 0.5,
-                            }}
-                          >
-                            {nightVotes}
-                          </Text>
-                        </View>
-                      )}
-                  </Pressable>
-                </BlurView>
-              )}
-
-            {game?.value === "Day" &&
-              dayNumber > 1 &&
-              activePlayerToSpeech?.userId !== item?.userId && (
-                <BlurView
-                  tint="dark"
-                  intensity={40}
-                  style={{
-                    position: "absolute",
-                    zIndex: 50,
-                    width: "100%",
-                    height: "100%",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: 100,
-                    overflow: "hidden",
-                  }}
-                >
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      if (activePlayerToSpeech?.userId === currentUser?._id) {
-                        if (!userInPlay?.death && !userSpectator) {
-                          if (haptics) {
-                            Haptics.impactAsync(
-                              Haptics.ImpactFeedbackStyle.Soft
-                            );
-                          }
-                          if (
-                            game.value === "Day" &&
-                            game.options.length === 0
-                          ) {
-                            VoiceToLeave();
-                          }
-                        }
-                      }
-                    }}
-                    style={{
-                      width: "90%",
-                      height: "35%",
-                      borderRadius: 100,
-                      backgroundColor: "rgba(0,0,0,0.7)",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderWidth: 1,
-                      borderColor: "rgba(255,255,255,0.5)",
-                      flexDirection: "row",
-                      gap: 4,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color:
-                          activePlayerToSpeech?.userId === currentUser?._id
-                            ? theme.active
-                            : "#999",
-                        fontWeight: 600,
-                        fontSize: 12,
-                      }}
-                    >
-                      Vote
-                    </Text>
-                    {dailyVotes > 0 && (
-                      <Pressable
-                        style={{
-                          alignItems: "center",
-                          justifyContent: "center",
-
-                          zIndex: 60,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: theme.text,
-                            fontWeight: 600,
-                            fontSize: 12,
-                            position: "relative",
-                            bottom: 0.5,
-                          }}
-                        >
-                          {dailyVotes}
-                        </Text>
-                      </Pressable>
-                    )}
-                  </Pressable>
-                </BlurView>
-              )}
-            {((activePlayerToSpeech?.userId === item?.userId &&
-              game.value === "Day") ||
-              game.value === "Common Time") && (
-              <View
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: "blue",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  position: "absolute",
-                  zIndex: 60,
-                  borderRadius: 50,
-                }}
-              >
-                <Text style={{ color: theme.text }}>Video</Text>
-              </View>
-            )}
-
-            {killBySerialKiller &&
-              currentUserRole === "serial-killer" &&
-              game.value === "Night" && (
-                <View
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "black",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    position: "absolute",
-                    zIndex: 60,
-                    borderRadius: 50,
-                    overflow: "hidden",
-                  }}
-                >
-                  <Text style={{ color: "red", fontSize: 40, fontWeight: 700 }}>
-                    X
-                  </Text>
-                </View>
-              )}
-
-            {((isMafiaRevealed && item?.role?.value?.includes("mafia")) ||
-              (game.value === "Night" &&
-                item?.role?.value?.includes("mafia") &&
-                currentUserRole?.includes("mafia"))) && (
-              <View
-                style={{
-                  backgroundColor: "black",
-                  width: "100%",
-                  height: "100%",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  position: "absolute",
-                  zIndex: 20,
-                  borderRadius: 50,
-                }}
-              >
-                <Text
-                  style={{
-                    color: "white",
-                    fontWeight: "bold",
-                    fontSize: 12,
-                  }}
-                >
-                  {item.role.label}
-                </Text>
-              </View>
-            )}
+            <ChaitActions
+              game={game}
+              currentUserRole={currentUserRole}
+              timeController={timeController}
+              item={item}
+              userInPlay={userInPlay}
+              userSpectator={userSpectator}
+              sherifPlayer={sherifPlayer}
+              findNight={findNight}
+              nightNumber={nightNumber}
+              dayNumber={dayNumber}
+              FindSherif={FindSherif}
+              FindMafia={FindMafia}
+              KillPlayer={KillPlayer}
+              nightVotes={nightVotes}
+              alreadySafedOnce={alreadySafedOnce}
+              VoteToSafe={VoteToSafe}
+              safePlayer={safePlayer}
+              foundedMafias={foundedMafias}
+              KillPlayerBySerialKiller={KillPlayerBySerialKiller}
+              activePlayerToSpeech={activePlayerToSpeech}
+              VoiceToLeave={VoiceToLeave}
+              dailyVotes={dailyVotes}
+              voteLoading={voteLoading}
+              killBySerialKiller={killBySerialKiller}
+              isMafiaRevealed={isMafiaRevealed}
+              roles={roles}
+              speechTimer={speechTimer}
+              textColor={textColor}
+            />
             <View
               style={{
                 width: "100%",
@@ -1182,15 +721,14 @@ const Chair = ({
               <Img uri={item.userCover} />
             </View>
           </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            {item?.playerNumber && (
+          {item?.playerNumber && (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
               <Text
                 style={{
                   color: theme.text,
@@ -1201,10 +739,37 @@ const Chair = ({
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                N{item?.playerNumber}.
+                N{item?.playerNumber}
               </Text>
-            )}
-          </View>
+              {sherifPlayer &&
+                currentUserRole === "mafia-don" &&
+                item?.role?.value === sherifPlayer?.role?.value && (
+                  <MaterialIcons
+                    name="local-police"
+                    size={14}
+                    color={theme.active}
+                  />
+                )}
+              {alreadySafedOnce?.find(
+                (sf: any) => sf.safePlayer?.playerId === item?.userId
+              ) &&
+                currentUserRole === "doctor" && (
+                  <MaterialIcons
+                    name="health-and-safety"
+                    size={14}
+                    color="red"
+                  />
+                )}
+              {currentUserRole === "police" &&
+                foundedMafias?.find((m: any) => m === item?.userId) && (
+                  <MaterialCommunityIcons
+                    name="redhat"
+                    size={16}
+                    color={theme.active}
+                  />
+                )}
+            </View>
+          )}
         </>
       ) : (
         <>

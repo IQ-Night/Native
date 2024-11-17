@@ -3,10 +3,12 @@ import React, { useEffect, useRef } from "react";
 import Menu from "./menu";
 import { ActivityIndicator } from "react-native-paper";
 import { useAdminContext } from "../../context/admin";
+import { useAuthContext } from "../../context/auth";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const AdminDashboard = ({ navigation }: any) => {
+  const { currentUser } = useAuthContext();
   const { loadingAdminNotifications } = useAdminContext();
   /**
    * loading animation
@@ -60,7 +62,7 @@ const AdminDashboard = ({ navigation }: any) => {
         }}
       >
         <Text style={{ color: "white", fontSize: 24, fontWeight: 600 }}>
-          Admin Dashboard
+          {currentUser?.admin?.role} Dashboard
         </Text>
       </View>
       <Animated.View

@@ -1,10 +1,11 @@
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { createStackNavigator } from "@react-navigation/stack";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import CountryFlag from "react-native-country-flag";
 import { ActivityIndicator } from "react-native-paper";
+import { Confirm } from "../components/confirm";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useInvoicesContext } from "../context/invoices";
@@ -13,7 +14,7 @@ import { useProfileContext } from "../context/profile";
 import About from "../screens/screen-about/main";
 import Coins from "../screens/screen-coins/coins";
 import Help from "../screens/screen-help/main";
-import BlackList from "../screens/screen-profile/blackList/main";
+import Assets from "../screens/screen-profile/assets/main";
 import ChangePassword from "../screens/screen-profile/changePassword/main";
 import Gift from "../screens/screen-profile/gifts/main";
 import Invoices from "../screens/screen-profile/invoices/main";
@@ -23,8 +24,8 @@ import MyClans from "../screens/screen-profile/myClans/main";
 import Notifications from "../screens/screen-profile/notifications/main";
 import Referrals from "../screens/screen-profile/referrals/main";
 import User from "../screens/screen-user/main";
-import Block from "../admin/users/block-user";
-import { Confirm } from "../components/confirm";
+import { Badge } from "react-native-elements";
+import Vip from "../screens/screen-VIP/main";
 
 const ProfileStackNavigator = () => {
   const ProfileStack = createStackNavigator();
@@ -114,7 +115,7 @@ const ProfileStackNavigator = () => {
         <ProfileStack.Screen
           name="Clan"
           component={Clan}
-          options={({ route }: any) => ({
+          options={({ route, navigation }: any) => ({
             headerTitle: () => (
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View
@@ -125,11 +126,15 @@ const ProfileStackNavigator = () => {
                   }}
                 >
                   <CountryFlag
-                    isoCode={route.params?.item?.language} // Assuming language code is passed in the item
-                    size={16} // Adjust the size as needed
+                    isoCode={route.params?.item?.language}
+                    size={16}
                   />
                 </View>
-                <Text style={{ color: theme.text, fontSize: 18 }}>
+                <Text
+                  style={{ color: theme.text, fontSize: 18, width: "65%" }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
                   {route.params?.item?.title || "Clan"}
                 </Text>
               </View>
@@ -148,7 +153,7 @@ const ProfileStackNavigator = () => {
               >
                 {currentUser._id ===
                   route.params.item.admin.find((a: any) => a.role === "founder")
-                    .user._id && (
+                    .user.id && (
                   <>
                     <MaterialIcons
                       name="edit"
@@ -161,6 +166,7 @@ const ProfileStackNavigator = () => {
                         }
                       }}
                     />
+
                     <MaterialCommunityIcons
                       onPress={() => {
                         setDeleteConfirm("clan");
@@ -176,8 +182,20 @@ const ProfileStackNavigator = () => {
                 )}
               </View>
             ),
+            // Add focus and blur event listeners
+            listeners: {
+              focus: () => {
+                console.log("Clan screen is focused");
+                // Run any function here when "Clan" screen becomes active
+              },
+              blur: () => {
+                console.log("Clan screen is blurred");
+                // Run any cleanup or other function when "Clan" screen loses focus
+              },
+            },
           })}
         />
+
         <ProfileStack.Screen
           name="User"
           component={User}
@@ -241,11 +259,12 @@ const ProfileStackNavigator = () => {
             ),
           })}
         />
+        <ProfileStack.Screen name="Assets" component={Assets} />
         <ProfileStack.Screen name="Gifts" component={Gift} />
         <ProfileStack.Screen name="Coins" component={Coins} />
+        <ProfileStack.Screen name="Vip" component={Vip} />
         <ProfileStack.Screen name="About" component={About} />
         <ProfileStack.Screen name="Help" component={Help} />
-        <ProfileStack.Screen name="Black List" component={BlackList} />
         <ProfileStack.Screen
           name="Invoices"
           component={Invoices}

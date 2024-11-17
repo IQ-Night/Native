@@ -86,27 +86,29 @@ const NotificationItem = ({ item, setDeleteItem }: any) => {
             flexDirection: "row",
           }}
         >
-          <View
-            style={{
-              height: 30,
-              width: 30,
-              borderRadius: 100,
-              overflow: "hidden",
-            }}
-          >
-            <Img uri={item?.sender?.cover} />
-          </View>
+          {item?.sender !== "IQ-Night" && (
+            <View
+              style={{
+                height: 30,
+                width: 30,
+                borderRadius: 100,
+                overflow: "hidden",
+              }}
+            >
+              <Img uri={item?.sender?.cover} />
+            </View>
+          )}
           <View
             style={{ maxWidth: "45%", height: 30, justifyContent: "center" }}
           >
             <Text
               style={{
-                color: theme.text,
+                color: item?.sender !== "IQ-Night" ? theme.text : theme.active,
                 fontSize: 14,
                 fontWeight: 600,
               }}
             >
-              {item?.sender?.name}
+              {item?.sender !== "IQ-Night" ? item?.sender?.name : "IQ-Night"}
             </Text>
           </View>
           <View style={{ height: 30, justifyContent: "center" }}>

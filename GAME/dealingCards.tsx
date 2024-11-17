@@ -5,6 +5,7 @@ import { useAppContext } from "../context/app";
 import { BlurView } from "expo-blur";
 import { useGameContext } from "../context/game";
 import { useAuthContext } from "../context/auth";
+import { roles } from "../context/rooms";
 
 const DealingCards = ({ timeController, loading, setLoading }: any) => {
   /**
@@ -35,6 +36,13 @@ const DealingCards = ({ timeController, loading, setLoading }: any) => {
       });
     }
   };
+
+  const currentUserRole = gamePlayers.find(
+    (user: any) => user.userId === currentUser._id
+  )?.role;
+  const roleLabel = roles?.find(
+    (r: any) => r.value === currentUserRole?.value
+  )?.label;
 
   return (
     <BlurView
@@ -68,12 +76,7 @@ const DealingCards = ({ timeController, loading, setLoading }: any) => {
             justifyContent: "center",
           }}
         >
-          <Text style={{ color: theme.text, fontSize: 24 }}>
-            {
-              gamePlayers.find((user: any) => user.userId === currentUser._id)
-                ?.role?.label
-            }
-          </Text>
+          <Text style={{ color: theme.text, fontSize: 24 }}>{roleLabel}</Text>
         </View>
         <View style={{ width: "90%" }}>
           <Button

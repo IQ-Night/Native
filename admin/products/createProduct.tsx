@@ -19,6 +19,7 @@ import Input from "../../components/input";
 import { useAppContext } from "../../context/app";
 import { useAuthContext } from "../../context/auth";
 import { storage } from "../../firebase";
+import * as Haptics from "expo-haptics";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -46,7 +47,7 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
    */
   const [productState, setProductState] = useState<any>({
     title: "",
-    type: "",
+    type: [],
     file: null,
     path: "",
     price: 0,
@@ -86,10 +87,8 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
     if (productState.file != null) {
       setLoading(true);
       // add in storage
-      const imageRef = ref(
-        storage,
-        `products/${productState.type}s/${productState.title + new Date()}`
-      );
+      const pathName = productState.title + new Date();
+      const imageRef = ref(storage, `products/${pathName}`);
 
       const fileBlob = await uriToBlob(productState.file?.base64);
 
@@ -98,19 +97,42 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
           getDownloadURL(snapshot.ref)
             .then((url) => {
               const UploadCover = async () => {
-                const response = await axios.post(`${apiUrl}/api/v1/products`, {
-                  title: productState.title,
-                  type: productState.type,
-                  price: productState.price,
-                  newPrice: productState.newPrice,
-                  file: url,
-                });
-                if (response.data.status === "success") {
-                  setCreateProduct(false);
-                  setProducts((prev: any) => [
-                    response.data.data.product,
-                    ...prev,
-                  ]);
+                try {
+                  const response = await axios.post(
+                    `${apiUrl}/api/v1/products`,
+                    {
+                      title: productState.title,
+                      pathName: pathName,
+                      type: productState.type,
+                      price: productState.price,
+                      newPrice: productState.newPrice,
+                      file: url,
+                      founder: {
+                        type: "Admin",
+                        userId: currentUser?._id,
+                        cover: currentUser?.cover,
+                        name: currentUser?.name,
+                      },
+                      owners: [currentUser?._id],
+                      status: "for sale",
+                    }
+                  );
+                  if (response.data.status === "success") {
+                    setCreateProduct(false);
+                    setProducts((prev: any) => [
+                      response.data.data.product,
+                      ...prev,
+                    ]);
+                    setProductState({
+                      title: "",
+                      type: [],
+                      file: null,
+                      path: "",
+                      price: 0,
+                    });
+                  }
+                } catch (error: any) {
+                  console.log(error.response.data.message);
                 }
               };
               if (url) {
@@ -138,7 +160,12 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
             Create New Product
           </Text>
           <Ionicons
-            onPress={() => setCreateProduct(false)}
+            onPress={() => {
+              if (haptics) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              }
+              setCreateProduct(false);
+            }}
             name="caret-down-outline"
             color={theme.text}
             size={24}
@@ -164,22 +191,43 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
               {types.map((item: any, index: number) => {
                 return (
                   <Pressable
-                    onPress={() =>
-                      setProductState((prev: any) => ({
-                        ...prev,
-                        type: item.value,
-                      }))
-                    }
+                    onPress={() => {
+                      if (haptics) {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                      }
+
+                      setProductState((prev: any) => {
+                        // Ensure `type` is an array to prevent runtime errors
+                        const currentTypes = prev?.type || [];
+
+                        if (currentTypes.includes(item.value)) {
+                          // Remove `item.value` if it exists in the array
+                          return {
+                            ...prev,
+                            type: currentTypes.filter(
+                              (i: any) => i !== item.value
+                            ),
+                          };
+                        } else {
+                          // Add `item.value` if it doesn’t exist in the array
+                          return {
+                            ...prev,
+                            type: [...currentTypes, item.value],
+                          };
+                        }
+                      });
+                    }}
                     style={styles.button}
                     key={index}
                   >
                     <Text
                       style={{
-                        color:
-                          productState.type === item.value
-                            ? theme.active
-                            : theme.text,
-                        fontWeight: 500,
+                        color: productState.type.find(
+                          (t: any) => t === item.value
+                        )
+                          ? theme.active
+                          : theme.text,
+                        fontWeight: 600,
                       }}
                     >
                       {item.label}
@@ -230,7 +278,7 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
               onChangeText={(text: string) =>
                 setProductState((prev: any) => ({ ...prev, price: text }))
               }
-              type="text"
+              type="numeric"
             />
           </View>
 

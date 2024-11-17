@@ -1,6 +1,7 @@
 import {
   FontAwesome,
   FontAwesome5,
+  FontAwesome6,
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
@@ -21,6 +22,8 @@ import Img from "../components/image";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
+import { roles } from "../context/rooms";
+import { Badge } from "react-native-elements";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -29,6 +32,9 @@ const Header = ({
   setOpenLogs,
   game,
   setOpenSpectators,
+  setOpenChat,
+  openChat,
+  unreadMessages,
 }: any) => {
   const { apiUrl, theme, haptics } = useAppContext();
   const { currentUser } = useAuthContext();
@@ -92,10 +98,7 @@ const Header = ({
       const leftRoom = (data: any) => {
         if (data?.userId === currentUser?._id) {
           if (data?.type === "Room closed") {
-            if (
-              activeRoom?.admin.founder === currentUser?._id ||
-              activeRoom?.admin?.founder?._id === currentUser?._id
-            ) {
+            if (activeRoom?.admin?.founder?.id === currentUser?._id) {
               setAttention({ active: false, value: "" });
               setActiveRoom(null);
               setGamePlayers([]);
@@ -137,7 +140,6 @@ const Header = ({
   // disable voice & video
   const [voice, setVoice] = useState(true);
   const [video, setVideo] = useState(true);
-  const [chat, setChat] = useState(true);
 
   // switch to spectator
   const changeToSpectator = async () => {
@@ -169,6 +171,13 @@ const Header = ({
       ? "player"
       : null;
 
+  // current use role
+  const currentUserRole = gamePlayers.find(
+    (player: any) => player.userId === currentUser._id
+  )?.role;
+  const roleLabel = roles?.find(
+    (r: any) => r.value === currentUserRole?.value
+  )?.label;
   return (
     <>
       <View
@@ -296,20 +305,72 @@ const Header = ({
           </View>
         ) : (
           <>
-            {gamePlayers.find(
-              (player: any) => player.userId === currentUser._id
-            )?.role?.label && (
-              <View>
+            {roleLabel && (
+              <View style={{ alignItems: "center", gap: 8 }}>
                 <Text
                   style={{ color: theme.text, fontSize: 16, fontWeight: 600 }}
                 >
                   Your Role:{" "}
-                  {
-                    gamePlayers.find(
-                      (player: any) => player.userId === currentUser._id
-                    )?.role?.label
-                  }{" "}
+                  <Text
+                    style={{
+                      color: theme.active,
+                    }}
+                  >
+                    {roleLabel}
+                  </Text>{" "}
+                  {currentUserRole?.value === "police" && (
+                    <MaterialCommunityIcons
+                      color={theme.active}
+                      name="account-tie-hat"
+                      size={16}
+                    />
+                  )}
+                  {currentUserRole?.value?.includes("mafia") && (
+                    <MaterialCommunityIcons
+                      color={theme.active}
+                      name="redhat"
+                      size={16}
+                    />
+                  )}
+                  {currentUserRole?.value === "doctor" && (
+                    <FontAwesome6
+                      color={theme.active}
+                      name="user-doctor"
+                      size={16}
+                    />
+                  )}
+                  {currentUserRole?.value === "serial-killer" && (
+                    <FontAwesome6
+                      color={theme.active}
+                      name="person-rifle"
+                      size={16}
+                    />
+                  )}
+                  {currentUserRole?.value === "citizen" && (
+                    <FontAwesome6
+                      color={theme.active}
+                      name="person"
+                      size={16}
+                    />
+                  )}
                 </Text>
+                {currentUserRole.value === "serial-killer" && (
+                  <Text
+                    style={{ color: theme.text, fontSize: 16, fontWeight: 600 }}
+                  >
+                    Kills left:{" "}
+                    <Text
+                      style={{
+                        color:
+                          currentUserRole?.totalKills > 0
+                            ? theme.active
+                            : "red",
+                      }}
+                    >
+                      {currentUserRole?.totalKills}
+                    </Text>
+                  </Text>
+                )}
               </View>
             )}
             {spectators.find(
@@ -327,7 +388,9 @@ const Header = ({
         )}
       </View>
 
-      <Pressable style={{ position: "absolute", top: 110, right: 18 }}>
+      <Pressable
+        style={{ position: "absolute", top: 110, right: 18, zIndex: 70 }}
+      >
         <MaterialCommunityIcons
           onPress={() => {
             if (haptics) {
@@ -341,7 +404,9 @@ const Header = ({
         />
       </Pressable>
 
-      <Pressable style={{ position: "absolute", top: 148, right: 18 }}>
+      <Pressable
+        style={{ position: "absolute", top: 148, right: 18, zIndex: 70 }}
+      >
         <MaterialCommunityIcons
           onPress={() => {
             if (haptics) {
@@ -355,17 +420,33 @@ const Header = ({
         />
       </Pressable>
 
-      <Pressable style={{ position: "absolute", top: 186, right: 18 }}>
+      <Pressable
+        style={{ position: "absolute", top: 186, right: 18, zIndex: 70 }}
+        onPress={() => {
+          if (haptics) {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+          }
+          console.log("run");
+          setOpenChat(true);
+        }}
+      >
+        {unreadMessages && unreadMessages !== "empty" && (
+          <Badge
+            status="success"
+            badgeStyle={{
+              backgroundColor: theme.active,
+              position: "absolute",
+              zIndex: 50,
+              right: -2,
+              top: -2,
+            }}
+          />
+        )}
+
         <MaterialCommunityIcons
-          onPress={() => {
-            if (haptics) {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-            }
-            setChat((prev: any) => !prev);
-          }}
           name="chat"
           size={26}
-          color={theme.text}
+          color={openChat ? theme.active : theme.text}
         />
       </Pressable>
 
@@ -459,23 +540,20 @@ const Header = ({
               <Button
                 loading={leaveLoading}
                 title={
-                  currentUser?._id === activeRoom?.admin?.founder ||
-                  currentUser?._id === activeRoom?.admin?.founder?._id
+                  currentUser?._id === activeRoom?.admin?.founder?.id
                     ? "Close Room"
                     : "Leave Room"
                 }
                 style={{
                   backgroundColor:
-                    currentUser?._id === activeRoom?.admin?.founder ||
-                    currentUser?._id === activeRoom?.admin?.founder?._id
+                    currentUser?._id === activeRoom?.admin?.founder?.id
                       ? "red"
                       : theme.active,
                   color: "white",
                   width: "48%",
                 }}
                 icon={
-                  currentUser?._id === activeRoom?.admin?.founder ||
-                  currentUser?._id === activeRoom?.admin?.founder?._id ? (
+                  currentUser?._id === activeRoom?.admin?.founder?.id ? (
                     <MaterialIcons name="close" color="white" size={24} />
                   ) : (
                     <MaterialIcons name="logout" size={24} color="white" />

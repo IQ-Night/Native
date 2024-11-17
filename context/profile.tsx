@@ -1,9 +1,12 @@
 import {
   Entypo,
-  FontAwesome5,
+  FontAwesome,
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import * as Haptics from "expo-haptics";
 import {
   ReactNode,
   createContext,
@@ -12,9 +15,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { useAppContext } from "./app";
-import { useAuthContext } from "./auth";
-import axios from "axios";
 import {
   Animated,
   Dimensions,
@@ -24,12 +24,13 @@ import {
   Text,
   View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import CountryFlag from "react-native-country-flag";
 import { FormatDate } from "../functions/formatDate";
+import { useAppContext } from "./app";
+import { useAuthContext } from "./auth";
 import { useContentContext } from "./content";
-import { Badge } from "react-native-elements";
 import { useNotificationsContext } from "./notifications";
+import { useNavigationState, useRoute } from "@react-navigation/native";
 
 /**
  * Profile context state
@@ -74,14 +75,30 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     try {
       setUpdateLoading(true);
       const response = await axios.patch(
-        apiUrl + "/api/v1/users/" + currentUser?._id,
+        apiUrl + "/api/v1/users/" + currentUser?._id + "?editType=name",
         data
       );
       if (response.data.status === "success") {
         setTimeout(() => {
-          setCurrentUser((prev: any) => ({ ...prev, ...data }));
           setUpdateLoading(false);
           setUpdateState("");
+
+          if (currentUser?.editOptions?.totalFreeEditName > 0) {
+            setCurrentUser((prev: any) => ({
+              ...prev,
+              name: data?.name,
+              editOptions: {
+                ...prev.editOptions,
+                totalFreeEditName: prev.editOptions.totalFreeEditName - 1,
+              },
+            }));
+          } else {
+            setCurrentUser((prev: any) => ({
+              ...prev,
+              name: data?.name,
+              coins: { ...prev.coins, total: prev.coins.total - 150 },
+            }));
+          }
         }, 200);
       }
     } catch (error: any) {
@@ -100,14 +117,22 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
         duration: 250,
         useNativeDriver: true,
       }).start();
-    } else {
-      Animated.timing(translateYState, {
-        toValue: SCREEN_HEIGHT / 4,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
     }
   }, [updateState]);
+
+  const closeState = () => {
+    if (haptics) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+    }
+    Animated.timing(translateYState, {
+      toValue: SCREEN_HEIGHT,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      // Once the animation is complete, update the state
+      setUpdateState("");
+    });
+  };
 
   /**
    * Update clan state
@@ -176,11 +201,11 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
       type: "screen",
     },
     {
-      value: "Gifts",
-      label: "Gifts",
+      value: "Assets",
+      label: "Assets",
       icon: (
         <MaterialCommunityIcons
-          name="gift"
+          name="folder-multiple-image"
           size={21}
           color={theme.text}
           style={{ position: "relative", bottom: 1 }}
@@ -188,19 +213,32 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
       ),
       type: "screen",
     },
-    {
-      value: "Referrals",
-      label: "Referrals",
-      icon: (
-        <MaterialIcons
-          name="people"
-          size={22}
-          color={theme.text}
-          style={{ position: "relative", bottom: 1 }}
-        />
-      ),
-      type: "screen",
-    },
+    // {
+    //   value: "Gifts",
+    //   label: "Gifts",
+    //   icon: (
+    //     <MaterialCommunityIcons
+    //       name="gift"
+    //       size={21}
+    //       color={theme.text}
+    //       style={{ position: "relative", bottom: 1 }}
+    //     />
+    //   ),
+    //   type: "screen",
+    // },
+    // {
+    //   value: "Referrals",
+    //   label: "Referrals",
+    //   icon: (
+    //     <MaterialIcons
+    //       name="people"
+    //       size={22}
+    //       color={theme.text}
+    //       style={{ position: "relative", bottom: 1 }}
+    //     />
+    //   ),
+    //   type: "screen",
+    // },
     {
       value: "Country",
       label: "Country",
@@ -349,19 +387,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
         </View>
       ),
     },
-    {
-      value: "Black List",
-      label: "Black List",
-      icon: (
-        <MaterialIcons
-          name="view-list"
-          size={22}
-          color={theme.text}
-          style={{ position: "relative", bottom: 1 }}
-        />
-      ),
-      type: "screen",
-    },
+
     {
       value: "Invoices",
       label: "Invoices",
@@ -449,6 +475,8 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
 
   // confirm
   const [confirm, setConfirm] = useState<any>(null);
+  // confirm
+  const [confirmAction, setConfirmAction] = useState<any>(null);
 
   return (
     <Profile.Provider
@@ -470,6 +498,9 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
         setLoading,
         confirm,
         setConfirm,
+        closeState,
+        confirmAction,
+        setConfirmAction,
       }}
     >
       {children}

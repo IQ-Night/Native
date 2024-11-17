@@ -13,6 +13,7 @@ import Members from "../screens/screen-clans/members";
 import Coins from "../screens/screen-coins/coins";
 import User from "../screens/screen-user/main";
 import Block from "../admin/users/block-user";
+import Vip from "../screens/screen-VIP/main";
 
 const ClansStackNavigator = () => {
   /**
@@ -74,7 +75,11 @@ const ClansStackNavigator = () => {
                     size={16} // Adjust the size as needed
                   />
                 </View>
-                <Text style={{ color: theme.text, fontSize: 18 }}>
+                <Text
+                  style={{ color: theme.text, fontSize: 18, maxWidth: "80%" }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
                   {route.params?.item?.title || "Clan"}
                 </Text>
               </View>
@@ -90,6 +95,7 @@ const ClansStackNavigator = () => {
         />
         <ClanStack.Screen name="Members" component={Members} />
         <ClanStack.Screen name="Coins" component={Coins} />
+        <ClanStack.Screen name="Vip" component={Vip} />
       </ClanStack.Navigator>
       <Confirm confirm={confirm} setConfirm={setConfirm} />
     </>

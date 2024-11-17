@@ -36,6 +36,8 @@ import NightTimer from "./timers/nightTimer";
 import SpeechTimer from "./timers/speechTimer";
 import Block from "../admin/users/block-user";
 import UserPopup from "./userPopup";
+import ConfirmRoles from "./confirmRoles";
+import Chat from "./chat/main";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -66,19 +68,6 @@ const Game = () => {
   const { currentUser } = useAuthContext();
 
   /**
-   * Update players in db
-   */
-  const UpdatePlayers = async (list: any, roomId: any) => {
-    try {
-      await axios.patch(apiUrl + "/api/v1/rooms/players/" + roomId, {
-        players: list,
-      });
-    } catch (error: any) {
-      console.log(error.response.data.message);
-    }
-  };
-
-  /**
    *
    * თამაშის სივრცე
    *
@@ -107,9 +96,7 @@ const Game = () => {
           const host = data?.usersInRoom.filter(
             (u: any) => u.status !== "offline"
           )[0];
-          if (host?.userId === currentUser?._id && !data?.gameOver) {
-            UpdatePlayers(data?.usersInRoom, host?.roomId);
-          }
+
           if (data?.message) {
             setMessage({
               type: data.message.type,
@@ -176,16 +163,55 @@ const Game = () => {
   // confirm roles by host before starting playing if less players in room than maximum
   const [openConfirmRoles, setOpenConfirmRoles] = useState<any>(false);
   const [confirmedRoles, setConfirmedRoles] = useState<any>([]);
+  const [loadingStarting, setLoadingStarting] = useState(false);
 
   const StartPlay = () => {
+    setLoadingStarting(true);
     if (socket) {
+      let roles = [];
+      const maxPlayers = activeRoom?.options.maxPlayers;
+      const maxMafias = activeRoom?.options.maxMafias;
+
+      // Step 1: Add unique roles (like doctor, police, etc.) if specified
+      const specialRoles =
+        activeRoom?.roles?.filter(
+          (role: any) =>
+            role.value !== "mafia" &&
+            role.value !== "mafia-don" &&
+            role.value !== "citizen"
+        ) || [];
+      roles.push(...specialRoles);
+
+      // Step 2: Add the specified number of "mafia" roles
+      const mafiaRoles = Array.from({ length: maxMafias }, () => ({
+        value: "mafia",
+      }));
+
+      // Step 3: If "mafia-don" is specified, replace one "mafia" with "mafia-don"
+      if (activeRoom.roles?.some((role: any) => role.value === "mafia-don")) {
+        mafiaRoles[0] = { value: "mafia-don" };
+      }
+      roles.push(...mafiaRoles);
+
+      // Step 4: Fill remaining slots with "citizen" until roles reach maxPlayers
+      const remainingSlots = maxPlayers - roles.length;
+      const citizenRoles = Array.from({ length: remainingSlots }, () => ({
+        value: "citizen",
+      }));
+      roles.push(...citizenRoles);
+
+      // Emit the startPlay event with the fully constructed roles array
       socket.emit("startPlay", {
         roomId: activeRoom?._id,
-        confirmedRoles:
-          confirmedRoles?.length > 0 ? confirmedRoles : activeRoom?.roles,
+        confirmedRoles: confirmedRoles?.length > 0 ? confirmedRoles : roles,
       });
-      setConfirmedRoles([]);
-      setOpenConfirmRoles(false);
+
+      // Resetting states
+      setTimeout(() => {
+        setConfirmedRoles([]);
+        setOpenConfirmRoles(false);
+        setLoadingStarting(false);
+      }, 1000);
     }
   };
 
@@ -195,6 +221,7 @@ const Game = () => {
   useEffect(() => {
     if (socket) {
       const handleGameStarted = (data: any) => {
+        console.log(data?.players?.map((p: any) => p.role));
         // Determine the virtual host of the game
         const host = data?.players.filter(
           (u: any) => u.status !== "offline"
@@ -237,7 +264,6 @@ const Game = () => {
         setGame({ value: "Getting to know mafias", options: [] });
         // Initiate the mafia introduction timer if the current user is the host
         if (currentUser?._id === host?.userId) {
-          UpdatePlayers(data?.players, host?.roomId);
           socket?.emit("GettingKnowMafiasTimerStart", {
             roomId: host?.roomId,
           });
@@ -266,7 +292,6 @@ const Game = () => {
           setGame(data);
 
           if (currentUser?._id === host?.userId) {
-            UpdatePlayers(data.players, data?.roomId);
             socket?.emit("GettingKnowMafiasTimerStart", {
               roomId: host?.roomId,
             });
@@ -643,6 +668,7 @@ const Game = () => {
   useEffect(() => {
     if (socket) {
       const handleTimerEnd = (data: any) => {
+        setGamePlayers(data?.players);
         // List of active alive players
         const totalAlivePlayers = data.players.filter(
           (player: any) => !player.death
@@ -656,42 +682,6 @@ const Game = () => {
         // Determine the most frequent victim
         let result = findMostFrequentVictim(data.votes || []);
         const mostFrequentVictimId = result.mostFrequentVictims;
-
-        if (mostFrequentVictimId) {
-          let victim = data?.players?.find(
-            (p: any) => p.userId === mostFrequentVictimId
-          );
-
-          let mafias = data?.players?.filter(
-            (p: any) => !p.death && p.role.value?.includes("mafia")
-          );
-
-          if (victim?.role?.value === "police") {
-            mafias?.map((m: any) =>
-              AddRating({
-                points: 10,
-                scenario: "Police Killed by Mafia",
-                userId: m?.userId,
-              })
-            );
-          } else if (victim?.role?.value === "doctor") {
-            mafias?.map((m: any) =>
-              AddRating({
-                points: 10,
-                scenario: "Doctor Killed by Mafia",
-                userId: m?.userId,
-              })
-            );
-          } else if (victim?.role?.value === "serial-killer") {
-            mafias?.map((m: any) =>
-              AddRating({
-                points: 8,
-                scenario: "Serial-Killer Killed by Mafia",
-                userId: m?.userId,
-              })
-            );
-          }
-        }
 
         result = {
           ...result,
@@ -751,6 +741,7 @@ const Game = () => {
           );
         }
 
+        // if player saved by doctor add rating to doctor
         if (playerSaved) {
           deaths = deaths.filter(
             (death: any) => death?.userId !== playerSaved.userId
@@ -759,67 +750,122 @@ const Game = () => {
           let doctor = data?.players.find(
             (p: any) => p.role.value === "doctor"
           );
-          if (playerSaved?.role?.value === "doctor") {
-            AddRating({
-              points: 12,
-              scenario: "Doctor saved by Doctor",
-              userId: doctor?.userId,
-            });
-          } else if (playerSaved?.role?.value === "police") {
-            AddRating({
-              points: 12,
-              scenario: "Police saved by Doctor",
-              userId: doctor?.userId,
-            });
-          } else if (playerSaved?.role?.value === "citizen") {
-            AddRating({
-              points: 7,
-              scenario: "Citizen saved by Doctor",
-              userId: doctor?.userId,
-            });
-          } else if (playerSaved?.role?.value === "serial-killer") {
-            AddRating({
-              points: 2,
-              scenario: "Serial-Killer saved by Doctor",
-              userId: doctor?.userId,
-            });
+          const host = data?.players.filter(
+            (u: any) => u.status !== "offline"
+          )[0];
+          if (host?.userId === currentUser?._id) {
+            if (playerSaved?.role?.value === "doctor") {
+              AddRating({
+                points: 12,
+                scenario: "Doctor saved by Doctor",
+                userId: doctor?.userId,
+              });
+            } else if (playerSaved?.role?.value === "police") {
+              AddRating({
+                points: 12,
+                scenario: "Police saved by Doctor",
+                userId: doctor?.userId,
+              });
+            } else if (playerSaved?.role?.value === "citizen") {
+              AddRating({
+                points: 7,
+                scenario: "Citizen saved by Doctor",
+                userId: doctor?.userId,
+              });
+            } else if (playerSaved?.role?.value === "serial-killer") {
+              AddRating({
+                points: 2,
+                scenario: "Serial-Killer saved by Doctor",
+                userId: doctor?.userId,
+              });
+            }
           }
         }
 
+        // if player killed by mafia add rating to mafias
         if (deaths) {
-          let killer = data?.players.find(
-            (p: any) => p.role.value === "serial-killer"
+          let victim = deaths?.find(
+            (p: any) => p.userId === mostFrequentVictimId
           );
-          if (deaths[0]?.role?.value === "citizen") {
-            AddRating({
-              points: 5,
-              scenario: "Citizen killed by Serial-Killer",
-              userId: killer?.userId,
-            });
-          } else if (deaths[0]?.role?.value === "police") {
-            AddRating({
-              points: 7,
-              scenario: "Police killed by Serial-Killer",
-              userId: killer?.userId,
-            });
-          } else if (deaths[0]?.role?.value === "doctor") {
-            AddRating({
-              points: 7,
-              scenario: "Doctor killed by Serial-Killer",
-              userId: killer?.userId,
-            });
-          } else if (deaths[0]?.role?.value?.includes("mafia")) {
-            AddRating({
-              points: 10,
-              scenario: "Mafia killed by Serial-Killer",
-              userId: killer?.userId,
-            });
+
+          let mafias = data?.players?.filter(
+            (p: any) => !p.death && p.role.value?.includes("mafia")
+          );
+
+          const host = data?.players.filter(
+            (u: any) => u.status !== "offline"
+          )[0];
+          if (host?.userId === currentUser?._id) {
+            if (victim?.role?.value === "police") {
+              mafias?.map((m: any) =>
+                AddRating({
+                  points: 10,
+                  scenario: "Police Killed by Mafia",
+                  userId: m?.userId,
+                })
+              );
+            } else if (victim?.role?.value === "doctor") {
+              mafias?.map((m: any) =>
+                AddRating({
+                  points: 10,
+                  scenario: "Doctor Killed by Mafia",
+                  userId: m?.userId,
+                })
+              );
+            } else if (victim?.role?.value === "serial-killer") {
+              console.log("killed adding rating... by mafia");
+              mafias?.map((m: any) =>
+                AddRating({
+                  points: 8,
+                  scenario: "Serial-Killer Killed by Mafia",
+                  userId: m?.userId,
+                })
+              );
+            }
           }
         }
 
+        // if player killed by serial killer add rating to killer
         const host = data?.players.filter(
           (u: any) => u.status !== "offline"
         )[0];
+        if (host?.userId === currentUser?._id) {
+          if (deaths) {
+            let killer = data?.players.find(
+              (p: any) => p.role.value === "serial-killer"
+            );
+            let serialKillerKilled = deaths?.find(
+              (d: any) => d?.userId === deathPlayer?.userId
+            );
+
+            if (serialKillerKilled?.role?.value === "citizen") {
+              AddRating({
+                points: 5,
+                scenario: "Citizen killed by Serial-Killer",
+                userId: killer?.userId,
+              });
+            } else if (serialKillerKilled?.role?.value === "police") {
+              AddRating({
+                points: 7,
+                scenario: "Police killed by Serial-Killer",
+                userId: killer?.userId,
+              });
+            } else if (serialKillerKilled?.role?.value === "doctor") {
+              AddRating({
+                points: 7,
+                scenario: "Doctor killed by Serial-Killer",
+                userId: killer?.userId,
+              });
+            } else if (serialKillerKilled?.role?.value?.includes("mafia")) {
+              AddRating({
+                points: 10,
+                scenario: "Mafia killed by Serial-Killer",
+                userId: killer?.userId,
+              });
+            }
+          }
+        }
+
         if (deaths?.length > 0) {
           if (currentUser._id === host?.userId) {
             socket.emit("exitPlayer", {
@@ -919,10 +965,6 @@ const Game = () => {
           (u: any) => u.status !== "offline"
         )[0];
 
-        if (currentUser?._id === host?.userId && !exitData?.gameOver) {
-          UpdatePlayers(exitData?.players, host?.roomId);
-        }
-
         setOpenNominationsWindow(null);
 
         if (exitData?.gameOver) {
@@ -932,6 +974,17 @@ const Game = () => {
               "Game over - Winners " +
               `${"'" + exitData.gameOver.winners + "'"}`,
           });
+
+          const UpdateRating = async () => {
+            try {
+              await axios.patch(apiUrl + "/api/v1/ratings/" + host?.roomId);
+            } catch (error: any) {
+              console.log(error.response.data.message);
+            }
+          };
+          if (currentUser?._id === host?.userId) {
+            UpdateRating();
+          }
           setTimeout(() => {
             // End the game and return to the initial stage
             setGame({ value: "Ready to start", options: [] });
@@ -1036,6 +1089,7 @@ const Game = () => {
           players: data.players,
         });
       } else if (data?.gameStage?.options[1] === "After Day") {
+        console.log("total: " + data?.players?.length);
         setGame({
           value: "Day",
           options: [],
@@ -1267,6 +1321,65 @@ const Game = () => {
    */
   const [openBlock, setOpenBlock] = useState<any>(null);
 
+  /**
+   * chat
+   */
+  const [openChat, setOpenChat] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(false);
+
+  /**
+   * messages state
+   */
+  const [loadingChat, setLoadingChat] = useState(true);
+  const [messages, setMessages] = useState<any>([]);
+  const [page, setPage] = useState(1);
+  const [totalMessages, setTotalMessages] = useState<any>(null);
+
+  useEffect(() => {
+    const GetChat = async () => {
+      try {
+        const response = await axios(
+          apiUrl + "/api/v1/rooms/" + activeRoom?._id + "/chat?page=1"
+        );
+        if (response?.data.status === "success") {
+          setTotalMessages(response.data.totalMessages);
+          setMessages(response?.data?.data?.messages);
+          if (
+            !response?.data?.data?.lastMessagesSeen?.find(
+              (i: any) => i === currentUser?._id
+            )
+          ) {
+            setUnreadMessages(true);
+          }
+          setTimeout(() => {
+            setLoadingChat(false);
+          }, 1000);
+        }
+      } catch (error: any) {
+        console.log(error.response.data.message);
+        setLoading(false);
+      }
+    };
+    GetChat();
+  }, []);
+
+  useEffect(() => {
+    // Define the event handler
+    const handleSendMessage = (data: any) => {
+      if (data?.message?.sender?.userId !== currentUser?._id) {
+        setMessages((prev: any) => [data?.message, ...prev]);
+        setUnreadMessages(true);
+      }
+    };
+
+    // Attach the event listener
+    socket.on("sendMessage", handleSendMessage);
+
+    // Clean up by removing the event listener
+    return () => {
+      socket.off("sendMessage", handleSendMessage);
+    };
+  }, [socket, currentUser?._id]); // Add currentUser._id as a dependency
   return (
     <BlurView
       intensity={50}
@@ -1301,6 +1414,9 @@ const Game = () => {
           setOpenLogs={setOpenLogs}
           openConfirmRoles={openConfirmRoles}
           setOpenSpectators={setOpenSpectators}
+          setOpenChat={setOpenChat}
+          openChat={openChat}
+          unreadMessages={unreadMessages}
         />
         {game.value === "Dealing Cards" && (
           <DealingCards
@@ -1344,7 +1460,19 @@ const Game = () => {
           setLoading={setLoading}
           game={game}
           setGame={setGame}
-          timeContorller={speechTimer}
+          timeController={
+            game.value === "Day"
+              ? speechTimer
+              : game.value === "Users are confirming own roles.."
+              ? dealingCardsTimer
+              : game.value === "Getting to know mafias"
+              ? gettingKnowsMafiasTimer
+              : game.value === "Night"
+              ? nightTimer
+              : game.value === "Common Time"
+              ? commonTimer
+              : 0
+          }
           activePlayerToSpeech={activePlayerToSpeech}
           dayNumber={dayNumber}
           days={days}
@@ -1414,99 +1542,14 @@ const Game = () => {
       )}
 
       {openConfirmRoles && (
-        <BlurView
-          intensity={120}
-          tint="dark"
-          style={{
-            position: "absolute",
-            zIndex: 80,
-            width: "100%",
-            height: "100%",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 48,
-          }}
-        >
-          <Pressable
-            style={{ position: "absolute", top: 56, right: 16, zIndex: 80 }}
-            onPress={() => {
-              if (haptics) {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-              }
-              setOpenConfirmRoles(null);
-              setConfirmedRoles([]);
-            }}
-          >
-            <MaterialCommunityIcons
-              name="close"
-              size={30}
-              color={theme.active}
-            />
-          </Pressable>
-          <Text style={{ fontSize: 24, fontWeight: 600, color: theme.text }}>
-            Choice Roles:
-          </Text>
-
-          <View
-            style={{
-              flexDirection: "row",
-              width: "100%",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-            }}
-          >
-            {activeRoom?.roles?.map((r: any, x: number) => {
-              let label = roles?.find(
-                (role: any) => role?.value === r?.value
-              )?.label;
-              return (
-                <Pressable
-                  onPress={() =>
-                    setConfirmedRoles((prev: any) => {
-                      if (prev?.find((rol: any) => rol.value === r.value)) {
-                        return prev.filter((p: any) => p.value !== r.value);
-                      } else {
-                        return [...prev, r];
-                      }
-                    })
-                  }
-                  key={x}
-                  style={{
-                    width: "44%",
-                    height: 100,
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                    borderRadius: 8,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderWidth: 1.5,
-                    borderColor: confirmedRoles?.find(
-                      (cr: any) => cr.value === r.value
-                    )
-                      ? theme.active
-                      : "#333",
-                  }}
-                >
-                  <Text
-                    style={{ color: theme.text, fontWeight: 600, fontSize: 18 }}
-                  >
-                    {label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <Button
-            title="Start Play"
-            style={{
-              width: "90%",
-              backgroundColor: theme.active,
-              color: "white",
-            }}
-            onPressFunction={StartPlay}
-          />
-        </BlurView>
+        <ConfirmRoles
+          setOpenConfirmRoles={setOpenConfirmRoles}
+          setConfirmedRoles={setConfirmedRoles}
+          roles={roles}
+          confirmedRoles={confirmedRoles}
+          StartPlay={StartPlay}
+          loadingStarting={loadingStarting}
+        />
       )}
 
       {openBlock && (
@@ -1516,6 +1559,20 @@ const Game = () => {
           setOpenBlock={setOpenBlock}
           setOpenUser={setOpenUser}
           from={{ state: "room", stateId: activeRoom?._id }}
+        />
+      )}
+      {openChat && (
+        <Chat
+          loading={loadingChat}
+          setLoading={setLoadingChat}
+          page={page}
+          setPage={setPage}
+          setTotalMessages={setTotalMessages}
+          totalMessages={totalMessages}
+          messages={messages}
+          setMessages={setMessages}
+          setOpenChat={setOpenChat}
+          setUnreadMessages={setUnreadMessages}
         />
       )}
     </BlurView>

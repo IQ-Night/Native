@@ -1,9 +1,4 @@
-import {
-  FontAwesome,
-  Ionicons,
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useRef, useState } from "react";
@@ -13,7 +8,6 @@ import {
   Easing,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
@@ -25,7 +19,6 @@ import CreateRoom from "./create-room/main";
 import RoomReview from "./door-review";
 import Filter from "./filter";
 import List from "./list";
-import EditRoom from "./edit-room";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -158,7 +151,7 @@ const Rooms = ({ navigation }: any) => {
   }, [open]);
 
   return (
-    <View style={{ flex: 1, minHeight: "100%" }}>
+    <View style={{ flex: 1 }}>
       <Animated.View style={{ flex: 1, transform: [{ scale: scaleBg }] }}>
         <Header
           list={rooms}
@@ -185,6 +178,7 @@ const Rooms = ({ navigation }: any) => {
             width: 40,
             position: "absolute",
             top: 156,
+            zIndex: 80,
             left: SCREEN_WIDTH / 2 - 20,
           }}
         >
@@ -196,76 +190,103 @@ const Rooms = ({ navigation }: any) => {
           <List setDoorReview={setDoorReview} navigation={navigation} />
         </Animated.View>
       </Animated.View>
-      <View
-        style={{
-          // Box shadow for iOS
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.2,
-          shadowRadius: 2,
-          // Elevation for Android
-          elevation: 4,
-        }}
-      >
-        <View style={styles.createIcon}>
-          <View
-            style={{
-              borderRadius: 50,
-              overflow: "hidden",
-              justifyContent: "center",
-              alignItems: "center",
-              width: 52,
-              aspectRatio: 1,
-            }}
-          >
-            <BlurView
-              intensity={120}
-              tint="dark"
+
+      {/* {!createRoom && !doorReview && !openFilter && totalPages > 1 && (
+        <Pagination
+          totalPages={totalPages}
+          currentPage={page}
+          debouncedAdd={debouncedAddRooms}
+        />
+      )} */}
+      {/* {loadRooms && (
+        <BlurView
+          intensity={10}
+          tint="dark"
+          style={{
+            position: "absolute",
+            zIndex: 90,
+            width: "100%",
+            height: "100%",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ActivityIndicator size={24} color={theme.active} />
+        </BlurView>
+      )} */}
+
+      {totalRooms && (
+        <View
+          style={{
+            // Box shadow for iOS
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.2,
+            shadowRadius: 2,
+            // Elevation for Android
+            elevation: 4,
+          }}
+        >
+          <View style={styles.createIcon}>
+            <View
               style={{
-                gap: 16,
+                borderRadius: 50,
+                overflow: "hidden",
                 justifyContent: "center",
                 alignItems: "center",
-                width: "100%",
+                width: 52,
+                aspectRatio: 1,
               }}
             >
-              <Pressable
-                onPress={() => {
-                  setCreateRoom(true);
-                  if (haptics) {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                  }
-                }}
+              <BlurView
+                intensity={120}
+                tint="dark"
                 style={{
-                  // borderWidth: 1.5,
-                  // borderColor: "rgba(255,255,255,0.05)",
-
-                  borderRadius: 50,
-                  width: "100%",
-                  flexDirection: "row",
+                  gap: 16,
                   justifyContent: "center",
                   alignItems: "center",
-                  height: "100%",
-                  gap: 4,
-                  padding: 4,
+                  width: "100%",
                 }}
               >
-                <MaterialCommunityIcons
-                  name="plus"
-                  // style={{ position: "absolute", zIndex: 60, left: 19 }}
-                  size={32}
-                  color={theme.active}
-                />
+                <Pressable
+                  onPress={() => {
+                    setCreateRoom(true);
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
+                  }}
+                  style={{
+                    // borderWidth: 1.5,
+                    // borderColor: "rgba(255,255,255,0.05)",
 
-                {/* <Text
+                    borderRadius: 50,
+                    width: "100%",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "100%",
+                    gap: 4,
+                    padding: 4,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="plus"
+                    // style={{ position: "absolute", zIndex: 60, left: 19 }}
+                    size={32}
+                    color={theme.active}
+                  />
+
+                  {/* <Text
                   style={{ fontSize: 16, fontWeight: 600, color: theme.active }}
                 >
                   Create
                 </Text> */}
-              </Pressable>
-            </BlurView>
+                </Pressable>
+              </BlurView>
+            </View>
           </View>
         </View>
-      </View>
+      )}
 
       {openFilter && (
         <View style={[styles.screen]}>
