@@ -426,7 +426,6 @@ const Header = ({
           if (haptics) {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
           }
-          console.log("run");
           setOpenChat(true);
         }}
       >

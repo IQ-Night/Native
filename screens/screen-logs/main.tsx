@@ -32,7 +32,6 @@ const Logs = ({ route, item }: any) => {
   const [page, setPage] = useState(1);
 
   const GetLogs = async () => {
-    console.log("getLogs");
     try {
       const response = await axios.get(
         apiUrl + "/api/v1/rooms/" + room?._id + "/logs?page=1"

@@ -138,7 +138,6 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
   const [loadingDelete, setLoadingDelete] = useState(false);
   const Remove = async () => {
     try {
-      console.log(deleteConfirm?.pathName);
       setLoadingDelete(true);
 
       // Send request to delete from API

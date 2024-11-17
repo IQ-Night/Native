@@ -213,8 +213,6 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
    * Open popup
    */
   const [openPopup, setOpenPopup] = useState("");
-  console.log(oldData?.price);
-  console.log(totalPrice);
 
   return (
     <View style={{ flex: 1, width: "100%" }}>

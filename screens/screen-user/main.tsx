@@ -249,7 +249,7 @@ const User = ({ route, navigation, userItem, from }: any) => {
               width: 60,
             }}
           >
-            {user?._id !== currentUser?._id && (
+            {user && user?._id !== currentUser?._id && (
               <MaterialCommunityIcons
                 onPress={() => {
                   setOpenGifts(true);
@@ -258,19 +258,19 @@ const User = ({ route, navigation, userItem, from }: any) => {
                 }}
                 name="gift"
                 size={21}
-                color={theme.text}
+                color={theme.active}
                 style={{ position: "relative", bottom: 1 }}
               />
             )}
-            <FontAwesome
+            <MaterialIcons
               onPress={() => {
                 setOpenActions((prev: boolean) => !prev);
                 if (haptics)
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
               }}
-              name={openActions ? "close" : "exclamation-triangle"}
-              size={openActions ? 30 : 20}
-              color={theme.active}
+              name={openActions ? "close" : "info"}
+              size={openActions ? 22 : 22}
+              color={openActions ? theme.active : theme.text}
             />
           </View>
           <View style={{ gap: 16 }}>

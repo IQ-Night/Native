@@ -84,7 +84,6 @@ const ScreenManager = () => {
     setRerenderProducts,
     setRerenderLiderBoard,
     setRerenderProfile,
-    setRerenderNotifications,
     scrollToTop,
     scrollYRooms,
     scrollYClans,
@@ -111,8 +110,7 @@ const ScreenManager = () => {
       if (scrollYRooms?.current > 0) {
         scrollToTop("Rooms");
       } else {
-        console.log("rerender");
-        setRerenderRooms((prev: any) => !prev);
+        setRerenderRooms(true);
       }
       scrollToTop("Rooms");
     } else if (focused && tab.includes("Clans")) {
@@ -145,7 +143,6 @@ const ScreenManager = () => {
       } else {
         GetUser();
         setRerenderProfile(true);
-        setRerenderNotifications((prev: any) => !prev);
       }
     } else if (focused && tab.includes("Admin")) {
       if (routeName !== "Admin" && routeName !== "Admin-Stack") {
@@ -335,14 +332,14 @@ const ScreenManager = () => {
         </Tab.Screen>
         <Tab.Screen name="Profile">
           {() => (
-            <ProfileContextWrapper>
-              <InvoicesContextWrapper>
+            <InvoicesContextWrapper>
+              <ProfileContextWrapper>
                 <CustomComponent
                   component={ProfileStackNavigator}
                   onMount={() => console.log("Profile tab selected")}
                 />
-              </InvoicesContextWrapper>
-            </ProfileContextWrapper>
+              </ProfileContextWrapper>
+            </InvoicesContextWrapper>
           )}
         </Tab.Screen>
         {currentUser?.admin && (

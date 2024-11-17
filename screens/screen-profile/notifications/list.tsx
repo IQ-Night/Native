@@ -22,7 +22,6 @@ const List = ({ setDeleteItem }: any) => {
         if (isCloseToBottom) {
           if (totalNotifications > notifications?.length) {
             AddNotifications();
-            console.log("added..");
           }
         }
       }}

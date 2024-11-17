@@ -190,7 +190,6 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
                 <TouchableOpacity
                   activeOpacity={0.5}
                   onPress={() => {
-                    console.log(item.admin.founder);
                     navigation.navigate("User", {
                       item: {
                         _id: item.admin.founder.id,

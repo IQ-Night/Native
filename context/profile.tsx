@@ -144,6 +144,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
    */
   const [loadingClans, setLoadingClans] = useState(true);
   const [clans, setClans] = useState([]);
+
   const GetClans = async () => {
     try {
       const response = await axios.get(
@@ -161,10 +162,12 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    if (currentUser && !loading) {
-      GetClans();
+    if (!loading) {
+      if (rerenderProfile || clans?.length < 1) {
+        GetClans();
+      }
     }
-  }, [currentUser, rerenderProfile, clansNotifications, loading]);
+  }, [rerenderProfile, clansNotifications, loading]);
 
   // delete confirm state
   const [deleteConfirm, setDeleteConfirm] = useState(false);

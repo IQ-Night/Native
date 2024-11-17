@@ -19,12 +19,14 @@ import { useAuthContext } from "../../context/auth";
 import { ActivityIndicator } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import Img from "../../components/image";
+import { useContentContext } from "../../context/content";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const SendGift = ({ openState, setOpenState, user }: any) => {
   const { theme, haptics, apiUrl, setAlert } = useAppContext();
   const { currentUser, setCurrentUser } = useAuthContext();
+  const { setConfirmAction } = useContentContext();
 
   // animation component
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current; // Start off-screen
@@ -78,37 +80,91 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
   /**
    * Sending
    */
-  const [selectGift, setSelectGift] = useState(null);
+  const [selectGift, setSelectGift] = useState<any>(null);
 
   const SendGift = async () => {
+    if (selectGift?.type === "money") {
+      setSelectGift(null);
+      alert("Buy Vip and send gift");
+      try {
+        const newGift = {
+          sender: currentUser?._id,
+          receiver: user?._id,
+          gift: selectGift,
+        };
+        const response = await axios.patch(apiUrl + "/api/v1/gifts", newGift);
+        if (response.data.status === "success") {
+          setAlert({
+            active: true,
+            text: "Gift sent successfully!",
+            type: "success",
+          });
+          setCurrentUser((prev: any) => ({
+            ...prev,
+            coins: {
+              ...prev.coins,
+              total: prev.coins.total - response.data.data.price,
+            },
+          }));
+        }
+      } catch (error: any) {
+        console.log(error.response.data.message);
+      }
+    } else {
+      try {
+        const newGift = {
+          sender: currentUser?._id,
+          receiver: user?._id,
+          gift: selectGift,
+        };
+        const response = await axios.patch(
+          apiUrl + "/api/v1/sendGift",
+          newGift
+        );
+        if (response.data.status === "success") {
+          setCurrentUser((prev: any) => ({
+            ...prev,
+            coins: {
+              ...prev.coins,
+              total: prev.coins.total - parseInt(selectGift?.price),
+            },
+          }));
+        }
+      } catch (error: any) {
+        console.log(error.response.data.message);
+      }
+    }
+  };
+
+  /**
+   * Store state
+   */
+  const [products, setProducts] = useState([]);
+  const [totalProducts, setTotalProducts] = useState(null);
+  const [type, setType] = useState("");
+  const [search, setSearch] = useState("");
+
+  //Get Products
+  const GetProducts = async () => {
     try {
-      const newGift = {
-        sender: currentUser?._id,
-        receiver: user?._id,
-        gift: selectGift,
-      };
-      const response = await axios.patch(
-        apiUrl + "/api/v1/users/sendGift",
-        newGift
+      setLoading(true);
+      const response = await axios.get(
+        apiUrl + "/api/v1/products?type=" + type + "&search=" + search
       );
       if (response.data.status === "success") {
-        setAlert({
-          active: true,
-          text: "Gift sent successfully!",
-          type: "success",
-        });
-        setCurrentUser((prev: any) => ({
-          ...prev,
-          coins: {
-            ...prev.coins,
-            total: prev.coins.total - response.data.data.price,
-          },
-        }));
+        setProducts(response.data.data.products);
+        setTotalProducts(response.data.totalProducts);
+        setLoading(false);
       }
     } catch (error: any) {
       console.log(error.response.data.message);
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    GetProducts();
+  }, [type, search]);
   return (
     <BlurView
       intensity={120}
@@ -167,28 +223,42 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
             >
               VIP
             </Text>
-            <View style={styles.gridContainer}>
-              {loading ? (
-                <View style={{ width: "100%", alignItems: "center" }}>
-                  <ActivityIndicator
-                    size={32}
-                    color={theme.active}
-                    style={{ marginTop: 48 }}
-                  />
-                </View>
-              ) : (
-                assets.map((item: any, index: number) => {
-                  return (
-                    <Item
-                      key={index}
-                      item={item}
-                      selectGift={selectGift}
-                      setSelectGift={setSelectGift}
+            {user?.vip?.active ? (
+              <Text
+                style={{
+                  marginVertical: 12,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: theme.active,
+                }}
+              >
+                The User already has VIP status!
+              </Text>
+            ) : (
+              <View style={styles.gridContainer}>
+                {loading ? (
+                  <View style={{ width: "100%", alignItems: "center" }}>
+                    <ActivityIndicator
+                      size={32}
+                      color={theme.active}
+                      style={{ marginTop: 48 }}
                     />
-                  );
-                })
-              )}
-            </View>
+                  </View>
+                ) : (
+                  vips.map((item: any, index: number) => {
+                    return (
+                      <VipItem
+                        key={index}
+                        item={item}
+                        selectGift={selectGift}
+                        setSelectGift={setSelectGift}
+                      />
+                    );
+                  })
+                )}
+              </View>
+            )}
+
             <Text
               style={{
                 fontSize: 18,
@@ -210,9 +280,9 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
                   />
                 </View>
               ) : (
-                assets.map((item: any, index: number) => {
+                coins.map((item: any, index: number) => {
                   return (
-                    <Item
+                    <CoinItem
                       key={index}
                       item={item}
                       selectGift={selectGift}
@@ -230,7 +300,7 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
                 marginVertical: 4,
               }}
             >
-              Assets
+              Your Assets
             </Text>
             <View style={styles.gridContainer}>
               {loading ? (
@@ -244,7 +314,42 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
               ) : (
                 assets.map((item: any, index: number) => {
                   return (
-                    <Item
+                    <AssetItem
+                      key={index}
+                      item={item}
+                      selectGift={selectGift}
+                      setSelectGift={setSelectGift}
+                    />
+                  );
+                })
+              )}
+            </View>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: 600,
+                color: theme.text,
+                marginVertical: 4,
+              }}
+            >
+              Explore Assets
+            </Text>
+            <View style={styles.gridContainer}>
+              {loading ? (
+                <View style={{ width: "100%", alignItems: "center" }}>
+                  <ActivityIndicator
+                    size={32}
+                    color={theme.active}
+                    style={{ marginTop: 48 }}
+                  />
+                </View>
+              ) : (
+                products.map((item: any, index: number) => {
+                  if (assets?.find((a: any) => a._id === item?._id)) {
+                    return;
+                  }
+                  return (
+                    <AssetItem
                       key={index}
                       item={item}
                       selectGift={selectGift}
@@ -258,13 +363,23 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
         </ScrollView>
 
         <Button
-          onPressFunction={() => alert("Sent")}
+          onPressFunction={() =>
+            setConfirmAction({
+              active: true,
+              text: "Confirm send gift!",
+              price: selectGift?.price,
+              Function: () => SendGift(),
+              money: selectGift?.moneyType,
+              successText: "Gift sent successfully!",
+            })
+          }
           title="Send"
           style={{
             width: "100%",
             backgroundColor: theme.active,
             color: "white",
           }}
+          disabled={!selectGift}
         />
       </Animated.View>
     </BlurView>
@@ -283,13 +398,19 @@ const styles = StyleSheet.create({
   },
   gridItem: {
     width: (SCREEN_WIDTH - 70) / 3, // Divide the screen width by 2 for two columns, with padding
-    aspectRatio: 1,
+    height: (SCREEN_WIDTH - 70) / 3, // Divide the screen width by 2 for two columns, with padding
     overflow: "hidden",
     borderRadius: 10,
   },
 });
 
-const Item = ({ item, state, setAvatars, selectGift, setSelectGift }: any) => {
+const AssetItem = ({
+  item,
+  state,
+  setAvatars,
+  selectGift,
+  setSelectGift,
+}: any) => {
   const { theme, haptics } = useAppContext();
   const navigation: any = useNavigation();
   /**
@@ -303,10 +424,21 @@ const Item = ({ item, state, setAvatars, selectGift, setSelectGift }: any) => {
         if (haptics) {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
         }
-        if (item === selectGift) {
+        if (item === selectGift?.item) {
           setSelectGift(null);
         } else {
-          setSelectGift(item);
+          setSelectGift({
+            item: item,
+            price:
+              item?.price &&
+              item?.founder?.type !== "Admin" &&
+              item?.founder?.userId !== currentUser?._id
+                ? (item.price + (item?.price / 100) * 5).toFixed(0)
+                : 5,
+            type: "asset",
+            moneyType: "coins",
+            asset: item?._id,
+          });
         }
       }}
       style={[
@@ -314,7 +446,7 @@ const Item = ({ item, state, setAvatars, selectGift, setSelectGift }: any) => {
         {
           borderWidth: 2,
           borderColor:
-            item === selectGift ? theme.active : "rgba(255,255,255,0.1)",
+            item === selectGift?.item ? theme.active : "rgba(255,255,255,0.1)",
         },
       ]}
     >
@@ -334,7 +466,9 @@ const Item = ({ item, state, setAvatars, selectGift, setSelectGift }: any) => {
         }}
       >
         <FontAwesome5 name="coins" size={12} color="white" />
-        {item?.price ? (
+        {item?.price &&
+        item?.founder?.type !== "Admin" &&
+        item?.founder?.userId !== currentUser?._id ? (
           <Text
             style={{
               color: "white",
@@ -361,3 +495,228 @@ const Item = ({ item, state, setAvatars, selectGift, setSelectGift }: any) => {
     </Pressable>
   );
 };
+
+const CoinItem = ({
+  item,
+  state,
+  setAvatars,
+  selectGift,
+  setSelectGift,
+}: any) => {
+  const { theme, haptics } = useAppContext();
+  const navigation: any = useNavigation();
+  /**
+   * Auth context
+   */
+  const { currentUser } = useAuthContext();
+
+  return (
+    <Pressable
+      onPress={() => {
+        if (haptics) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+        }
+        if (item === selectGift?.item) {
+          setSelectGift(null);
+        } else {
+          setSelectGift({
+            item: item,
+            price: (item.size + (item?.size / 100) * 5).toFixed(0),
+            type: "coins",
+            moneyType: "coins",
+          });
+        }
+      }}
+      style={[
+        styles.gridItem,
+        {
+          height: 80,
+          padding: 12,
+          gap: 12,
+          justifyContent: "center",
+          borderWidth: 2,
+          borderColor:
+            item === selectGift?.item ? theme.active : "rgba(255,255,255,0.1)",
+        },
+      ]}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: theme.active,
+          borderRadius: 50,
+          padding: 2,
+          paddingHorizontal: 8,
+        }}
+      >
+        <FontAwesome5 name="coins" size={18} color="white" />
+        <Text
+          style={{
+            color: "white",
+            marginLeft: 4,
+            fontWeight: "500",
+            fontSize: 18,
+          }}
+        >
+          {item.size}
+        </Text>
+      </View>
+      <Text
+        style={{
+          color: "white",
+          marginLeft: 4,
+          fontWeight: "500",
+          fontSize: 12,
+        }}
+      >
+        + 5% Tax
+      </Text>
+    </Pressable>
+  );
+};
+
+const VipItem = ({
+  item,
+  state,
+  setAvatars,
+  selectGift,
+  setSelectGift,
+}: any) => {
+  const { theme, haptics } = useAppContext();
+  const navigation: any = useNavigation();
+  /**
+   * Auth context
+   */
+  const { currentUser } = useAuthContext();
+
+  return (
+    <Pressable
+      onPress={() => {
+        if (haptics) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+        }
+        if (item === selectGift?.item) {
+          setSelectGift(null);
+        } else {
+          setSelectGift({
+            item: item,
+            price: (item.price + (item?.price / 100) * 5).toFixed(0),
+            type: "vip",
+            moneyType: "money",
+            vip: item,
+          });
+        }
+      }}
+      style={[
+        styles.gridItem,
+        {
+          height: 100,
+          padding: 6,
+          gap: 12,
+          justifyContent: "center",
+          alignItems: "center",
+          borderWidth: 2,
+          borderColor:
+            item === selectGift?.item ? theme.active : "rgba(255,255,255,0.1)",
+        },
+      ]}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: 50,
+          padding: 2,
+          paddingHorizontal: 8,
+        }}
+      >
+        <MaterialIcons name="diamond" size={16} color={theme.active} />
+        <Text
+          style={{
+            color: "white",
+            marginLeft: 4,
+            fontWeight: "500",
+            fontSize: 16,
+          }}
+        >
+          {item.duration}
+        </Text>
+      </View>
+
+      <Text
+        style={{
+          color: "green",
+          marginLeft: 4,
+          fontWeight: 600,
+          fontSize: 16,
+        }}
+      >
+        {(item.price + (item?.price / 100) * 5).toFixed(0)}$
+      </Text>
+      <Text
+        style={{
+          color: "white",
+          marginLeft: 4,
+          fontWeight: "500",
+          fontSize: 12,
+        }}
+      >
+        + 5% Tax
+      </Text>
+    </Pressable>
+  );
+};
+
+const coins = [
+  {
+    size: 100,
+  },
+  {
+    size: 200,
+  },
+  {
+    size: 500,
+  },
+  {
+    size: 1000,
+  },
+  {
+    size: 1500,
+  },
+  {
+    size: 2000,
+  },
+  {
+    size: 3500,
+  },
+];
+
+const vips = [
+  {
+    duration: "1 Week",
+    price: 7,
+  },
+  {
+    duration: "2 Weeks",
+    price: 12,
+  },
+  {
+    duration: "1 Month",
+    price: 20,
+  },
+  {
+    duration: "3 Months",
+    price: 50,
+  },
+  {
+    duration: "6 Months",
+    price: 80,
+  },
+  {
+    duration: "Annually",
+    price: 140,
+  },
+];

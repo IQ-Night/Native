@@ -8,9 +8,12 @@ import { ActivityIndicator } from "react-native-paper";
 import { Confirm } from "../components/confirm";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
-import { useInvoicesContext } from "../context/invoices";
+import {
+  InvoicesContextWrapper,
+  useInvoicesContext,
+} from "../context/invoices";
 import { useNotificationsContext } from "../context/notifications";
-import { useProfileContext } from "../context/profile";
+import { ProfileContextWrapper, useProfileContext } from "../context/profile";
 import About from "../screens/screen-about/main";
 import Coins from "../screens/screen-coins/coins";
 import Help from "../screens/screen-help/main";
@@ -62,7 +65,6 @@ const ProfileStackNavigator = () => {
   // Effect to handle timeout for clearing invoices
   useEffect(() => {
     let timer: NodeJS.Timeout; // Define timer variable for cleanup
-
     if (isTimerActive && clearTimeoutValue > 0) {
       // Set interval to decrement the clearTimeoutValue every second
       timer = setInterval(() => {
@@ -90,7 +92,6 @@ const ProfileStackNavigator = () => {
     }
     setIsTimerActive(true); // Start the timer
   };
-
   return (
     <>
       <ProfileStack.Navigator
@@ -229,7 +230,7 @@ const ProfileStackNavigator = () => {
                       ? theme.active
                       : "rgba(255,255,255,0.1)",
                   paddingHorizontal: 12,
-                  width: 96,
+                  width: 100,
                   height: 26,
                   justifyContent: "center",
                   alignItems: "center",

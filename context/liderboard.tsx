@@ -51,7 +51,9 @@ export const LiderboardContextWrapper: React.FC<contextProps> = ({
         setLoadList(false);
       }
     };
-    GetUsers();
+    if (rerenderLiderBoard || liderboard?.length < 1) {
+      GetUsers();
+    }
   }, [rerenderLiderBoard]);
 
   return (

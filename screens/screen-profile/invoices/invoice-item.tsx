@@ -26,7 +26,6 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
    * Auth context
    */
   const { currentUser } = useAuthContext();
-
   return (
     <View style={[styles.container]}>
       <View style={styles.wrapper}>
@@ -645,6 +644,52 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
                 }}
               >
                 Product bought
+              </Text>
+              <Text
+                style={{
+                  color: "red",
+                  fontSize: 16,
+
+                  fontWeight: 500,
+                }}
+              >
+                - {item?.price}{" "}
+                <FontAwesome6 name="coins" size={16} color={theme.active} />
+              </Text>
+
+              <Text
+                style={{
+                  color: theme.text,
+                  fontSize: 14,
+
+                  fontWeight: 500,
+                }}
+              >
+                {FormatDate(item.createdAt, "")}
+              </Text>
+              <Text
+                style={{
+                  color: "green",
+                  fontSize: 14,
+
+                  fontWeight: 500,
+                }}
+              >
+                Successfully
+              </Text>
+            </View>
+          )}
+          {item?.type && item?.type?.includes("Sent gift") && (
+            <View style={{ gap: 8, justifyContent: "center" }}>
+              <Text
+                style={{
+                  color: theme.text,
+                  fontSize: 18,
+
+                  fontWeight: 500,
+                }}
+              >
+                Send gift!
               </Text>
               <Text
                 style={{

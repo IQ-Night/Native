@@ -9,6 +9,7 @@ const List = ({ setDeleteItem }: any) => {
   const { invoices, totalInvoices, AddInvoices, loading } =
     useInvoicesContext();
   const { theme } = useAppContext();
+
   return (
     <ScrollView
       onScroll={({ nativeEvent }) => {
@@ -18,9 +19,6 @@ const List = ({ setDeleteItem }: any) => {
           contentSize.height - 350;
 
         if (isCloseToBottom) {
-          console.log("run");
-          console.log("total: " + totalInvoices);
-          console.log(invoices?.length);
           if (totalInvoices > invoices?.length) {
             AddInvoices();
           }

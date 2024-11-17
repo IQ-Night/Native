@@ -221,7 +221,6 @@ const Game = () => {
   useEffect(() => {
     if (socket) {
       const handleGameStarted = (data: any) => {
-        console.log(data?.players?.map((p: any) => p.role));
         // Determine the virtual host of the game
         const host = data?.players.filter(
           (u: any) => u.status !== "offline"
@@ -297,7 +296,6 @@ const Game = () => {
             });
           }
         } else {
-          console.log("Waiting to confirm roles");
           setGame(data);
         }
       };
@@ -813,7 +811,6 @@ const Game = () => {
                 })
               );
             } else if (victim?.role?.value === "serial-killer") {
-              console.log("killed adding rating... by mafia");
               mafias?.map((m: any) =>
                 AddRating({
                   points: 8,
@@ -1089,7 +1086,6 @@ const Game = () => {
           players: data.players,
         });
       } else if (data?.gameStage?.options[1] === "After Day") {
-        console.log("total: " + data?.players?.length);
         setGame({
           value: "Day",
           options: [],

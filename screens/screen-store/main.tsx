@@ -44,8 +44,6 @@ const Store = () => {
     inputRef,
     translateYFilter,
     scaleBg,
-    type,
-    setType,
     totalProducts,
   } = useStoreContext();
 
@@ -56,7 +54,6 @@ const Store = () => {
 
   // buy item
   const [openBuyItem, setOpenBuyItem] = useState(null);
-  console.log(openBuyItem);
   return (
     <View style={{ flex: 1, minHeight: "100%" }}>
       <Animated.View style={{ flex: 1, transform: [{ scale: scaleBg }] }}>

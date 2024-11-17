@@ -65,7 +65,9 @@ export const ClansContextWrapper: React.FC<contextProps> = ({ children }) => {
     }
   };
   useEffect(() => {
-    GetClans(1);
+    if (rerenderClans || clans?.length < 1) {
+      GetClans(1);
+    }
   }, [apiUrl, search, rerenderClans]);
 
   // delete clan confirm state

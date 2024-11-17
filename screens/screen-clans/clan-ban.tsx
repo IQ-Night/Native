@@ -121,7 +121,6 @@ const Ban = ({ openUser, setOpenBan, clans, setUsersClans }: any) => {
       setLoading(false);
     }
   };
-  console.log(choisenClan?.banList);
   return (
     <BlurView
       intensity={120}

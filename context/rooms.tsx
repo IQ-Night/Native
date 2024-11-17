@@ -88,7 +88,9 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
 
   useEffect(() => {
     if (currentUser) {
-      GetRooms(1);
+      if (rooms?.length < 1 || rerenderRooms) {
+        GetRooms(1);
+      }
     }
   }, [apiUrl, search, currentUser, language, rerenderRooms]);
 

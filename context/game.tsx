@@ -36,7 +36,6 @@ export const GameContextWrapper: React.FC<contextProps> = ({ children }) => {
    * Auth user state
    */
   const { currentUser } = useAuthContext();
-  const { rerenderProfile } = useContentContext();
 
   /**
    * Active Room and Users

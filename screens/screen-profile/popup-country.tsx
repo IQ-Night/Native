@@ -54,7 +54,7 @@ const EditCountry = () => {
   ];
   return (
     <BlurView
-      intensity={120}
+      intensity={0}
       tint="dark"
       style={{
         borderRadius: 10,

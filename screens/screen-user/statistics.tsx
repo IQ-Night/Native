@@ -5,7 +5,6 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { DefineUserLevel } from "../../functions/userLevelOptimizer";
 
 const Statistics = ({ user, statistics }: any) => {
-  console.log(statistics);
   const { theme } = useAppContext();
   let level = DefineUserLevel({ user });
 

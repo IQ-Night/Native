@@ -91,6 +91,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
-    bottom: 30,
+    bottom: 100,
   },
 });

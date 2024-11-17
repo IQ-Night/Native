@@ -14,7 +14,7 @@ import Button from "./button";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useAuthContext } from "../context/auth";
 
-const ConfirmAction = ({ openState, setOpenState, Function, price }: any) => {
+const ConfirmAction = ({ openState, setOpenState, Function, money }: any) => {
   const { currentUser } = useAuthContext();
   const { theme, setAlert } = useAppContext();
   const slideAnim = useRef(new Animated.Value(220)).current; // Start off-screen
@@ -63,7 +63,7 @@ const ConfirmAction = ({ openState, setOpenState, Function, price }: any) => {
 
   // Function to handle user confirmation
   const handleConfirm = () => {
-    if (currentUser?.coins?.total < 1500) {
+    if (currentUser?.coins?.total < parseInt(openState?.price)) {
       return setAlert({
         active: true,
         text: "You don't have enough coins to change cover!",
@@ -74,11 +74,13 @@ const ConfirmAction = ({ openState, setOpenState, Function, price }: any) => {
     closeComponent(); // Close popup
     setAlert({
       active: true,
-      text: "Complete successfully!",
+      text: openState?.successText
+        ? openState?.successText
+        : "Complete successfully!",
       type: "success",
     });
   };
-  console.log(openState);
+
   return (
     <BlurView
       intensity={20}
@@ -149,7 +151,15 @@ const ConfirmAction = ({ openState, setOpenState, Function, price }: any) => {
                     }}
                   >
                     Confirm {openState?.price}{" "}
-                    <FontAwesome5 name="coins" size={14} color={theme.active} />
+                    {money === "money" ? (
+                      "$"
+                    ) : (
+                      <FontAwesome5
+                        name="coins"
+                        size={14}
+                        color={theme.active}
+                      />
+                    )}
                   </Text>
                 }
                 onPressFunction={handleConfirm}

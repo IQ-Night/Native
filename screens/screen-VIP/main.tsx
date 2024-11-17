@@ -134,6 +134,31 @@ const Vip = () => {
         paddingBottom: 100,
       }}
     >
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 18, fontWeight: 600, color: theme.text }}>
+          Advantages:
+        </Text>
+        <View style={{ padding: 12, gap: 6, paddingBottom: 0 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <MaterialIcons color={theme.active} size={16} name="done" />
+            <Text style={{ color: theme.active, fontWeight: 600 }}>
+              All roles: Free
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <MaterialIcons color={theme.active} size={16} name="done" />
+            <Text style={{ color: theme.active, fontWeight: 600 }}>
+              Open room: Free
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <MaterialIcons color={theme.active} size={16} name="done" />
+            <Text style={{ color: theme.active, fontWeight: 600 }}>
+              Private Room: Free
+            </Text>
+          </View>
+        </View>
+      </View>
       {Vips?.map((c: any, x: number) => {
         return (
           <View

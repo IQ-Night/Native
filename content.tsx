@@ -27,7 +27,6 @@ const Content = () => {
    * Content context
    */
   const { confirmAction, setConfirmAction } = useContentContext();
-  console.log(confirmAction);
   return (
     <View style={styles.background}>
       <BgSound />
@@ -45,6 +44,7 @@ const Content = () => {
           openState={confirmAction}
           setOpenState={setConfirmAction}
           Function={confirmAction?.Function}
+          money={confirmAction?.money}
         />
       )}
 

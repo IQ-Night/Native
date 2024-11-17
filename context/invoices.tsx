@@ -45,25 +45,25 @@ export const InvoicesContextWrapper: React.FC<contextProps> = ({
   const [invoices, setInvoices] = useState<any>([]);
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    const GetInvoices = async () => {
-      try {
-        const response = await axios.get(
-          apiUrl + "/api/v1/users/" + currentUser._id + "/invoices?page=1"
-        );
-        if (response.data.status === "success") {
-          setInvoices(response.data.data.invoices);
-          setTotalInvoices(response.data.total);
-          setPage(1);
-          setTimeout(() => {
-            setLoading(false);
-          }, 200);
-        }
-      } catch (error: any) {
-        console.log(error.response.data.message);
-        setLoading(false);
+  const GetInvoices = async () => {
+    try {
+      const response = await axios.get(
+        apiUrl + "/api/v1/users/" + currentUser._id + "/invoices?page=1"
+      );
+      if (response.data.status === "success") {
+        setInvoices(response.data.data.invoices);
+        setTotalInvoices(response.data.total);
+        setPage(1);
+        setTimeout(() => {
+          setLoading(false);
+        }, 200);
       }
-    };
+    } catch (error: any) {
+      console.log(error.response.data.message);
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
     if (currentUser) {
       GetInvoices();
     }
@@ -112,10 +112,6 @@ export const InvoicesContextWrapper: React.FC<contextProps> = ({
     }
   };
 
-  console.log(page);
-
-  console.log("total: " + invoices?.length);
-
   // clear Invoices
   const [loadingClearInvoices, setLoadingClearInvoices] = useState<any>(null);
   const [clearInvoicesState, setClearInvoicesState] = useState<any>(null);
@@ -125,15 +121,14 @@ export const InvoicesContextWrapper: React.FC<contextProps> = ({
       const response = await axios.delete(
         apiUrl + "/api/v1/users/" + currentUser?._id + "/invoices"
       );
-
       if (response.data.status === "success") {
         setInvoices([]);
         setTotalInvoices(0);
         setClearInvoicesState(null);
-        setLoadingClearInvoices(false);
+        setLoadingClearInvoices(null);
       }
     } catch (error: any) {
-      // console.log(error.response.data.message);
+      console.log(error.response.data.message);
       setLoadingClearInvoices(false);
     }
   };

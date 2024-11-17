@@ -69,7 +69,6 @@ const Header = ({
   }, [open]);
 
   const { connectionStatus, reconnectAttempts } = useGameContext();
-  console.log(currentUser);
   return (
     <View style={styles.headerContainer}>
       <BlurView intensity={120} tint="dark" style={styles.blurContainer}>
@@ -247,7 +246,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.05)",
     padding: 4,
     borderRadius: 50,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     position: "relative",
     top: 2,
   },

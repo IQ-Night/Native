@@ -62,7 +62,9 @@ export const StoreContextWrapper: React.FC<contextProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    GetProducts();
+    if (rerenderProducts || products?.length < 1) {
+      GetProducts();
+    }
   }, [type, search, rerenderProducts]);
 
   /**

@@ -56,12 +56,10 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo }: any) => {
                   }
                 }
               } else {
-                console.log("run");
                 if (
                   roomState?.options?.maxMafias === 1 &&
                   item?.value === "mafia-don"
                 ) {
-                  console.log("run");
                   const updatedRoles = roomState?.roles?.filter(
                     (r: any) => r.value !== "mafia"
                   );
@@ -74,7 +72,6 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo }: any) => {
                   roomState?.options?.maxMafias === 1 &&
                   item?.value === "mafia"
                 ) {
-                  console.log("run");
                   const updatedRoles = roomState?.roles?.filter(
                     (r: any) => r.value !== "mafia-don"
                   );
