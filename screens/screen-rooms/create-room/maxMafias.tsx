@@ -7,7 +7,7 @@ const MaxMafias = ({ setNumericPopup, setRoomState, roomState }: any) => {
   /**
    * App context
    */
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
 
   const [maxValue, setMaxValue] = useState(6);
 
@@ -79,12 +79,12 @@ const MaxMafias = ({ setNumericPopup, setRoomState, roomState }: any) => {
   const styles = createStyles(theme);
   return (
     <View style={styles.fieldContainer}>
-      <Text style={styles.title}>Max Mafias</Text>
+      <Text style={styles.title}>{activeLanguage?.maxMafias}</Text>
       <Pressable
         style={styles.numericValue}
         onPress={() => {
           setNumericPopup({
-            title: "Max Mafias",
+            title: activeLanguage?.maxMafias,
             min: 1,
             max: maxValue,
             selectedValue: roomState.options.maxMafias,

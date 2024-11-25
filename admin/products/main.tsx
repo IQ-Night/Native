@@ -15,7 +15,7 @@ const Products = () => {
   /**
    * App context
    */
-  const { theme, apiUrl } = useAppContext();
+  const { theme, apiUrl, activeLanguage } = useAppContext();
 
   /**
    * Products List
@@ -114,7 +114,7 @@ const Products = () => {
         }}
       >
         <Button
-          title="Create Product"
+          title={activeLanguage?.create_product}
           style={{
             width: "100%",
             backgroundColor: theme.active,

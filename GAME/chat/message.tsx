@@ -29,9 +29,7 @@ const Message = ({ message, index }: any) => {
     >
       <View
         style={{
-          backgroundColor: "rgba(255,255,255,0.01)", // Light transparent background
           borderRadius: 8, // Rounded corners
-          padding: 4,
           alignItems:
             message?.sender?.userId === currentUser?._id
               ? "flex-end"
@@ -54,7 +52,7 @@ const Message = ({ message, index }: any) => {
               <Img uri={message.sender.cover} />
             </View>
             <Text style={{ fontWeight: 500, color: theme.text }}>
-              {message.sender.name} {index}
+              {message.sender.name}
             </Text>
           </View>
         )}

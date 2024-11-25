@@ -17,7 +17,7 @@ const Clans = ({ navigation }: any) => {
   /**
    * App context
    */
-  const { haptics, theme } = useAppContext();
+  const { haptics, activeLanguage } = useAppContext();
   /**
    * Context state
    */
@@ -153,6 +153,7 @@ const Clans = ({ navigation }: any) => {
           setIsFocused={setIsFocused}
           inputRef={inputRef}
           tab="Clans"
+          tabTitle={activeLanguage?.clans}
           totalData={totalClans}
         />
         <Animated.View

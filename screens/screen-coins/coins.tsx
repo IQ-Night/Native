@@ -10,7 +10,7 @@ const Coins = () => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics, setAlert } = useAppContext();
+  const { apiUrl, theme, haptics, setAlert, activeLanguage } = useAppContext();
 
   // auth
   const { currentUser, setCurrentUser } = useAuthContext();
@@ -180,8 +180,8 @@ const Coins = () => {
             <Button
               title={
                 confirm === c?.size
-                  ? "Confirm (" + clearTimeoutValue + ")"
-                  : "Buy"
+                  ? `${activeLanguage.confirm} (" + clearTimeoutValue + ")`
+                  : activeLanguage?.buy
               }
               style={{
                 width: "100%",

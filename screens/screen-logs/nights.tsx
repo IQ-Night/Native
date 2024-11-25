@@ -1,17 +1,13 @@
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useState } from "react";
 import { useAppContext } from "../../context/app";
-import {
-  FontAwesome,
-  FontAwesome5,
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from "@expo/vector-icons";
 import { roles } from "../../context/rooms";
 import { findMostFrequentVictim } from "../../GAME/mostVictims";
+import * as Haptics from "expo-haptics";
 
 const Nights = ({ data, players }: any) => {
-  const { theme } = useAppContext();
+  const { theme, activeLanguage, haptics } = useAppContext();
   const [openNight, setOpenNight] = useState<any>(null);
   return (
     <View style={{ gap: 4 }}>
@@ -20,15 +16,25 @@ const Nights = ({ data, players }: any) => {
           <Pressable
             onPress={
               openNight === night?.number
-                ? () => setOpenNight(null)
-                : () => setOpenNight(night?.number)
+                ? () => {
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
+                    setOpenNight(null);
+                  }
+                : () => {
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
+                    setOpenNight(night?.number);
+                  }
             }
             key={index}
             style={{
-              padding: 12,
-              backgroundColor: "rgba(255,255,255,0.05)",
               borderRadius: 8,
               gap: 8,
+              backgroundColor: "rgba(255,255,255,0.05)",
+              padding: 12,
             }}
           >
             <View
@@ -50,7 +56,7 @@ const Nights = ({ data, players }: any) => {
                     fontWeight: "500",
                   }}
                 >
-                  Result:
+                  {activeLanguage?.result}:
                 </Text>
                 {(() => {
                   // Determine the most frequent victim
@@ -124,7 +130,7 @@ const Nights = ({ data, players }: any) => {
 
                   if (deaths?.length > 0) {
                     return (
-                      <View style={{ marginLeft: 8 }}>
+                      <View style={{}}>
                         {deaths?.map((d: any, x: number) => {
                           return (
                             <Text
@@ -132,7 +138,6 @@ const Nights = ({ data, players }: any) => {
                               style={{
                                 color: theme.text,
                                 fontWeight: 500,
-                                marginLeft: 8,
                               }}
                             >
                               <Text
@@ -156,10 +161,9 @@ const Nights = ({ data, players }: any) => {
                         style={{
                           color: theme.text,
                           fontWeight: 500,
-                          marginLeft: 8,
                         }}
                       >
-                        No Players have left the game
+                        {activeLanguage?.no_players_left_game}
                       </Text>
                     );
                   }
@@ -178,9 +182,7 @@ const Nights = ({ data, players }: any) => {
             {openNight === night?.number && (
               <View
                 style={{
-                  backgroundColor: "rgba(255,255,255,0.05)",
                   borderRadius: 8,
-                  padding: 12,
                 }}
               >
                 <Text
@@ -190,11 +192,11 @@ const Nights = ({ data, players }: any) => {
                     fontSize: 18,
                   }}
                 >
-                  Actions:
+                  {activeLanguage?.actions}:
                 </Text>
-                <View style={{ gap: 8, marginTop: 16, marginLeft: 8 }}>
+                <View style={{ gap: 8, marginTop: 16 }}>
                   <Text style={{ color: theme.active, fontWeight: 500 }}>
-                    Mafia's kills:
+                    {activeLanguage?.mafia_kills}:
                   </Text>
                   {night?.votes?.length > 0 && (
                     <View>
@@ -205,12 +207,31 @@ const Nights = ({ data, players }: any) => {
                         const victim = players?.find(
                           (p: any) => p.userId === v.victim
                         );
-                        const killerRoleLabel = roles?.find(
-                          (r: any) => r.value === killer?.role?.value
-                        )?.label;
-                        const victimRoleLabel = roles?.find(
-                          (r: any) => r.value === victim?.role?.value
-                        )?.label;
+                        let killerRoleLabel =
+                          killer?.role?.value === "mafia"
+                            ? activeLanguage?.mafia
+                            : killer?.role?.value === "citizen"
+                            ? activeLanguage?.citizen
+                            : killer?.role?.value === "doctor"
+                            ? activeLanguage?.doctor
+                            : killer?.role?.value === "police"
+                            ? activeLanguage?.police
+                            : killer?.role?.value === "serial-killer"
+                            ? activeLanguage?.serialKiller
+                            : activeLanguage?.mafiaDon;
+
+                        let victimRoleLabel =
+                          victim?.role?.value === "mafia"
+                            ? activeLanguage?.mafia
+                            : victim?.role?.value === "citizen"
+                            ? activeLanguage?.citizen
+                            : victim?.role?.value === "doctor"
+                            ? activeLanguage?.doctor
+                            : victim?.role?.value === "police"
+                            ? activeLanguage?.police
+                            : victim?.role?.value === "serial-killer"
+                            ? activeLanguage?.serialKiller
+                            : activeLanguage?.mafiaDon;
 
                         return (
                           <View
@@ -241,9 +262,9 @@ const Nights = ({ data, players }: any) => {
                   )}
                 </View>
                 {night?.killedBySerialKiller && (
-                  <View style={{ gap: 8, marginTop: 16, marginLeft: 8 }}>
+                  <View style={{ gap: 8, marginTop: 16 }}>
                     <Text style={{ color: theme.active, fontWeight: "500" }}>
-                      Serial Killer's kill:
+                      {activeLanguage?.serial_killer_kill}:
                     </Text>
                     <View>
                       <View
@@ -258,16 +279,22 @@ const Nights = ({ data, players }: any) => {
                             (p: any) => p?.role?.value === "serial-killer"
                           );
 
-                          const serialKillerLabel = roles?.find(
-                            (r: any) => r.value === serialKiller?.role?.value
-                          )?.label;
                           const victim = players?.find(
                             (p: any) =>
                               p.userId === night?.killedBySerialKiller?.playerId
                           );
-                          const victimLabel = roles?.find(
-                            (r: any) => r.value === victim?.role?.value
-                          )?.label;
+                          let victimLabel =
+                            victim?.role?.value === "mafia"
+                              ? activeLanguage?.mafia
+                              : victim?.role?.value === "citizen"
+                              ? activeLanguage?.citizen
+                              : victim?.role?.value === "doctor"
+                              ? activeLanguage?.doctor
+                              : victim?.role?.value === "police"
+                              ? activeLanguage?.police
+                              : victim?.role?.value === "serial-killer"
+                              ? activeLanguage?.serialKiller
+                              : activeLanguage?.mafiaDon;
 
                           return (
                             <>
@@ -275,7 +302,7 @@ const Nights = ({ data, players }: any) => {
                                 style={{ color: theme.text, fontWeight: "500" }}
                               >
                                 N{serialKiller?.playerNumber}{" "}
-                                {serialKillerLabel}
+                                {activeLanguage?.serialKiller}
                               </Text>
                               <Text style={{ color: "red", fontWeight: "500" }}>
                                 X
@@ -293,9 +320,9 @@ const Nights = ({ data, players }: any) => {
                   </View>
                 )}
                 {night?.findSherif && (
-                  <View style={{ gap: 8, marginTop: 16, marginLeft: 8 }}>
+                  <View style={{ gap: 8, marginTop: 16 }}>
                     <Text style={{ color: theme.active, fontWeight: "500" }}>
-                      Mafia Don's Action:
+                      {activeLanguage?.mafia_don_action}:
                     </Text>
                     <View>
                       <View
@@ -314,16 +341,25 @@ const Nights = ({ data, players }: any) => {
                             (p: any) => p.userId === night?.findSherif?.findUser
                           );
 
-                          const findUserLabel = roles?.find(
-                            (r: any) => r.value === findUser?.role?.value
-                          )?.label;
+                          const findUserLabel =
+                            findUser?.role?.value === "mafia"
+                              ? activeLanguage?.mafia
+                              : findUser?.role?.value === "citizen"
+                              ? activeLanguage?.citizen
+                              : findUser?.role?.value === "doctor"
+                              ? activeLanguage?.doctor
+                              : findUser?.role?.value === "police"
+                              ? activeLanguage?.police
+                              : findUser?.role?.value === "serial-killer"
+                              ? activeLanguage?.serialKiller
+                              : activeLanguage?.mafiaDon;
 
                           return (
                             <>
                               <Text
                                 style={{ color: theme.text, fontWeight: "500" }}
                               >
-                                N{don?.playerNumber} Mafia Don
+                                N{don?.playerNumber} {activeLanguage?.mafiaDon}
                               </Text>
                               <MaterialCommunityIcons
                                 name={
@@ -351,9 +387,9 @@ const Nights = ({ data, players }: any) => {
                   </View>
                 )}
                 {night?.findMafia && (
-                  <View style={{ gap: 8, marginTop: 16, marginLeft: 8 }}>
+                  <View style={{ gap: 8, marginTop: 16 }}>
                     <Text style={{ color: theme.active, fontWeight: "500" }}>
-                      Police's Action:
+                      {activeLanguage?.police_action}:
                     </Text>
                     <View>
                       <View
@@ -371,16 +407,26 @@ const Nights = ({ data, players }: any) => {
                           const findUser = players?.find(
                             (p: any) => p.userId === night?.findMafia?.findUser
                           );
-                          const findUserLabel = roles?.find(
-                            (r: any) => r.value === findUser?.role?.value
-                          )?.label;
+
+                          const findUserLabel =
+                            findUser?.role?.value === "mafia"
+                              ? activeLanguage?.mafia
+                              : findUser?.role?.value === "citizen"
+                              ? activeLanguage?.citizen
+                              : findUser?.role?.value === "doctor"
+                              ? activeLanguage?.doctor
+                              : findUser?.role?.value === "police"
+                              ? activeLanguage?.police
+                              : findUser?.role?.value === "serial-killer"
+                              ? activeLanguage?.serialKiller
+                              : activeLanguage?.mafiaDon;
 
                           return (
                             <>
                               <Text
                                 style={{ color: theme.text, fontWeight: "500" }}
                               >
-                                N{police?.playerNumber} Police
+                                N{police?.playerNumber} {activeLanguage?.police}
                               </Text>
                               <MaterialCommunityIcons
                                 name={
@@ -408,9 +454,9 @@ const Nights = ({ data, players }: any) => {
                   </View>
                 )}
                 {night?.safePlayer && (
-                  <View style={{ gap: 8, marginTop: 16, marginLeft: 8 }}>
+                  <View style={{ gap: 8, marginTop: 16 }}>
                     <Text style={{ color: theme.active, fontWeight: "500" }}>
-                      Doctor's Action:
+                      {activeLanguage?.doctor_action}:
                     </Text>
                     <View>
                       <View
@@ -428,16 +474,26 @@ const Nights = ({ data, players }: any) => {
                           const findUser = players?.find(
                             (p: any) => p.userId === night?.safePlayer?.playerId
                           );
-                          const findUserLabel = roles?.find(
-                            (r: any) => r.value === findUser?.role?.value
-                          )?.label;
+
+                          const findUserLabel =
+                            findUser?.role?.value === "mafia"
+                              ? activeLanguage?.mafia
+                              : findUser?.role?.value === "citizen"
+                              ? activeLanguage?.citizen
+                              : findUser?.role?.value === "doctor"
+                              ? activeLanguage?.doctor
+                              : findUser?.role?.value === "police"
+                              ? activeLanguage?.police
+                              : findUser?.role?.value === "serial-killer"
+                              ? activeLanguage?.serialKiller
+                              : activeLanguage?.mafiaDon;
 
                           return (
                             <>
                               <Text
                                 style={{ color: theme.text, fontWeight: "500" }}
                               >
-                                N{doctor?.playerNumber} Doctor
+                                N{doctor?.playerNumber} {activeLanguage?.doctor}
                               </Text>
                               <MaterialIcons
                                 name="health-and-safety"
@@ -467,7 +523,7 @@ const Nights = ({ data, players }: any) => {
                       fontSize: 18,
                     }}
                   >
-                    Result:
+                    {activeLanguage?.result}:
                   </Text>
                   <View>
                     {(() => {
@@ -485,7 +541,7 @@ const Nights = ({ data, players }: any) => {
                           : null,
                       };
 
-                      const currentNightBase = data;
+                      const currentNightBase = night;
 
                       // Check if serial killer killed during the night
                       let deathPlayer = players.find(
@@ -544,7 +600,7 @@ const Nights = ({ data, players }: any) => {
 
                       if (deaths?.length > 0) {
                         return (
-                          <View style={{ marginLeft: 8 }}>
+                          <View style={{}}>
                             {deaths?.map((d: any, x: number) => {
                               return (
                                 <Text
@@ -552,7 +608,6 @@ const Nights = ({ data, players }: any) => {
                                   style={{
                                     color: theme.text,
                                     fontWeight: 500,
-                                    marginLeft: 8,
                                   }}
                                 >
                                   <Text
@@ -576,10 +631,9 @@ const Nights = ({ data, players }: any) => {
                             style={{
                               color: theme.text,
                               fontWeight: 500,
-                              marginLeft: 8,
                             }}
                           >
-                            No Players have left the game
+                            {activeLanguage?.no_players_left_game}
                           </Text>
                         );
                       }

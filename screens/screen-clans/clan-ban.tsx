@@ -113,7 +113,9 @@ const Ban = ({ openUser, setOpenBan, clans, setUsersClans }: any) => {
           }
           return prev; // Return the previous state if the clan is not matched
         });
-        socket.emit("rerenderRooms", { userId: openUser?._id });
+        if (socket) {
+          socket.emit("rerenderRooms", { userId: openUser?._id });
+        }
       }
     } catch (error: any) {
       console.error("Error:", error.response?.data?.message || error.message);
@@ -138,7 +140,7 @@ const Ban = ({ openUser, setOpenBan, clans, setUsersClans }: any) => {
             alignItems: "center",
           }}
         >
-          {clans?.length > 1 && (
+          {clans?.length > 0 && (
             <View style={{ width: "100%", alignItems: "center" }}>
               <View style={styles.header}>
                 <Text style={[styles.headerText, { color: theme.text }]}>

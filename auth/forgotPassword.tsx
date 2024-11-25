@@ -20,6 +20,7 @@ import Button from "../components/button";
 import Input from "../components/input";
 import { BlurView } from "expo-blur";
 import { useAppContext } from "../context/app";
+import * as Haptics from "expo-haptics";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -32,7 +33,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({
   onPressFunction,
   forgotPass,
 }) => {
-  const { apiUrl, setAlert, theme, activeLanguage } = useAppContext();
+  const { apiUrl, setAlert, theme, activeLanguage, haptics } = useAppContext();
 
   /**
    * change password
@@ -151,43 +152,35 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({
     }
   };
 
-  const [animation] = useState(new Animated.Value(0));
+  const animation = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   useEffect(() => {
     if (forgotPass) {
       Animated.timing(animation, {
-        toValue: 1,
-        duration: 300,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.timing(animation, {
         toValue: 0,
         duration: 300,
-        easing: Easing.in(Easing.ease),
+        easing: Easing.out(Easing.ease),
         useNativeDriver: true,
       }).start();
     }
   }, [forgotPass]);
 
-  const translateY = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [300, 0],
-  });
-
-  const opacity = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 0.5],
-  });
+  const close = () => {
+    Animated.timing(animation, {
+      toValue: SCREEN_HEIGHT,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start(() => onPressFunction());
+  };
 
   return (
-    <Modal transparent visible={forgotPass} onRequestClose={onPressFunction}>
+    <Modal transparent visible={forgotPass} onRequestClose={close}>
       <BlurView intensity={120} tint="dark" style={styles.centeredView}>
         <Animated.View style={[styles.container]}>
           <Animated.View
             style={{
-              transform: [{ translateY }],
+              transform: [{ translateY: animation }],
               flex: 1,
               width: SCREEN_WIDTH,
             }}
@@ -208,13 +201,19 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({
                 <TouchableOpacity
                   activeOpacity={0.8}
                   style={{ padding: 5 }}
-                  onPress={
-                    changing
-                      ? () => {
-                          setChanging(false);
-                        }
-                      : onPressFunction
-                  }
+                  onPress={() => {
+                    if (changing) {
+                      if (haptics) {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                      }
+                      setChanging(false);
+                    } else {
+                      if (haptics) {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                      }
+                      close();
+                    }
+                  }}
                 >
                   <MaterialIcons
                     name="keyboard-arrow-down"
@@ -330,7 +329,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({
                   <Button
                     style={{
                       width: (SCREEN_WIDTH / 100) * 95,
-                      color: theme.buttonText,
+                      color: "white",
                       backgroundColor: theme.active,
                     }}
                     icon=""

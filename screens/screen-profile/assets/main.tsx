@@ -34,7 +34,7 @@ const Assets = () => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
   /**
    * Auth context
    */
@@ -146,15 +146,15 @@ const Assets = () => {
   const types = [
     {
       value: "profile-avatar",
-      label: "Profile Avatar",
+      label: activeLanguage?.profileAvatar,
     },
     {
       value: "room-avatar",
-      label: "Room Avatar",
+      label: activeLanguage?.roomAvatar,
     },
     {
       value: "clan-avatar",
-      label: "Clan Avatar",
+      label: activeLanguage?.clanAvatar,
     },
   ];
 
@@ -210,12 +210,14 @@ const Assets = () => {
             onPress={() => Keyboard.dismiss()}
           >
             <Text style={{ color: theme.text, fontSize: 24, fontWeight: 600 }}>
-              Confirm upload
+              {activeLanguage?.confirmUpload}
             </Text>
             <View style={{ gap: 8, width: "100%" }}>
-              <Text style={[styles.title, { color: theme.text }]}>Title*</Text>
+              <Text style={[styles.title, { color: theme.text }]}>
+                {activeLanguage?.title}*
+              </Text>
               <Input
-                placeholder="Enter Product's Title"
+                placeholder={activeLanguage?.title}
                 value={title}
                 onChangeText={setTitle}
                 type="text"
@@ -230,7 +232,7 @@ const Assets = () => {
                   marginBottom: 4,
                 }}
               >
-                Select Type*
+                {activeLanguage?.select_type}*
               </Text>
 
               <View style={{ gap: 8 }}>
@@ -285,19 +287,20 @@ const Assets = () => {
               <CheckboxWithLabel
                 isChecked={addForSale}
                 setIsChecked={setAddForSale}
-                label="Add for sale"
+                label={activeLanguage?.addForSale}
               />
               <Text
                 style={{ color: theme.text, fontSize: 14, fontWeight: 600 }}
               >
-                You can sale your asset to people.
+                {activeLanguage?.addForSaleText}
               </Text>
               {addForSale && (
                 <View style={{ marginTop: 8, gap: 8 }}>
                   <Text
                     style={{ color: theme.text, fontSize: 14, fontWeight: 600 }}
                   >
-                    Price <FontAwesome5 name="coins" size={14} color="orange" />
+                    {activeLanguage?.price}{" "}
+                    <FontAwesome5 name="coins" size={14} color="orange" />
                   </Text>
 
                   <Input
@@ -320,7 +323,7 @@ const Assets = () => {
               }}
             >
               <Button
-                title="Cancel"
+                title={activeLanguage?.cancel}
                 onPressFunction={() => setOpenAddForSale(false)}
                 style={{
                   width: "50%",
@@ -331,7 +334,7 @@ const Assets = () => {
 
               <Button
                 loading={uploadLoading}
-                title="Confirm"
+                title={activeLanguage?.confirm}
                 onPressFunction={HandleUpload}
                 style={{
                   width: "45%",
@@ -412,7 +415,7 @@ const Assets = () => {
                 }}
               >
                 <Text style={{ color: "white", fontWeight: 500, fontSize: 12 }}>
-                  Upload Image
+                  {activeLanguage?.upload}
                 </Text>
               </Pressable>
             )}

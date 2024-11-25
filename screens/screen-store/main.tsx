@@ -23,7 +23,7 @@ const Store = () => {
   /**
    * App state
    */
-  const { rerenderProducts } = useAppContext();
+  const { rerenderProducts, activeLanguage } = useAppContext();
   /**
    * Store state
    */
@@ -72,7 +72,7 @@ const Store = () => {
           setIsFocused={setIsFocused}
           inputRef={inputRef}
           tab="Assets"
-          title="Assets"
+          tabTitle={activeLanguage?.store}
           totalData={totalProducts}
         />
         <Animated.View

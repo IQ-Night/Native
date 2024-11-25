@@ -52,6 +52,9 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
   const [loading, setLoading] = useState(false);
 
   const EditSlogan = async () => {
+    if (haptics) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+    }
     if (input?.length < 1) {
       return setUpdateClanState(null);
     }
@@ -137,6 +140,9 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
         style={{ margin: 12, marginBottom: 0 }}
         onPress={() => {
           closeState();
+          if (haptics) {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+          }
         }}
       >
         <MaterialIcons name="arrow-drop-down" size={42} color={theme.active} />
@@ -161,7 +167,7 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
           }}
         >
           <Input
-            placeholder="Slogan"
+            placeholder={activeLanguage?.slogan}
             onChangeText={(text: string) => setInput(text)}
             type="text"
             onSubmitEditing={EditSlogan}
@@ -191,7 +197,7 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
                 </View>
               )
             }
-            title="Change Slogan"
+            title={activeLanguage?.change_slogan}
             loading={loading}
             onPressFunction={() => EditSlogan()}
           />

@@ -1,34 +1,31 @@
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import Button from "../../components/button";
 import { useAppContext } from "../../context/app";
+import { useAuthContext } from "../../context/auth";
 import { useGameContext } from "../../context/game";
 import { useNotificationsContext } from "../../context/notifications";
 import { convertDuration } from "../../functions/checkBan";
-import Warnings from "./warnings";
-import { useAuthContext } from "../../context/auth";
-import { warnings } from "../../context/content";
-
-const blocksOptions = [
-  { totalHours: 0.0334, label: "2 min" },
-  { totalHours: 0.5, label: "30 min" },
-  { totalHours: 2, label: "2 hours" },
-  { totalHours: 6, label: "6 hours" },
-  { totalHours: 24, label: "24 hours" },
-  { totalHours: 72, label: "3 days" },
-  { totalHours: 168, label: "1 week" },
-  { totalHours: 720, label: "1 month" },
-  { totalHours: 8640, label: "1 year" },
-  { totalHours: 86400, label: "10 year" },
-];
 
 const Block = ({ userId, userName, setOpenBlock, setOpenUser, from }: any) => {
-  const { apiUrl, theme, haptics, setAlert } = useAppContext();
+  const { apiUrl, theme, haptics, setAlert, activeLanguage } = useAppContext();
+  const blocksOptions = [
+    { totalHours: 0.0334, label: "2 " + activeLanguage?.min },
+    { totalHours: 0.5, label: "30 " + activeLanguage?.min },
+    { totalHours: 2, label: "2 " + activeLanguage?.hours },
+    { totalHours: 6, label: "6 " + activeLanguage?.hours },
+    { totalHours: 24, label: "24 " + activeLanguage?.hours },
+    { totalHours: 72, label: "3 " + activeLanguage?.days },
+    { totalHours: 168, label: "1 " + activeLanguage?.week },
+    { totalHours: 720, label: "1 " + activeLanguage?.month },
+    { totalHours: 8640, label: "1 " + activeLanguage?.year },
+    { totalHours: 86400, label: "10 " + activeLanguage?.year },
+  ];
   const { socket, activeRoom } = useGameContext();
   const { currentUser } = useAuthContext();
 
@@ -78,7 +75,9 @@ const Block = ({ userId, userName, setOpenBlock, setOpenUser, from }: any) => {
           socket.emit("leaveRoom", from?.stateId, userId);
         }
 
-        socket.emit("rerenderAuthUser", { userId });
+        if (socket) {
+          socket.emit("rerenderAuthUser", { userId });
+        }
         const duration = convertDuration(selectedDuration);
         SendNotification({
           userId: userId,
@@ -120,7 +119,7 @@ const Block = ({ userId, userName, setOpenBlock, setOpenUser, from }: any) => {
         >
           <View style={styles.header}>
             <Text style={[styles.headerText, { color: theme.text }]}>
-              Block {userName} in App
+              {activeLanguage?.block} {userName} in app
             </Text>
             <MaterialCommunityIcons name="block-helper" size={18} color="red" />
           </View>
@@ -145,7 +144,7 @@ const Block = ({ userId, userName, setOpenBlock, setOpenUser, from }: any) => {
           </Pressable>
 
           <Button
-            title="Block"
+            title={activeLanguage?.block}
             style={{
               backgroundColor: "red",
               width: "100%",

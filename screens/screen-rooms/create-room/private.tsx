@@ -9,14 +9,14 @@ const Private = ({ roomState, setRoomState, totalPrice }: any) => {
   /**
    * App context
    */
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
 
   // styles
   const styles = createStyles(theme);
   return (
     <View style={{ width: "100%", gap: 8 }}>
       <View style={styles.fieldContainer}>
-        <Text style={styles.title}>Private</Text>
+        <Text style={styles.title}>{activeLanguage?.private}</Text>
         <View
           style={{
             width: 80,
@@ -55,7 +55,9 @@ const Private = ({ roomState, setRoomState, totalPrice }: any) => {
                 }));
               }}
             >
-              <Text style={{ color: theme.active }}>Active</Text>
+              <Text style={{ color: theme.active }}>
+                {activeLanguage?.active}
+              </Text>
             </Pressable>
           )}
         </View>
@@ -73,7 +75,7 @@ const Private = ({ roomState, setRoomState, totalPrice }: any) => {
           <View style={{ width: "50%" }}>
             <Input
               value={roomState.private.code}
-              placeholder="Code*"
+              placeholder={`${activeLanguage.code}*`}
               maxLength={8}
               type="numeric"
               onChangeText={(e: string) =>

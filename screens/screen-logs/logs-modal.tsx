@@ -1,21 +1,21 @@
-import React, { useEffect, useRef } from "react";
+import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
+import { useEffect, useRef } from "react";
 import {
   Animated,
-  View,
-  Text,
-  Pressable,
   Dimensions,
   Easing,
+  Pressable,
+  Text,
+  View,
 } from "react-native";
-import { BlurView } from "expo-blur";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import * as Haptics from "expo-haptics";
-import Logs from "./main";
 import { useAppContext } from "../../context/app";
 import { useGameContext } from "../../context/game";
+import Logs from "./main";
+import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 
 const LogsModal = ({ openLogs, setOpenLogs }: any) => {
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
   const { activeRoom } = useGameContext();
 
   const slideAnim = useRef(
@@ -77,7 +77,7 @@ const LogsModal = ({ openLogs, setOpenLogs }: any) => {
             <Text
               style={{ color: theme.text, fontSize: 18, fontWeight: "500" }}
             >
-              Game logs:
+              {activeLanguage?.game_logs}:
             </Text>
             <Pressable
               onPress={() => {
@@ -88,16 +88,7 @@ const LogsModal = ({ openLogs, setOpenLogs }: any) => {
               }}
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <Text
-                style={{
-                  color: theme.active,
-                  fontSize: 16,
-                  fontWeight: 600,
-                  marginRight: 4,
-                }}
-              >
-                Close
-              </Text>
+              <MaterialIcons name="close" color={theme.active} size={32} />
             </Pressable>
           </View>
           <Logs item={activeRoom} setOpenLogs={setOpenLogs} />

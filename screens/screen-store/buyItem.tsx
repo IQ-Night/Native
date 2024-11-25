@@ -9,7 +9,7 @@ import axios from "axios";
 import { useAuthContext } from "../../context/auth";
 
 const BuyItem = ({ item, closeComponent, setState }: any) => {
-  const { apiUrl, theme, setAlert } = useAppContext();
+  const { apiUrl, theme, setAlert, activeLanguage } = useAppContext();
 
   const { currentUser, setCurrentUser } = useAuthContext();
 
@@ -100,7 +100,7 @@ const BuyItem = ({ item, closeComponent, setState }: any) => {
         }}
       >
         <Text style={{ color: theme.text, fontSize: 24, fontWeight: 600 }}>
-          Buy Product
+          {activeLanguage?.buy_product}
         </Text>
         <View
           style={{
@@ -113,7 +113,7 @@ const BuyItem = ({ item, closeComponent, setState }: any) => {
           <Img uri={item?.file} />
         </View>
         <Text style={{ color: theme.text, fontSize: 16, fontWeight: 600 }}>
-          Price: {item?.price}{" "}
+          {activeLanguage?.price}: {item?.price}{" "}
           <FontAwesome5 name="coins" size={14} color="orange" />
         </Text>
         <View
@@ -127,13 +127,13 @@ const BuyItem = ({ item, closeComponent, setState }: any) => {
           }}
         >
           <Button
-            title="Cancel"
+            title={activeLanguage?.cancel}
             style={{ width: "45%", color: "white", backgroundColor: "#888" }}
             onPressFunction={close}
           />
           <Button
             loading={loading}
-            title={`Buy`}
+            title={activeLanguage?.buy}
             style={{ width: "45%", color: "white", backgroundColor: "green" }}
             onPressFunction={BuyItem}
           />

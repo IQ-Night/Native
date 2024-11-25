@@ -22,7 +22,7 @@ const Actions = ({
   usersClans,
   setOpenClanBan,
 }: any) => {
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
   const { currentUser } = useAuthContext();
 
   // Ref for the animated scale value
@@ -93,7 +93,7 @@ const Actions = ({
                   { color: theme.active, fontSize: 16 },
                 ]}
               >
-                Report
+                {activeLanguage?.report}
               </Text>
               <MaterialIcons name="report" size={16} color={theme.active} />
             </Pressable>
@@ -114,7 +114,7 @@ const Actions = ({
                   { color: theme.active, fontSize: 16 },
                 ]}
               >
-                Warning
+                {activeLanguage?.warning}
               </Text>
               <MaterialIcons name="warning" size={14} color={theme.active} />
             </Pressable>
@@ -130,7 +130,7 @@ const Actions = ({
               style={styles.actionButton}
             >
               <Text style={[styles.buttonText, { color: "red", fontSize: 16 }]}>
-                Block
+                {activeLanguage?.block}
               </Text>
               <MaterialCommunityIcons
                 name="block-helper"
@@ -150,7 +150,7 @@ const Actions = ({
               style={styles.actionButton}
             >
               <Text style={[styles.buttonText, { color: "red", fontSize: 16 }]}>
-                Clan Ban
+                {activeLanguage?.clanBan}
               </Text>
               <MaterialCommunityIcons
                 name="block-helper"
@@ -166,7 +166,7 @@ const Actions = ({
             !canShowBlock &&
             !canShowClanBan && (
               <Text style={styles.noActionsText}>
-                You can't perform any action for this user
+                {activeLanguage?.no_action_for_user}
               </Text>
             )}
         </View>

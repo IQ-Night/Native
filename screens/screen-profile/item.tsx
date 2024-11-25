@@ -32,14 +32,14 @@ const Item = ({ item, style, navigation }: any) => {
         } else if (item.type === "popup") {
           setUpdateState(item.value);
         }
-        if (haptics) {
+        if (haptics && item?.type !== "switch") {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
         }
       }}
     >
       {item.icon}
       <Text style={{ color: theme.text, fontSize: 16, fontWeight: 500 }}>
-        {item.value}
+        {item.label}
       </Text>
       {item.value === "My Clans" && clansTotalBadge > 0 && (
         <Badge

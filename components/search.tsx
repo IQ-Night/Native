@@ -18,7 +18,7 @@ const Search = ({
   /**
    * App context
    */
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
 
   return (
     <View style={styles.container}>
@@ -34,7 +34,7 @@ const Search = ({
         <View style={styles.searchInner}>
           <TextInput
             ref={inputRef}
-            placeholder="Search.."
+            placeholder={`${activeLanguage?.search}...`}
             placeholderTextColor={"#888"}
             onFocus={() => {
               setIsFocused(true);
@@ -83,7 +83,7 @@ const Search = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: "74%",
+    flex: 1,
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",

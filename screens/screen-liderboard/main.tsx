@@ -10,7 +10,7 @@ import { useAppContext } from "../../context/app";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const Liderboard = () => {
-  const { theme } = useAppContext();
+  const { activeLanguage } = useAppContext();
   /**
    * Content context
    */
@@ -18,7 +18,7 @@ const Liderboard = () => {
 
   return (
     <View style={{ width: "100%", flex: 1 }}>
-      <Header tab="Liderboard" />
+      <Header tab="Liderboard" tabTitle={activeLanguage?.leaderboard} />
 
       <Animated.View
         style={{

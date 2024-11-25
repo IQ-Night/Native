@@ -6,11 +6,22 @@ import { useAppContext } from "../../../context/app";
 import { useAuthContext } from "../../../context/auth";
 import { useGameContext } from "../../../context/game";
 import axios from "axios";
+import { useFocusEffect } from "@react-navigation/native";
+import { useChatContext } from "../../../context/chat";
 
-const Input = ({ setMessages, inputRef, keyboardHeight }: any) => {
-  const { theme, apiUrl, haptics } = useAppContext();
+const Input = ({
+  setMessages,
+  inputRef,
+  keyboardHeight,
+  receiver,
+  chatId,
+  setChat,
+  setLastMessage,
+}: any) => {
+  const { theme, apiUrl, haptics, activeLanguage } = useAppContext();
   const { activeRoom } = useGameContext();
   const { currentUser } = useAuthContext();
+  const { setChats } = useChatContext();
 
   const [input, setInput] = useState("");
 
@@ -38,21 +49,66 @@ const Input = ({ setMessages, inputRef, keyboardHeight }: any) => {
       messageId,
       text: input,
       sender: { userId: currentUser?._id },
+      receiver: { userId: receiver?.id },
       createdAt: new Date(),
     };
 
     // Add new message to state and send it to the server
     try {
-      setMessages((prev: any) => [newMessage, ...prev]);
-      setInput(""); // Clear input after sending message
-      await axios.post(
-        apiUrl + "/api/v1/rooms/" + activeRoom?._id + "/chat",
-        newMessage
-      );
+      if (!chatId) {
+        const response = await axios.post(apiUrl + "/api/v1/chats", {
+          members: [
+            {
+              id: currentUser?._id,
+              cover: currentUser?.cover,
+              name: currentUser?.name,
+            },
+            {
+              id: receiver?.id,
+              cover: receiver?.cover,
+              name: receiver?.name,
+            },
+          ],
+          lastMessage: { ...newMessage, seen: [] },
+          messages: [newMessage],
+          type: { value: "user" },
+        });
+        if (response?.data.status === "success") {
+          setMessages((prev: any) => [newMessage, ...prev]);
+          setInput(""); // Clear input after sending message
+          setChat(response?.data?.data?.chat);
+          setChats((prev: any) => [...prev, response?.data?.data?.chat]);
+        }
+      } else {
+        setMessages((prev: any) => [newMessage, ...prev]);
+        setInput(""); // Clear input after sending message
+        setChats((prev: any) =>
+          prev?.map((p: any) => {
+            if (p?._id === chatId) {
+              return { ...p, lastMessage: { ...newMessage, seen: [] } };
+            } else {
+              return p;
+            }
+          })
+        );
+        setLastMessage({ ...newMessage, seen: [] });
+        await axios.post(
+          apiUrl + "/api/v1/chats/" + chatId + "/messages",
+          newMessage
+        );
+      }
     } catch (error: any) {
-      console.log(error.response?.data?.message || "Error sending message");
+      console.log(error);
     }
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (inputRef.current) {
+        inputRef.current.focus(); // Autofocus on the input
+      }
+    }, [])
+  );
 
   return (
     <BlurView
@@ -64,7 +120,7 @@ const Input = ({ setMessages, inputRef, keyboardHeight }: any) => {
       ]}
     >
       <TextInput
-        placeholder="Type here..."
+        placeholder={activeLanguage?.typeHere}
         placeholderTextColor={"#888"}
         value={input}
         onChangeText={setInput}
@@ -82,7 +138,7 @@ const styles = StyleSheet.create({
   blurView: {
     width: "100%",
     zIndex: 110,
-    height: 80,
+    height: 70,
     shadowColor: "#fff",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,

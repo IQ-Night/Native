@@ -8,7 +8,7 @@ import {
 import axios from "axios";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -22,7 +22,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ActivityIndicator } from "react-native-paper";
 import Button from "../../components/button";
 import Img from "../../components/image";
 import { useAppContext } from "../../context/app";
@@ -30,9 +29,10 @@ import { useAuthContext } from "../../context/auth";
 import { useGameContext } from "../../context/game";
 import { useRoomsContext } from "../../context/rooms";
 import { FormatDate } from "../../functions/formatDate";
+import BlackList from "./blackList";
 import RoleInfo from "./create-room/roleInfo";
 import EditRoom from "./edit-room";
-import BlackList from "./blackList";
+import DeleteConfirm from "../../components/deleteConfirm";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -70,7 +70,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics, setAlert } = useAppContext();
+  const { apiUrl, theme, haptics, setAlert, activeLanguage } = useAppContext();
   /**
    * Auth context
    */
@@ -349,7 +349,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                   fontSize: 24,
                 }}
               >
-                Review
+                {activeLanguage?.review}
               </Text>
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 16 }}
@@ -467,7 +467,10 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                     activeOpacity={0.8}
                     onPress={() => {
                       navigation.navigate("User", {
-                        item: doorReview.admin.founder,
+                        item: {
+                          ...doorReview.admin.founder,
+                          _id: doorReview.admin.founder.id,
+                        },
                       });
                       if (haptics) {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
@@ -481,7 +484,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                         fontSize: 14,
                       }}
                     >
-                      Created by: {doorReview?.admin.founder.name}
+                      {activeLanguage?.host}: {doorReview?.admin.founder.name}
                     </Text>
                   </TouchableOpacity>
 
@@ -514,7 +517,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                   marginTop: 16,
                 }}
               >
-                Level: {doorReview?.rating.min}
+                {activeLanguage?.lvl}: {doorReview?.rating.min}
               </Text>
               <View
                 style={{
@@ -522,6 +525,8 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                   alignItems: "center",
                   gap: 4,
                   marginTop: 8,
+                  maxWidth: "80%",
+                  flexWrap: "wrap",
                 }}
               >
                 <Text
@@ -531,7 +536,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                     fontSize: 14,
                   }}
                 >
-                  Draw in re-vote:
+                  {activeLanguage?.drawInReVote}:
                 </Text>
                 <Text
                   style={{
@@ -540,7 +545,11 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                     fontSize: 14,
                   }}
                 >
-                  {doorReview.drawInReVote}
+                  {doorReview.drawInReVote === "People decide"
+                    ? activeLanguage?.peopleDecide
+                    : doorReview?.drawInReVote === "Jail all"
+                    ? activeLanguage?.jailAll
+                    : activeLanguage?.releaseAll}
                 </Text>
               </View>
               <View
@@ -554,7 +563,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                     marginTop: 8,
                   }}
                 >
-                  Spectators:
+                  {activeLanguage?.spectators}:
                 </Text>
                 {doorReview.spectatorMode ? (
                   <View
@@ -606,7 +615,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                   marginLeft: 4,
                 }}
               >
-                Roles:
+                {activeLanguage?.roles}:
               </Text>
               <View
                 style={{
@@ -629,6 +638,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                         position: "relative",
                         borderWidth: 2,
                         borderColor: "gray",
+                        padding: 2,
                       }}
                     >
                       <FontAwesome6
@@ -639,7 +649,19 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                         style={{ position: "absolute", top: 8, right: 8 }}
                       />
                       <Text style={{ fontSize: 12, color: theme.text }}>
-                        {role.label}{" "}
+                        <Text>
+                          {role.value === "mafia"
+                            ? activeLanguage?.mafia
+                            : role?.value === "citizen"
+                            ? activeLanguage?.citizen
+                            : role?.value === "doctor"
+                            ? activeLanguage?.doctor
+                            : role.value === "police"
+                            ? activeLanguage?.police
+                            : role?.value === "serial-killer"
+                            ? activeLanguage?.serialKiller
+                            : activeLanguage?.mafiaDon}
+                        </Text>{" "}
                         {role.value === "mafia"
                           ? "(" + doorReview.options.maxMafias + ")"
                           : role.value === "citizen"
@@ -681,11 +703,11 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                           fontWeight: 500,
                         }}
                       >
-                        Pin Code
+                        {activeLanguage?.code}
                       </Text>
                       <View style={{ width: "100%" }}>
                         <TextInput
-                          placeholder="Enter Pin Code"
+                          placeholder={activeLanguage?.code}
                           placeholderTextColor={theme.text}
                           maxLength={8}
                           value={pinCodeInput}
@@ -709,23 +731,23 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                 title={(() => {
                   if (currentUser?._id !== doorReview?.admin.founder.id) {
                     if (gameLevel?.status === "In Play") {
-                      return "Playing now";
+                      return activeLanguage?.playingNow;
                     } else if (
                       gameLevel?.status !== "In Play" &&
                       liveUsers?.filter((u: any) => u.type === "player")
                         .length === doorReview?.options.maxPlayers
                     ) {
-                      return "Room is full";
+                      return activeLanguage?.room_full;
                     } else {
-                      return "Join as a Player";
+                      return activeLanguage?.join_as_player;
                     }
                   } else {
                     if (currentUser?.vip?.active) {
-                      return <Text>Open Room</Text>;
+                      return <Text>{activeLanguage?.open}</Text>;
                     } else {
                       return (
                         <Text>
-                          Open Room 2{" "}
+                          {activeLanguage?.open} 2{" "}
                           <FontAwesome5 name="coins" size={14} color="white" />
                         </Text>
                       );
@@ -749,7 +771,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
               {doorReview?.spectatorMode &&
                 doorReview?.admin.founder.id !== currentUser?._id && (
                   <Button
-                    title="Join as a Spectator"
+                    title={activeLanguage?.join_as_spectator}
                     style={{
                       backgroundColor: theme.text,
                       color: "white",
@@ -814,56 +836,15 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
       )}
 
       {deleteConfirm && (
-        <BlurView
-          intensity={20}
-          tint="dark"
-          style={{
-            width: "100%",
-            height: "100%",
-            position: "absolute",
-            top: 0,
-            zIndex: 90,
-          }}
-        >
-          <Pressable
-            onPress={closeDeleteConfirm}
-            style={{ width: "100%", height: "100%" }}
-          >
-            <Animated.View
-              style={[
-                styles.confirmPopup,
-                { transform: [{ translateY: slideAnim }] },
-              ]}
-            >
-              <BlurView intensity={120} tint="dark" style={styles.confirmBlur}>
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 500,
-                    textAlign: "center",
-                    color: theme.text,
-                  }}
-                >
-                  Are you sure to want to delete this room?
-                </Text>
-                <View style={styles.confirmButtons}>
-                  <Button
-                    title="Cancel"
-                    style={styles.cancelButton}
-                    onPressFunction={closeDeleteConfirm}
-                  />
-                  <Button
-                    loading={loading}
-                    title="Remove"
-                    style={styles.removeButton}
-                    onPressFunction={DeleteRoom}
-                  />
-                </View>
-              </BlurView>
-            </Animated.View>
-          </Pressable>
-        </BlurView>
+        <DeleteConfirm
+          closeDeleteConfirm={closeDeleteConfirm}
+          text={activeLanguage?.room_delete_confirmation}
+          Function={DeleteRoom}
+          loadingDelete={loading}
+          slideAnim={slideAnim}
+        />
       )}
+
       {openBlackList && (
         <BlackList
           roomId={doorReview?._id}
@@ -920,46 +901,5 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 80,
     paddingBottom: 96,
-  },
-  confirmPopup: {
-    height: 300,
-    zIndex: 90,
-    position: "absolute",
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.8)",
-    width: "100%",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    overflow: "hidden",
-  },
-  confirmBlur: {
-    width: "100%",
-    height: 300,
-    padding: 24,
-    paddingTop: 48,
-    gap: 32,
-  },
-  confirmText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
-    lineHeight: 28,
-  },
-  confirmButtons: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 16,
-  },
-  cancelButton: {
-    width: "45%",
-    backgroundColor: "#888",
-    color: "white",
-  },
-  removeButton: {
-    width: "45%",
-    backgroundColor: "red",
-    color: "white",
   },
 });

@@ -4,10 +4,12 @@ import Menu from "./menu";
 import { ActivityIndicator } from "react-native-paper";
 import { useAdminContext } from "../../context/admin";
 import { useAuthContext } from "../../context/auth";
+import { useAppContext } from "../../context/app";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const AdminDashboard = ({ navigation }: any) => {
+  const { activeLanguage } = useAppContext();
   const { currentUser } = useAuthContext();
   const { loadingAdminNotifications } = useAdminContext();
   /**
@@ -62,7 +64,9 @@ const AdminDashboard = ({ navigation }: any) => {
         }}
       >
         <Text style={{ color: "white", fontSize: 24, fontWeight: 600 }}>
-          {currentUser?.admin?.role} Dashboard
+          {currentUser?.admin?.role === "App Admin"
+            ? activeLanguage?.app_admin
+            : activeLanguage?.game_admin}
         </Text>
       </View>
       <Animated.View

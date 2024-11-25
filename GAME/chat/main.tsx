@@ -8,6 +8,7 @@ import {
   View,
   KeyboardEvent,
   Easing,
+  Platform,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
@@ -122,26 +123,28 @@ const Chat = ({
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useEffect(() => {
-    function onKeyboardDidShow(e: KeyboardEvent) {
-      // Remove type here if not using TypeScript
-      setKeyboardHeight(e.endCoordinates.height);
-    }
+    const onKeyboardShow = (e: any) => {
+      const height = e.endCoordinates?.height || 0;
+      console.log("Keyboard Height:", height); // Debug log
+      setKeyboardHeight(height);
+    };
 
-    function onKeyboardDidHide() {
+    const onKeyboardHide = () => {
       setKeyboardHeight(0);
-    }
+    };
 
-    const showSubscription = Keyboard.addListener(
-      "keyboardDidShow",
-      onKeyboardDidShow
+    const showListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      onKeyboardShow
     );
-    const hideSubscription = Keyboard.addListener(
-      "keyboardDidHide",
-      onKeyboardDidHide
+    const hideListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      onKeyboardHide
     );
+
     return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
+      showListener.remove();
+      hideListener.remove();
     };
   }, []);
 

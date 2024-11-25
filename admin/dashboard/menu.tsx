@@ -1,31 +1,37 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 import MenuItem from "./menu-item";
+import { useAppContext } from "../../context/app";
 
 const Menu = ({ navigation }: any) => {
+  const { activeLanguage } = useAppContext();
   /**
    * Menu items
    */
   const items = [
     {
-      screen: "Management",
-      label: "Management",
+      screen: "Incomes",
+      label: activeLanguage?.incomes,
     },
     {
       screen: "Users",
-      label: "Users",
+      label: activeLanguage?.users,
     },
     {
-      screen: "Black List",
-      label: "Black List",
+      screen: "Management",
+      label: activeLanguage?.management,
     },
     {
       screen: "Products",
-      label: "Products",
+      label: activeLanguage?.products,
+    },
+    {
+      screen: "Black List",
+      label: activeLanguage?.blacklist,
     },
     {
       screen: "Reports",
-      label: "Reports",
+      label: activeLanguage?.reports,
     },
   ];
   return (

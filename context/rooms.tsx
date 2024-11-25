@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { Dimensions } from "react-native";
@@ -68,11 +69,9 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
         setLanguageTotals(response.data.data.languageTotals);
         setPage(pg); // Update the current page
         setTotalPages(response.data.totalPages); // Update total pages
-
-        // Reset loading state
-        setRerenderRooms(false);
         setLoading(false);
         setLoadRooms(false);
+        setRerenderRooms(false);
       } else {
         console.error("Failed to fetch rooms: ", response.data.message);
         setLoadRooms(false); // Stop loading even on failure
@@ -92,7 +91,20 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
         GetRooms(1);
       }
     }
-  }, [apiUrl, search, currentUser, language, rerenderRooms]);
+  }, [rerenderRooms]);
+
+  const avoidFirstRender = useRef(true);
+
+  useEffect(() => {
+    // Skip the effect on the first render
+    if (avoidFirstRender.current) {
+      avoidFirstRender.current = false;
+      return; // Exit early if it's the first render
+    }
+
+    // Now run GetRooms(1) on subsequent renders
+    GetRooms(1);
+  }, [search, currentUser, language]);
 
   const [loadMore, setLoadMore] = useState(false);
 

@@ -1,13 +1,10 @@
 import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import axios from "axios";
 import { BlurView } from "expo-blur";
-import {
-  deleteObject,
-  getDownloadURL,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-import React, { useEffect, useRef, useState } from "react";
+import * as Haptics from "expo-haptics";
+import { deleteObject, ref } from "firebase/storage";
+import _ from "lodash";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -21,14 +18,12 @@ import {
   View,
 } from "react-native";
 import Button from "../../components/button";
-import InputFile from "../../components/fileInput";
+import Img from "../../components/image";
 import Input from "../../components/input";
 import { useAppContext } from "../../context/app";
 import { useAuthContext } from "../../context/auth";
 import { storage } from "../../firebase";
-import * as Haptics from "expo-haptics";
-import _ from "lodash";
-import Img from "../../components/image";
+import DeleteConfirm from "../../components/deleteConfirm";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -36,7 +31,7 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
 
   /**
    * Auth context
@@ -65,15 +60,15 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
   const types = [
     {
       value: "profile-avatar",
-      label: "Profile Avatar",
+      label: activeLanguage?.profileAvatar,
     },
     {
       value: "room-avatar",
-      label: "Room Avatar",
+      label: activeLanguage?.roomAvatar,
     },
     {
       value: "clan-avatar",
-      label: "Clan Avatar",
+      label: activeLanguage?.clanAvatar,
     },
   ];
 
@@ -183,7 +178,8 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
       <BlurView intensity={120} tint="dark" style={styles.container}>
         <BlurView intensity={120} tint="dark" style={styles.header}>
           <Text style={{ color: theme.active, fontSize: 18, fontWeight: 500 }}>
-            {item?.founder.userId === currentUser?._id && "Edit Product"}
+            {item?.founder.userId === currentUser?._id &&
+              activeLanguage?.edit_product}
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
             <Pressable
@@ -215,9 +211,9 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
             contentContainerStyle={{ gap: 16, paddingBottom: 160 }}
           >
             <View style={{ gap: 8 }}>
-              <Text style={styles.title}>Title*</Text>
+              <Text style={styles.title}>{activeLanguage?.title}*</Text>
               <Input
-                placeholder="Enter Product's Title"
+                placeholder={activeLanguage?.title}
                 value={productState?.title}
                 onChangeText={(text: string) =>
                   setProductState((prev: any) => ({ ...prev, title: text }))
@@ -234,7 +230,7 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
                   marginBottom: 4,
                 }}
               >
-                Select Type*
+                {activeLanguage?.select_type}*
               </Text>
 
               <View style={{ gap: 8 }}>
@@ -295,10 +291,11 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
               <Text
                 style={{ color: theme.text, fontSize: 14, fontWeight: 600 }}
               >
-                Price <FontAwesome5 name="coins" size={14} color="orange" />
+                {activeLanguage?.price}{" "}
+                <FontAwesome5 name="coins" size={14} color="orange" />
               </Text>
               <Input
-                placeholder="Price"
+                placeholder={activeLanguage?.price}
                 value={`${productState?.price}`}
                 onChangeText={(text: string) =>
                   setProductState((prev: any) => ({ ...prev, price: text }))
@@ -308,7 +305,7 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
             </View>
 
             <Button
-              title="Save"
+              title={activeLanguage?.save}
               loading={loading}
               style={{
                 width: "100%",
@@ -350,52 +347,13 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
           </View>
         )}
         {deleteConfirm && (
-          <BlurView
-            intensity={20}
-            tint="dark"
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              top: 0,
-              zIndex: 80,
-            }}
-          >
-            <Pressable
-              onPress={closeDeleteConfirm}
-              style={{ width: "100%", height: "100%" }}
-            >
-              <Animated.View
-                style={[
-                  styles.confirmPopup,
-                  { transform: [{ translateY: slideAnim }] },
-                ]}
-              >
-                <BlurView
-                  intensity={120}
-                  tint="dark"
-                  style={styles.confirmBlur}
-                >
-                  <Text style={styles.confirmText}>
-                    Are you sure you want to remove this product?
-                  </Text>
-                  <View style={styles.confirmButtons}>
-                    <Button
-                      title="Cancel"
-                      style={styles.cancelButton}
-                      onPressFunction={closeDeleteConfirm}
-                    />
-                    <Button
-                      loading={loadingDelete}
-                      title="Remove"
-                      style={styles.removeButton}
-                      onPressFunction={Remove}
-                    />
-                  </View>
-                </BlurView>
-              </Animated.View>
-            </Pressable>
-          </BlurView>
+          <DeleteConfirm
+            closeDeleteConfirm={closeDeleteConfirm}
+            text={activeLanguage?.product_delete_confirmation}
+            Function={Remove}
+            loadingDelete={loadingDelete}
+            slideAnim={slideAnim}
+          />
         )}
       </BlurView>
     </KeyboardAvoidingView>
@@ -446,46 +404,5 @@ const createStyles = (theme: any) =>
       height: 100,
       resizeMode: "cover",
       borderRadius: 6,
-    },
-    confirmPopup: {
-      height: 300,
-      zIndex: 80,
-      position: "absolute",
-      bottom: 0,
-      backgroundColor: "rgba(0,0,0,0.8)",
-      width: "100%",
-      borderTopLeftRadius: 24,
-      borderTopRightRadius: 24,
-      overflow: "hidden",
-    },
-    confirmBlur: {
-      width: "100%",
-      height: 300,
-      padding: 24,
-      paddingTop: 48,
-      gap: 32,
-    },
-    confirmText: {
-      color: "white",
-      fontSize: 18,
-      fontWeight: "600",
-      textAlign: "center",
-      lineHeight: 28,
-    },
-    confirmButtons: {
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
-      gap: 16,
-    },
-    cancelButton: {
-      width: "45%",
-      backgroundColor: "#888",
-      color: "white",
-    },
-    removeButton: {
-      width: "45%",
-      backgroundColor: "red",
-      color: "white",
     },
   });

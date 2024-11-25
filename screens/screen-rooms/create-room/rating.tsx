@@ -9,7 +9,7 @@ const Rating = ({ setNumericPopup, setRoomState, roomState }: any) => {
   /**
    * App context
    */
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
 
   /**
    * Auth context
@@ -22,12 +22,12 @@ const Rating = ({ setNumericPopup, setRoomState, roomState }: any) => {
   const currentUserRating = DefineUserLevel({ user: currentUser });
   return (
     <View style={styles.fieldContainer}>
-      <Text style={styles.title}>Minimum Rating</Text>
+      <Text style={styles.title}>{activeLanguage?.minRating}</Text>
       <Pressable
         style={styles.numericValue}
         onPress={() => {
           setNumericPopup({
-            title: "Minimum Rating",
+            title: activeLanguage?.minRating,
             min: 1,
             max: currentUserRating?.current,
             selectedValue: roomState.rating.min,

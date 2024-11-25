@@ -11,7 +11,7 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo, oldData }: any) => {
   /**
    * App context
    */
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
   /**
    * App context
    */
@@ -103,7 +103,19 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo, oldData }: any) => {
               color={theme.text}
               style={{ position: "absolute", top: 8, right: 8 }}
             />
-            <Text>{item.label}</Text>
+            <Text>
+              {item.value === "mafia"
+                ? activeLanguage?.mafia
+                : item?.value === "citizen"
+                ? activeLanguage?.citizen
+                : item?.value === "doctor"
+                ? activeLanguage?.doctor
+                : item.value === "police"
+                ? activeLanguage?.police
+                : item?.value === "serial-killer"
+                ? activeLanguage?.serialKiller
+                : activeLanguage?.mafiaDon}
+            </Text>
             {item.price && !currentUser?.vip?.active && (
               <View
                 style={{

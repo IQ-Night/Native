@@ -12,7 +12,7 @@ import { useNotificationsContext } from "../../context/notifications";
 import { MaterialIcons } from "@expo/vector-icons";
 
 const UserRole = ({ setManageRoles, userId, manageRoles, setUsers }: any) => {
-  const { apiUrl, theme, haptics, setAlert } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
   const { socket, activeRoom } = useGameContext();
   const { currentUser } = useAuthContext();
 
@@ -95,7 +95,7 @@ const UserRole = ({ setManageRoles, userId, manageRoles, setUsers }: any) => {
         >
           <View style={styles.header}>
             <Text style={[styles.headerText, { color: theme.text }]}>
-              Manage Role for {manageRoles?.name}
+              {activeLanguage?.manage_role_for} {manageRoles?.name}
             </Text>
           </View>
 
@@ -128,7 +128,7 @@ const UserRole = ({ setManageRoles, userId, manageRoles, setUsers }: any) => {
                     adminRole?.role === "App Admin" ? theme.active : theme.text,
                 }}
               >
-                App Admin
+                {activeLanguage?.app_admin}
               </Text>
 
               {adminRole?.role === "App Admin" && (
@@ -167,7 +167,7 @@ const UserRole = ({ setManageRoles, userId, manageRoles, setUsers }: any) => {
                       : theme.text,
                 }}
               >
-                Game Admin
+                {activeLanguage?.game_admin}{" "}
               </Text>
 
               {adminRole?.role === "Game Admin" && (
@@ -182,7 +182,7 @@ const UserRole = ({ setManageRoles, userId, manageRoles, setUsers }: any) => {
           </Pressable>
 
           <Button
-            title="Save"
+            title={activeLanguage?.save}
             style={{
               backgroundColor: theme.active,
               width: "100%",

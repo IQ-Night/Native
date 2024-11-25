@@ -1,47 +1,82 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
-import { FlatList, StyleSheet, View, ActivityIndicator } from "react-native";
-import Message from "./message";
 import axios from "axios";
+import React, { useCallback, useEffect, useRef } from "react";
+import { FlatList, StyleSheet, View } from "react-native";
+import { useAppContext } from "../../../context/app";
 import { useAuthContext } from "../../../context/auth";
 import { useGameContext } from "../../../context/game";
-import { useAppContext } from "../../../context/app";
+import Message from "./message";
+import { useChatContext } from "../../../context/chat";
 
-const Messages = ({ messages, AddNewMessages, setUnreadMessages }: any) => {
+const Messages = ({
+  messages,
+  AddNewMessages,
+  lastMessage,
+  chatId,
+  members,
+  chat,
+}: any) => {
   const flatListRef = useRef<any>(null);
 
   const { apiUrl } = useAppContext();
   const { currentUser } = useAuthContext();
   const { activeRoom } = useGameContext();
+  const { chatNotifications, setChatNotifications, setChats } =
+    useChatContext();
 
   const handleScroll = (event: any) => {
     const { contentOffset } = event.nativeEvent;
 
-    // Detect if user is close to the top
-    if (contentOffset.y <= 50) {
-      AddNewMessages();
-    }
+    // // Detect if user is close to the top
+    // if (contentOffset.y <= 50) {
+    //   AddNewMessages();
+    // }
   };
 
   // Memoize the render function for each message to prevent re-renders
-  const renderMessage = useCallback(
-    ({ item, index }: any) => (
-      <Message key={item.messageId} message={item} index={index} />
-    ),
-    []
+  const renderMessage = ({ item, index }: any) => (
+    <Message
+      key={item.messageId}
+      message={item}
+      index={index}
+      members={members}
+      lastMessage={lastMessage}
+      chat={chat}
+    />
   );
-
   useEffect(() => {
     const SeenMessages = async () => {
       try {
         const response = await axios.patch(
           apiUrl +
-            "/api/v1/rooms/" +
-            activeRoom?._id +
-            "/chat/seen/" +
-            currentUser?._id
+            "/api/v1/chats/" +
+            chatId +
+            "?type=seen&seenBy=" +
+            currentUser?._id,
+          {
+            lastMessage: {
+              ...lastMessage,
+              seen: [...lastMessage?.seen, currentUser?._id],
+            },
+          }
         );
         if (response?.data?.status === "success") {
-          setUnreadMessages(false);
+          setChats((prev: any) =>
+            prev?.map((p: any) => {
+              if (p?._id === chatId) {
+                return {
+                  ...p,
+                  lastMessage: {
+                    ...p.lastMessage,
+                    seen: [...p.lastMessage?.seen, currentUser?._id],
+                  },
+                };
+              }
+            })
+          );
+
+          setChatNotifications((prev: any) =>
+            prev?.filter((p: any) => p?.chatId !== chatId)
+          );
         }
       } catch (error: any) {
         console.log(error.response.data.message);
@@ -75,7 +110,6 @@ const styles = StyleSheet.create({
     width: "100%",
     flex: 1,
     justifyContent: "flex-end",
-    marginTop: 350,
   },
   contentContainer: {
     paddingHorizontal: 12,

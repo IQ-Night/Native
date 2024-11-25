@@ -14,6 +14,8 @@ import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
 import { useNavigation } from "@react-navigation/native";
 import { Badge } from "react-native-elements";
+import { useNotificationsContext } from "../context/notifications";
+import { useChatContext } from "../context/chat";
 
 const Header = ({
   list,
@@ -29,16 +31,16 @@ const Header = ({
   isFocused,
   setIsFocused,
   inputRef,
-  title,
   totalData,
   tab,
+  tabTitle,
   filterStatus,
 }: any) => {
   const navigation: any = useNavigation();
   /**
    * App context
    */
-  const { theme, haptics } = useAppContext();
+  const { activeLanguage, theme, haptics } = useAppContext();
 
   /**
    * Auth context
@@ -69,12 +71,15 @@ const Header = ({
   }, [open]);
 
   const { connectionStatus, reconnectAttempts } = useGameContext();
+  const { chatNotifications } = useChatContext();
   return (
     <View style={styles.headerContainer}>
       <BlurView intensity={120} tint="dark" style={styles.blurContainer}>
         <View style={styles.titleContainer}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-            <Text style={[styles.titleText, { color: theme.text }]}>{tab}</Text>
+            <Text style={[styles.titleText, { color: theme.text }]}>
+              {tabTitle}
+            </Text>
             <Badge
               status={
                 connectionStatus === "online"
@@ -125,18 +130,19 @@ const Header = ({
                 navigation.navigate("Chats");
               }}
             >
-              {/* {unreadMessages && ( */}
-              <Badge
-                status="success"
-                badgeStyle={{
-                  backgroundColor: theme.active,
-                  position: "absolute",
-                  zIndex: 50,
-                  right: 0,
-                  top: 0,
-                }}
-              />
-              {/* )} */}
+              {chatNotifications?.length > 0 && (
+                <Badge
+                  status="success"
+                  value={chatNotifications?.length}
+                  badgeStyle={{
+                    backgroundColor: theme.active,
+                    position: "absolute",
+                    zIndex: 50,
+                    right: -6,
+                    top: -6,
+                  }}
+                />
+              )}
               <MaterialCommunityIcons
                 name="chat"
                 size={24}
@@ -159,7 +165,7 @@ const Header = ({
                 },
               ]}
             >
-              Total: {totalData}
+              {activeLanguage?.total}: {totalData}
             </Animated.Text>
 
             <Search
@@ -199,7 +205,7 @@ const Header = ({
                   },
                 ]}
               >
-                Filter
+                {activeLanguage?.filter}
               </Text>
             </Pressable>
           </View>
@@ -286,7 +292,6 @@ const styles = StyleSheet.create({
     zIndex: 40,
   },
   filterButton: {
-    width: 100,
     padding: 3,
     paddingHorizontal: 32,
     borderRadius: 50,

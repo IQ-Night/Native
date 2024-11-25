@@ -31,6 +31,8 @@ import Avatars from "../../../components/avatars";
 import BlackList from "./blackList";
 import { useContentContext } from "../../../context/content";
 import EditSlogan from "./popup-editSlogan";
+import Button from "../../../components/button";
+import DeleteConfirm from "../../../components/deleteConfirm";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -44,7 +46,7 @@ const Clan = ({ route, navigation }: any) => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics, setAlert } = useAppContext();
+  const { apiUrl, theme, haptics, setAlert, activeLanguage } = useAppContext();
   /**
    * Auth context
    */
@@ -68,6 +70,9 @@ const Clan = ({ route, navigation }: any) => {
     setUpdateClanState,
     deleteConfirm,
     setDeleteConfirm,
+    openDeleteConfirm,
+    closeDeleteConfirm,
+    slideAnimDelete,
   } = useProfileContext();
   /**
    * Notifications context
@@ -104,7 +109,7 @@ const Clan = ({ route, navigation }: any) => {
         );
         navigation.navigate("My Clans");
         setLoading(false);
-        setDeleteConfirm(false);
+        closeDeleteConfirm();
       }
     } catch (error: any) {
       console.log(error);
@@ -318,7 +323,7 @@ const Clan = ({ route, navigation }: any) => {
           prev.filter((mem: any) => mem.userId !== deleteConfirm)
         );
         setLoading(false);
-        setDeleteConfirm(false);
+        closeDeleteConfirm();
         SendNotification({
           userId: deleteConfirm,
           type: "Admin has deleted you from clan",
@@ -588,7 +593,7 @@ const Clan = ({ route, navigation }: any) => {
                 ? item?.slogan
                 : item?.admin?.find((a: any) => a.role === "founder").user
                     .id === currentUser?._id
-                ? "Slogan: "
+                ? `${activeLanguage?.slogan}: `
                 : ""}
             </Text>
             {item?.admin?.find((a: any) => a.role === "founder").user.id ===
@@ -614,7 +619,8 @@ const Clan = ({ route, navigation }: any) => {
               fontWeight: 500,
             }}
           >
-            Founded At: {FormatDate(item.createdAt, "onlyDate")}
+            {activeLanguage?.foundedAt}:{" "}
+            {FormatDate(item.createdAt, "onlyDate")}
           </Text>
           {item?.admin?.find((a: any) => a.role === "founder").user.id ===
             currentUser?._id && (
@@ -626,7 +632,7 @@ const Clan = ({ route, navigation }: any) => {
                   fontWeight: 500,
                 }}
               >
-                Chat:
+                {activeLanguage?.chat}:
               </Text>
               {Platform.OS === "ios" ? (
                 <Switch
@@ -691,7 +697,7 @@ const Clan = ({ route, navigation }: any) => {
                 >
                   <MaterialIcons name="logout" size={16} color="white" />
                   <Text style={{ color: "white", fontWeight: "500" }}>
-                    Leave Clan
+                    {activeLanguage?.leaveClan}
                   </Text>
                 </View>
               )}
@@ -758,7 +764,7 @@ const Clan = ({ route, navigation }: any) => {
                   name="users"
                 />
                 {"  "}
-                Members ({members?.length})
+                {activeLanguage?.members} ({members?.length})
               </Text>
             </Pressable>
 
@@ -787,7 +793,7 @@ const Clan = ({ route, navigation }: any) => {
                   fontWeight: 600,
                 }}
               >
-                Requests{" "}
+                {activeLanguage?.requests}{" "}
                 <Text
                   style={{
                     color:
@@ -830,7 +836,7 @@ const Clan = ({ route, navigation }: any) => {
                   fontWeight: 600,
                 }}
               >
-                Add Members
+                {activeLanguage?.add_members}
               </Text>
             </Pressable>
             <Pressable
@@ -857,7 +863,7 @@ const Clan = ({ route, navigation }: any) => {
                   fontWeight: 600,
                 }}
               >
-                Black List
+                {activeLanguage?.blacklist}
               </Text>
             </Pressable>
           </ScrollView>
@@ -870,8 +876,8 @@ const Clan = ({ route, navigation }: any) => {
               marginVertical: 4,
             }}
           >
-            <FontAwesome5 size={16} color={theme.text} name="users" /> Members (
-            {members?.length})
+            <FontAwesome5 size={16} color={theme.text} name="users" />{" "}
+            {activeLanguage?.members} ({members?.length})
           </Text>
         )}
         {openSearch && activeState === "add" && (
@@ -908,10 +914,11 @@ const Clan = ({ route, navigation }: any) => {
                         color: "rgba(255,255,255,0.3)",
                         fontWeight: 500,
                         fontSize: 16,
-                        margin: 16,
+                        position: "absolute",
+                        top: 64,
                       }}
                     >
-                      No Players Found!
+                      {activeLanguage?.not_found}
                     </Text>
                   )}
                   {!loadPlayers &&
@@ -1006,8 +1013,8 @@ const Clan = ({ route, navigation }: any) => {
                                     (player: any) =>
                                       player.userId === member?._id
                                   )
-                                    ? "Pending"
-                                    : "Invite"}
+                                    ? activeLanguage?.pending
+                                    : activeLanguage?.invite}
                                 </Text>
                               </Pressable>
                             )}
@@ -1026,10 +1033,36 @@ const Clan = ({ route, navigation }: any) => {
             {loadMembers && (
               <ActivityIndicator size={24} color={theme.active} />
             )}
+            {activeState === "requests" && requests?.length < 1 && (
+              <Text
+                style={{
+                  color: "rgba(255,255,255,0.3)",
+                  fontWeight: 500,
+                  fontSize: 16,
+                  position: "absolute",
+                  top: 64,
+                }}
+              >
+                {activeLanguage?.not_found}
+              </Text>
+            )}
+            {activeState === "members" && members?.length < 1 && (
+              <Text
+                style={{
+                  color: "rgba(255,255,255,0.3)",
+                  fontWeight: 500,
+                  fontSize: 16,
+                  position: "absolute",
+                  top: 64,
+                }}
+              >
+                {activeLanguage?.not_found}
+              </Text>
+            )}
             {!loadMembers &&
+              (activeState === "members" || activeState === "requests") &&
               (activeState === "members" ? members : requests)?.map(
                 (member: any, index: any) => {
-                  var level = DefineUserLevel({ user: member });
                   return (
                     <View
                       key={index}
@@ -1082,35 +1115,27 @@ const Clan = ({ route, navigation }: any) => {
                           }}
                         >
                           {member?.userId === currentUser?._id
-                            ? "You"
+                            ? activeLanguage?.you
                             : member?.name}
                         </Text>
                       </Pressable>
                       <Text style={{ color: theme.active, fontWeight: "500" }}>
                         {(() => {
                           const role = item?.admin.find(
-                            (m: any) => m.user._id === member?._id
+                            (m: any) => m.user.id === member?._id
                           )?.role;
-                          return role
-                            ? role.charAt(0).toUpperCase() + role.slice(1)
-                            : ""; // Capitalize role if it exists
+                          let roleLabel;
+                          if (role === "founder") {
+                            roleLabel = activeLanguage?.founder;
+                          } else if (role === "director") {
+                            roleLabel = activeLanguage?.director;
+                          } else if (role === "manager") {
+                            roleLabel = activeLanguage?.manager;
+                          } else if (role === "wiser") {
+                            roleLabel = activeLanguage?.wiser;
+                          }
+                          return roleLabel; // Capitalize role if it exists
                         })()}
-                      </Text>
-                      <Text
-                        style={{
-                          color: theme.text,
-                          fontWeight: 500,
-                        }}
-                      >
-                        Lvl: {level?.current}
-                      </Text>
-                      <Text
-                        style={{
-                          color: theme.active,
-                          fontWeight: 500,
-                        }}
-                      >
-                        {member?.rating} P.
                       </Text>
 
                       {(currentUserRole === "founder" ||
@@ -1128,6 +1153,11 @@ const Clan = ({ route, navigation }: any) => {
                           >
                             <Pressable
                               onPress={() => {
+                                if (haptics) {
+                                  Haptics.impactAsync(
+                                    Haptics.ImpactFeedbackStyle.Soft
+                                  );
+                                }
                                 setOpenConfig(member);
                               }}
                             >
@@ -1139,7 +1169,12 @@ const Clan = ({ route, navigation }: any) => {
                             </Pressable>
                             <Pressable
                               onPress={() => {
-                                setDeleteConfirm(member?._id);
+                                if (haptics) {
+                                  Haptics.impactAsync(
+                                    Haptics.ImpactFeedbackStyle.Soft
+                                  );
+                                }
+                                openDeleteConfirm(member?._id);
                               }}
                             >
                               <MaterialIcons
@@ -1163,6 +1198,11 @@ const Clan = ({ route, navigation }: any) => {
                           >
                             <Pressable
                               onPress={() => {
+                                if (haptics) {
+                                  Haptics.impactAsync(
+                                    Haptics.ImpactFeedbackStyle.Soft
+                                  );
+                                }
                                 CancelRequest({ userId: member?._id });
                               }}
                               style={{ marginLeft: "auto" }}
@@ -1176,10 +1216,15 @@ const Clan = ({ route, navigation }: any) => {
                             <Text
                               style={{ fontWeight: 600, color: theme.text }}
                             >
-                              Join?
+                              {activeLanguage?.join}?
                             </Text>
                             <Pressable
                               onPress={() => {
+                                if (haptics) {
+                                  Haptics.impactAsync(
+                                    Haptics.ImpactFeedbackStyle.Soft
+                                  );
+                                }
                                 ConfirmRequest({
                                   userId: member?._id,
                                 });
@@ -1212,86 +1257,17 @@ const Clan = ({ route, navigation }: any) => {
       )}
 
       {deleteConfirm && (
-        <BlurView
-          intensity={120}
-          tint="dark"
-          style={{
-            position: "absolute",
-            top: -50,
-            zIndex: 50,
-            height: "100%",
-            width: "100%",
-            justifyContent: "center",
-          }}
-        >
-          <View style={{ paddingHorizontal: 24, gap: 16 }}>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: 500,
-                textAlign: "center",
-                color: theme.text,
-              }}
-            >
-              {deleteConfirm === "clan"
-                ? "Are you sure to want to delete this Clan?"
-                : "Are you sure to want to delete this Member?"}
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                width: "100%",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
-            >
-              <Pressable
-                onPress={() => {
-                  setDeleteConfirm(false);
-                  if (haptics) {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                  }
-                }}
-                style={{
-                  paddingVertical: 12,
-                  paddingHorizontal: 8,
-                  borderRadius: 12,
-                  backgroundColor: "#333",
-                  width: "48%",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: 40,
-                }}
-              >
-                <Text style={{ fontWeight: "bold", color: theme.text }}>
-                  Cancel
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={deleteConfirm === "clan" ? DeleteClan : DeleteMember}
-                style={{
-                  paddingVertical: 12,
-                  paddingHorizontal: 8,
-                  borderRadius: 12,
-                  backgroundColor: theme.active,
-                  width: "48%",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: 40,
-                }}
-              >
-                {loading ? (
-                  <ActivityIndicator size={22} color="white" />
-                ) : (
-                  <Text style={{ fontWeight: "bold", color: "white" }}>
-                    Confirm
-                  </Text>
-                )}
-              </Pressable>
-            </View>
-          </View>
-        </BlurView>
+        <DeleteConfirm
+          closeDeleteConfirm={closeDeleteConfirm}
+          text={
+            deleteConfirm === "clan"
+              ? activeLanguage?.clan_delete_confirmation
+              : activeLanguage?.user_delete_confirmation
+          }
+          Function={deleteConfirm === "clan" ? DeleteClan : DeleteMember}
+          slideAnim={slideAnimDelete}
+          loadingDelete={loading}
+        />
       )}
       {openConfig && (
         <ManagementConfig
@@ -1361,14 +1337,7 @@ const styles = StyleSheet.create({
     gap: 6,
     minHeight: SCREEN_HEIGHT * 0.3,
   },
-  screen: {
-    width: "100%",
-    height: "110%",
-    position: "absolute",
-    top: 0,
-    zIndex: 50,
-    paddingBottom: 96,
-  },
+
   popupContainer: {
     height: "100%",
     width: "100%",

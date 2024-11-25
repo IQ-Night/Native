@@ -7,18 +7,18 @@ const MaxPlayers = ({ setNumericPopup, setRoomState, roomState }: any) => {
   /**
    * App context
    */
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
 
   // styles
   const styles = createStyles(theme);
   return (
     <View style={styles.fieldContainer}>
-      <Text style={styles.title}>Max Players</Text>
+      <Text style={styles.title}>{activeLanguage?.maxPlayers}</Text>
       <Pressable
         style={styles.numericValue}
         onPress={() => {
           setNumericPopup({
-            title: "Max Players",
+            title: activeLanguage?.maxPlayers,
             min: 4,
             max: 16,
             selectedValue: roomState.options.maxPlayers,

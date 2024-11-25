@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import NotificationItem from "./notification-item";
 import { useNotificationsContext } from "../../../context/notifications";
+import { useAppContext } from "../../../context/app";
 
 const List = ({ setDeleteItem }: any) => {
+  const { activeLanguage } = useAppContext();
   const { notifications, totalNotifications, AddNotifications } =
     useNotificationsContext();
 
@@ -39,7 +41,7 @@ const List = ({ setDeleteItem }: any) => {
               textAlign: "center",
             }}
           >
-            Not Found!
+            {activeLanguage?.not_found}
           </Text>
         )}
         {list?.map((item: any, index: number) => {

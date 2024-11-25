@@ -16,7 +16,7 @@ const ConfirmRoles = ({
   StartPlay,
   loadingStarting,
 }: any) => {
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
   const { activeRoom, gamePlayers } = useGameContext();
 
   const totalPlayersForStart = gamePlayers?.length;
@@ -136,9 +136,14 @@ const ConfirmRoles = ({
       >
         <MaterialCommunityIcons name="close" size={30} color={theme.active} />
       </Pressable>
-      <Text style={{ fontSize: 20, fontWeight: 600, color: theme.text }}>
-        Choice Roles (Total Players: {totalPlayersForStart}):
-      </Text>
+      <View style={{ alignItems: "center", gap: 12 }}>
+        <Text style={{ fontSize: 20, fontWeight: 600, color: theme.text }}>
+          {activeLanguage?.choice_roles}
+        </Text>
+        <Text style={{ fontSize: 20, fontWeight: 600, color: theme.text }}>
+          ({activeLanguage?.players}: {totalPlayersForStart})
+        </Text>
+      </View>
 
       <View
         style={{
@@ -151,9 +156,19 @@ const ConfirmRoles = ({
         }}
       >
         {activeRoom?.roles?.map((r: any, x: number) => {
-          let label = roles?.find(
-            (role: any) => role?.value === r?.value
-          )?.label;
+          let label =
+            r.value === "mafia"
+              ? activeLanguage?.mafia
+              : r?.value === "citizen"
+              ? activeLanguage?.citizen
+              : r?.value === "doctor"
+              ? activeLanguage?.doctor
+              : r.value === "police"
+              ? activeLanguage?.police
+              : r?.value === "serial-killer"
+              ? activeLanguage?.serialKiller
+              : activeLanguage?.mafiaDon;
+
           let disabled;
           if (r.value === "mafia" && !mafias) {
             disabled = true;
@@ -355,15 +370,10 @@ const ConfirmRoles = ({
                 style={{
                   color: disabled ? "#888" : theme.text,
                   fontWeight: 600,
-                  fontSize: 18,
+                  fontSize: 14,
                 }}
               >
                 {label}
-                {/* {r?.value === "citizen" &&
-                  " (" +
-                    confirmedRoles?.filter((ir: any) => ir.value === "citizen")
-                      .length +
-                    ")"} */}
               </Text>
               {mafias && r.value === "mafia" && maxMafias > 1 && (
                 <Pressable
@@ -378,7 +388,11 @@ const ConfirmRoles = ({
                     {selectedMaxMafias}{" "}
                     {confirmedRoles?.find(
                       (cr: any) => cr.value === "mafia-don"
-                    ) && <Text style={{ fontSize: 12 }}>(Include Don)</Text>}
+                    ) && (
+                      <Text style={{ fontSize: 12 }}>
+                        ({activeLanguage?.include_don})
+                      </Text>
+                    )}
                   </Text>
                 </Pressable>
               )}
@@ -387,7 +401,7 @@ const ConfirmRoles = ({
         })}
       </View>
       <Button
-        title="Start Play"
+        title={activeLanguage?.start_play}
         style={{
           width: "90%",
           backgroundColor: theme.active,
@@ -400,7 +414,7 @@ const ConfirmRoles = ({
 
       {openOptions?.active && (
         <NumberPicker
-          title="Total Mafias"
+          title={activeLanguage?.total_mafias}
           min={1}
           max={maxMafias}
           step={1}

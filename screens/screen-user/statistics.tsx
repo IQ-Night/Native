@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { DefineUserLevel } from "../../functions/userLevelOptimizer";
 
 const Statistics = ({ user, statistics }: any) => {
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
   let level = DefineUserLevel({ user });
 
   // Calculate the total number of roles
@@ -28,11 +28,11 @@ const Statistics = ({ user, statistics }: any) => {
           fontWeight: 600,
         }}
       >
-        User Stats:
+        {activeLanguage?.userStats}:
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
         <Text style={{ color: theme.text, fontSize: 16, fontWeight: 500 }}>
-          Total games played:
+          {activeLanguage?.totalGamesPlayed}:
         </Text>
         <Text style={{ color: theme.active, fontSize: 16, fontWeight: 500 }}>
           {user?.totalGames}
@@ -40,7 +40,7 @@ const Statistics = ({ user, statistics }: any) => {
       </View>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
         <Text style={{ color: theme.text, fontSize: 16, fontWeight: 500 }}>
-          Points:
+          {activeLanguage?.points}:
         </Text>
         <Text style={{ color: theme.active, fontSize: 16, fontWeight: 500 }}>
           {user?.rating}{" "}
@@ -53,7 +53,7 @@ const Statistics = ({ user, statistics }: any) => {
       </View>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
         <Text style={{ color: theme.text, fontSize: 16, fontWeight: 500 }}>
-          Level:
+          {activeLanguage?.level}:
         </Text>
         <Text style={{ color: theme.active, fontSize: 16, fontWeight: 500 }}>
           {level?.current}
@@ -67,10 +67,10 @@ const Statistics = ({ user, statistics }: any) => {
           marginTop: 8,
         }}
       >
-        Game Stats:
+        {activeLanguage?.gameStats}:
       </Text>
       <Text style={{ color: theme.text, fontSize: 16, fontWeight: 500 }}>
-        Roles:
+        {activeLanguage?.roles}:
       </Text>
       <View style={{ gap: 8, marginLeft: 8 }}>
         {[
@@ -88,7 +88,18 @@ const Statistics = ({ user, statistics }: any) => {
               key={role}
               style={{ color: theme.text, fontWeight: 500, fontSize: 16 }}
             >
-              {capitalize(role)}:{" "}
+              {role === "mafia"
+                ? activeLanguage?.mafia
+                : role === "mafia-don"
+                ? activeLanguage?.mafiaDon
+                : role === "doctor"
+                ? activeLanguage?.doctor
+                : role === "police"
+                ? activeLanguage?.police
+                : role === "serial-killer"
+                ? activeLanguage?.serialKiller
+                : activeLanguage?.citizen}
+              :{" "}
               <Text style={{ color: theme.active }}>
                 {roleCount}{" "}
                 <Text style={{ color: theme.text, fontStyle: "italic" }}>

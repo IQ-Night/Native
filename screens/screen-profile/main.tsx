@@ -26,6 +26,7 @@ import Item from "./item";
 import BirthdayWindow from "./popup-birthday";
 import EditCountry from "./popup-country";
 import EditNameWindow from "./popup-editName";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -117,7 +118,7 @@ const Profile = ({ navigation }: any) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <Header tab="Profile" />
+      <Header tab="Profile" tabTitle={activeLanguage?.profile} />
 
       <Animated.View
         style={{
@@ -182,7 +183,7 @@ const Profile = ({ navigation }: any) => {
               <Text
                 style={{ color: theme.text, fontSize: 14, fontWeight: 500 }}
               >
-                Lvl: {level?.current}
+                {activeLanguage?.lvl}: {level?.current}
               </Text>
             </View>
 
@@ -300,7 +301,11 @@ const Profile = ({ navigation }: any) => {
               {updateState === "Language" && (
                 <ChoiceLanguage
                   state={language}
-                  setState={(e: string) => setLanguage(e)}
+                  setState={async (e: string) => {
+                    await AsyncStorage.setItem("IQ-Night:language", e);
+
+                    setLanguage(e);
+                  }}
                   setOpenPopup={setUpdateState}
                 />
               )}

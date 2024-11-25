@@ -7,7 +7,7 @@ import Img from "../components/image";
 import * as Haptics from "expo-haptics";
 
 const Spectators = ({ setOpenSpectators, setOpenUser }: any) => {
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
   const { spectators } = useGameContext();
   const slideAnim = useRef(new Animated.Value(500)).current; // Start off-screen
 
@@ -71,7 +71,7 @@ const Spectators = ({ setOpenSpectators, setOpenUser }: any) => {
               bottom: 24,
             }}
           >
-            Spectators
+            {activeLanguage?.spectators}
           </Text>
           <View
             style={{

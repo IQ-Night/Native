@@ -23,7 +23,7 @@ const Item = ({ item, setEditProduct }: any) => {
   /**
    * App context
    */
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
 
   const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
@@ -36,15 +36,15 @@ const Item = ({ item, setEditProduct }: any) => {
   const types = [
     {
       value: "profile-avatar",
-      label: "Profile Avatar",
+      label: activeLanguage?.profileAvatar,
     },
     {
       value: "room-avatar",
-      label: "Room Avatar",
+      label: activeLanguage?.roomAvatar,
     },
     {
       value: "clan-avatar",
-      label: "Clan Avatar",
+      label: activeLanguage?.clanAvatar,
     },
   ];
 
@@ -188,8 +188,8 @@ const Item = ({ item, setEditProduct }: any) => {
                               key={x}
                               style={{
                                 color: theme.text,
-                                fontSize: 12,
-                                fontWeight: "400",
+                                fontSize: 10,
+                                fontWeight: 500,
                                 overflow: "hidden",
                                 width: "100%",
                               }}

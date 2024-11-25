@@ -1,19 +1,17 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import {
   Dimensions,
-  Image,
-  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import CountryFlag from "react-native-country-flag";
-import { useAppContext } from "../../context/app";
 import Img from "../../components/image";
-import { useNavigation } from "@react-navigation/native";
+import { useAppContext } from "../../context/app";
 import { useAuthContext } from "../../context/auth";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 
 interface ItemType {
   id: string;
@@ -39,7 +37,7 @@ const UserItem: React.FC<UserItemProps> = ({
   /**
    * App context
    */
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
 
   const { currentUser } = useAuthContext();
 
@@ -99,7 +97,11 @@ const UserItem: React.FC<UserItemProps> = ({
               fontWeight: 500,
             }}
           >
-            ({item.admin.role})
+            (
+            {item.admin.role === "Game Admin"
+              ? activeLanguage?.game_admin
+              : activeLanguage?.app_admin}
+            )
           </Text>
         )}
       </TouchableOpacity>

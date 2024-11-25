@@ -1,7 +1,3 @@
-import { StyleSheet, Text, View, Animated } from "react-native";
-import React, { useEffect, useRef } from "react";
-import { BlurView } from "expo-blur";
-import { useAppContext } from "../context/app";
 import {
   FontAwesome5,
   FontAwesome6,
@@ -9,12 +5,15 @@ import {
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import { useGameContext } from "../context/game";
-import Img from "../components/image";
+import { BlurView } from "expo-blur";
 import LottieView from "lottie-react-native";
+import { StyleSheet, Text, View } from "react-native";
+import Img from "../components/image";
+import { useAppContext } from "../context/app";
+import { useGameContext } from "../context/game";
 
 const AttentionWindow = ({ attention, data }: any) => {
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
   const { gamePlayers } = useGameContext();
 
   // Define the attention context
@@ -24,7 +23,7 @@ const AttentionWindow = ({ attention, data }: any) => {
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
         <Fontisto name="day-sunny" size={24} color={theme.active} />
         <Text style={{ color: theme.text, fontSize: 24, fontWeight: 500 }}>
-          {attention.value}
+          {activeLanguage.start_of_the_day}
         </Text>
       </View>
     );
@@ -33,7 +32,7 @@ const AttentionWindow = ({ attention, data }: any) => {
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
         <Fontisto name="night-clear" size={24} color={theme.active} />
         <Text style={{ color: theme.text, fontSize: 24, fontWeight: 500 }}>
-          {attention.value}
+          {activeLanguage.start_of_the_night}
         </Text>
       </View>
     );
@@ -53,7 +52,7 @@ const AttentionWindow = ({ attention, data }: any) => {
             fontWeight: 500,
           }}
         >
-          {attention.value}
+          {activeLanguage.common_time}
         </Text>
       </View>
     );
@@ -70,7 +69,7 @@ const AttentionWindow = ({ attention, data }: any) => {
               fontWeight: 500,
             }}
           >
-            {attention.value}
+            {activeLanguage.candidates_to_vote}
           </Text>
         </View>
         <View style={{ gap: 8 }}>
@@ -147,7 +146,7 @@ const AttentionWindow = ({ attention, data }: any) => {
               textAlign: "center",
             }}
           >
-            {attention.value}
+            {activeLanguage.game_over_winners}
           </Text>
         </View>
       </View>
@@ -183,7 +182,7 @@ const AttentionWindow = ({ attention, data }: any) => {
             textAlign: "center",
           }}
         >
-          {attention.value} by Host!
+          {activeLanguage.room_closed} by {activeLanguage?.host}!
         </Text>
       </View>
     );
@@ -198,7 +197,7 @@ const AttentionWindow = ({ attention, data }: any) => {
             textAlign: "center",
           }}
         >
-          Votes are draw - No player has left!
+          {activeLanguage?.votes_are_draw}
         </Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <MaterialCommunityIcons
@@ -214,7 +213,7 @@ const AttentionWindow = ({ attention, data }: any) => {
               textAlign: "center",
             }}
           >
-            Starts speechs again!
+            {activeLanguage?.starts_speechs_again}
           </Text>
         </View>
       </View>
@@ -223,7 +222,7 @@ const AttentionWindow = ({ attention, data }: any) => {
     content = (
       <View style={{ alignItems: "center", justifyContent: "center", gap: 24 }}>
         <Text style={{ color: theme.text, fontSize: 16, fontWeight: 500 }}>
-          Voting Again!
+          {activeLanguage?.voting_again}
         </Text>
         <View style={{ gap: 8 }}>
           {attention?.players

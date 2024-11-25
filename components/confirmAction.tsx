@@ -16,7 +16,7 @@ import { useAuthContext } from "../context/auth";
 
 const ConfirmAction = ({ openState, setOpenState, Function, money }: any) => {
   const { currentUser } = useAuthContext();
-  const { theme, setAlert } = useAppContext();
+  const { theme, setAlert, activeLanguage } = useAppContext();
   const slideAnim = useRef(new Animated.Value(220)).current; // Start off-screen
   const [countdown, setCountdown] = useState(5); // Timer countdown state
 
@@ -132,7 +132,7 @@ const ConfirmAction = ({ openState, setOpenState, Function, money }: any) => {
               }}
             >
               <Button
-                title={`Cancel ${countdown}s`}
+                title={`${activeLanguage?.cancel} ${countdown}s`}
                 onPressFunction={closeComponent}
                 style={{
                   width: "45%",
@@ -150,7 +150,7 @@ const ConfirmAction = ({ openState, setOpenState, Function, money }: any) => {
                       marginVertical: 6,
                     }}
                   >
-                    Confirm {openState?.price}{" "}
+                    {activeLanguage?.confirm} {openState?.price}{" "}
                     {money === "money" ? (
                       "$"
                     ) : (

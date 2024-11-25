@@ -273,7 +273,7 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
             <Text
               style={{ color: theme.active, fontSize: 18, fontWeight: 500 }}
             >
-              Create New Room
+              {activeLanguage?.createNewRoom}
             </Text>
             <Ionicons
               onPress={() => {
@@ -296,7 +296,7 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
               >
-                <Text style={styles.title}>Cover</Text>
+                <Text style={styles.title}>{activeLanguage?.avatar}</Text>
               </View>
               <Pressable
                 onPress={() => {
@@ -371,7 +371,7 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
                             fontSize: 12,
                           }}
                         >
-                          Default Free
+                          {activeLanguage?.defaultFree}
                         </Text>
                       </Pressable>
                     </View>
@@ -408,7 +408,7 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
               />
             </View>
             <View style={{ gap: 8 }}>
-              <Text style={styles.title}>Roles</Text>
+              <Text style={styles.title}>{activeLanguage?.roles}</Text>
               <Roles
                 roomState={roomState}
                 setRoomState={setRoomState}
@@ -432,7 +432,7 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
               totalPrice={totalPrice}
             />
             <View style={styles.fieldContainer}>
-              <Text style={styles.title}>Language</Text>
+              <Text style={styles.title}>{activeLanguage?.language}</Text>
               <Pressable
                 onPress={() => {
                   setOpenPopup("choiceLanguage");
@@ -459,7 +459,7 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
               setNumericPopup={setNumericPopup}
             />
             <View style={styles.fieldContainer}>
-              <Text style={styles.title}>Spectator Mode</Text>
+              <Text style={styles.title}>{activeLanguage?.spectatorMode}</Text>
               <SpectatorMode
                 roomState={roomState}
                 setRoomState={setRoomState}
@@ -469,7 +469,7 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
             <DrawInReVote roomState={roomState} setRoomState={setRoomState} />
             <View style={{ marginVertical: 8 }}>
               <View style={styles.fieldContainer}>
-                <Text style={styles.title}>Rules</Text>
+                <Text style={styles.title}>{activeLanguage?.rules}</Text>
                 <Pressable
                   style={styles.numericValue}
                   onPress={() => {
@@ -480,7 +480,7 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
                   }}
                 >
                   <Text style={{ color: theme.text, fontWeight: 500 }}>
-                    Add
+                    {activeLanguage?.add}
                   </Text>
                 </Pressable>
               </View>
@@ -553,7 +553,7 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
                   </View>
                 )
               }
-              title={"Create"}
+              title={activeLanguage?.create}
               loading={loading}
               style={{
                 width: "100%",

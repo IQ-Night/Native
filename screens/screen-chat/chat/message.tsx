@@ -1,17 +1,25 @@
+import { useNavigation } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useState } from "react";
+import Img from "../../../components/image";
 import { useAppContext } from "../../../context/app";
-import { BlurView } from "expo-blur";
 import { useAuthContext } from "../../../context/auth";
 import GetTimesAgo from "../../../functions/getTimesAgo";
-import * as Haptics from "expo-haptics";
-import Img from "../../../components/image";
 
-const Message = ({ message, index }: any) => {
+const Message = ({ chat, message, index, members, lastMessage }: any) => {
   const { theme, haptics } = useAppContext();
   const { currentUser } = useAuthContext();
 
   const [openMessage, setOpenMessage] = useState(false);
+  let sender;
+  if (members?.length > 0) {
+    const senderObj = members?.find(
+      (member: any) => member?._id === message?.sender?.userId
+    );
+    sender = { ...senderObj, userId: senderObj?._id };
+  }
+  const navigation: any = useNavigation();
 
   return (
     <Pressable
@@ -24,14 +32,12 @@ const Message = ({ message, index }: any) => {
       style={{
         overflow: "hidden",
         borderRadius: 8,
-        marginBottom: index === 0 ? 12 : 8,
+        marginBottom: index === 0 ? 12 : 10,
       }}
     >
       <View
         style={{
-          backgroundColor: "rgba(255,255,255,0.01)", // Light transparent background
           borderRadius: 8, // Rounded corners
-          padding: 4,
           alignItems:
             message?.sender?.userId === currentUser?._id
               ? "flex-end"
@@ -40,8 +46,11 @@ const Message = ({ message, index }: any) => {
           gap: 8,
         }}
       >
-        {message?.sender?.userId !== currentUser?._id && (
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+        {sender && sender?.userId !== currentUser?._id && (
+          <Pressable
+            onPress={() => navigation.navigate("User", { item: sender })}
+            style={{ flexDirection: "row", alignItems: "center" }}
+          >
             <View
               style={{
                 width: 20,
@@ -51,12 +60,12 @@ const Message = ({ message, index }: any) => {
                 marginRight: 8, // Space between avatar and message text
               }}
             >
-              <Img uri={message.sender.cover} />
+              <Img uri={sender.cover} />
             </View>
             <Text style={{ fontWeight: 500, color: theme.text }}>
-              {message.sender.name} {index}
+              {sender.name}
             </Text>
-          </View>
+          </Pressable>
         )}
         <View
           style={{
@@ -79,6 +88,31 @@ const Message = ({ message, index }: any) => {
             {message.text}
           </Text>
         </View>
+
+        {index === 0 &&
+          lastMessage?.seen?.find(
+            (userId: any) => userId === message?.receiver?.userId
+          ) &&
+          lastMessage?.sender?.userId === currentUser?._id && (
+            <View
+              style={{
+                width: 16,
+                height: 16,
+                borderRadius: 100,
+                overflow: "hidden",
+                marginLeft: 8, // Space between avatar and message text
+              }}
+            >
+              <Img
+                uri={
+                  chat?.members?.find(
+                    (m: any) => m.id === lastMessage?.receiver?.userId
+                  )?.cover
+                }
+              />
+            </View>
+          )}
+
         {openMessage && (
           <View
             style={{

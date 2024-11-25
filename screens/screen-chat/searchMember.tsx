@@ -1,20 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Animated, StyleSheet, View, Keyboard } from "react-native";
-import { TextInput } from "react-native-paper";
 import { Feather, FontAwesome } from "@expo/vector-icons";
-import { useAppContext } from "../../../context/app";
+import { StyleSheet, View } from "react-native";
+import { TextInput } from "react-native-paper";
+import { useAppContext } from "../../context/app";
 
-const Search = ({
-  search,
-  setSearch,
-  open,
-  setOpen,
-  isFocused,
-  setIsFocused,
-  slideAnim,
-  opacityAnim,
-  inputRef,
-}: any) => {
+const Search = ({ search, setSearch, setIsFocused, inputRef }: any) => {
   /**
    * App context
    */
@@ -22,15 +11,7 @@ const Search = ({
 
   return (
     <View style={styles.container}>
-      <Animated.View
-        style={[
-          styles.searchContainer,
-          {
-            transform: [{ translateX: slideAnim }],
-            opacity: opacityAnim,
-          },
-        ]}
-      >
+      <View style={styles.searchContainer}>
         <View style={styles.searchInner}>
           <TextInput
             ref={inputRef}
@@ -51,9 +32,6 @@ const Search = ({
           {search?.length > 0 && (
             <FontAwesome
               onPress={() => {
-                if (!isFocused) {
-                  setOpen(false);
-                }
                 setSearch("");
               }}
               name="close"
@@ -63,17 +41,12 @@ const Search = ({
           )}
         </View>
         <Feather
-          onPress={() => {
-            if (!open) {
-              setOpen(true);
-            }
-          }}
           name="search"
           color="rgba(255,255,255,0.1)"
-          size={20}
+          size={24}
           style={styles.searchIcon}
         />
-      </Animated.View>
+      </View>
     </View>
   );
 };

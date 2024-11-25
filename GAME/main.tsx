@@ -1367,14 +1367,15 @@ const Game = () => {
         setUnreadMessages(true);
       }
     };
+    if (socket) {
+      // Attach the event listener
+      socket.on("sendMessage", handleSendMessage);
 
-    // Attach the event listener
-    socket.on("sendMessage", handleSendMessage);
-
-    // Clean up by removing the event listener
-    return () => {
-      socket.off("sendMessage", handleSendMessage);
-    };
+      // Clean up by removing the event listener
+      return () => {
+        socket.off("sendMessage", handleSendMessage);
+      };
+    }
   }, [socket, currentUser?._id]); // Add currentUser._id as a dependency
   return (
     <BlurView

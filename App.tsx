@@ -2,6 +2,7 @@ import Content from "./content";
 import { AdminContextWrapper } from "./context/admin";
 import { AppContextWrapper } from "./context/app";
 import { AuthContextWrapper } from "./context/auth";
+import { ChatContextWrapper } from "./context/chat";
 import { ContentContextWrapper } from "./context/content";
 import { GameContextWrapper } from "./context/game";
 import { NotificationsContextWrapper } from "./context/notifications";
@@ -20,7 +21,9 @@ export default function App() {
             <PushNotificationsProvider>
               <NotificationsContextWrapper>
                 <AdminContextWrapper>
-                  <Content />
+                  <ChatContextWrapper>
+                    <Content />
+                  </ChatContextWrapper>
                 </AdminContextWrapper>
               </NotificationsContextWrapper>
             </PushNotificationsProvider>

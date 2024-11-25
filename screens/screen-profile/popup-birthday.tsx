@@ -13,7 +13,7 @@ const BirthdayWindow = () => {
   /**
    * App context
    */
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
 
   /**
    * Auth context
@@ -62,7 +62,7 @@ const BirthdayWindow = () => {
         </View>
         <View style={{ width: "90%", marginTop: 8 }}>
           <Button
-            title="Select Birthday"
+            title={activeLanguage?.save}
             onPressFunction={() => {
               if (birthDay !== new Date()) {
                 const formattedDate = birthDay.toISOString().split("T")[0];

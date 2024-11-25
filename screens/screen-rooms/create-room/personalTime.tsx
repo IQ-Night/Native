@@ -7,7 +7,7 @@ const PersonalTime = ({ roomState, setRoomState }: any) => {
   /**
    * App context
    */
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
   // styles
   const styles = createStyles(theme);
   return (
@@ -23,7 +23,7 @@ const PersonalTime = ({ roomState, setRoomState }: any) => {
         },
       ]}
     >
-      <Text style={styles.title}>Personal Time</Text>
+      <Text style={styles.title}>{activeLanguage?.personalTime}</Text>
       <View
         style={{
           flexDirection: "row",
@@ -59,7 +59,7 @@ const PersonalTime = ({ roomState, setRoomState }: any) => {
               fontWeight: 600,
             }}
           >
-            30 sec.
+            30 {activeLanguage?.sec}
           </Text>
         </Pressable>
         <Pressable
@@ -87,7 +87,7 @@ const PersonalTime = ({ roomState, setRoomState }: any) => {
               fontWeight: 600,
             }}
           >
-            45 sec.
+            45 {activeLanguage?.sec}
           </Text>
         </Pressable>
         <Pressable
@@ -115,7 +115,7 @@ const PersonalTime = ({ roomState, setRoomState }: any) => {
               fontWeight: 600,
             }}
           >
-            1 min.
+            1 {activeLanguage?.min}
           </Text>
         </Pressable>
       </View>

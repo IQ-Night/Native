@@ -15,7 +15,7 @@ const Vip = () => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics, setAlert } = useAppContext();
+  const { apiUrl, theme, haptics, setAlert, activeLanguage } = useAppContext();
 
   // auth
   const { currentUser, setCurrentUser } = useAuthContext();
@@ -136,25 +136,25 @@ const Vip = () => {
     >
       <View style={{ flex: 1 }}>
         <Text style={{ fontSize: 18, fontWeight: 600, color: theme.text }}>
-          Advantages:
+          {activeLanguage?.advantages}:
         </Text>
         <View style={{ padding: 12, gap: 6, paddingBottom: 0 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
             <MaterialIcons color={theme.active} size={16} name="done" />
             <Text style={{ color: theme.active, fontWeight: 600 }}>
-              All roles: Free
+              {activeLanguage?.allRolesFree}
             </Text>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
             <MaterialIcons color={theme.active} size={16} name="done" />
             <Text style={{ color: theme.active, fontWeight: 600 }}>
-              Open room: Free
+              {activeLanguage?.openRoomFree}
             </Text>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
             <MaterialIcons color={theme.active} size={16} name="done" />
             <Text style={{ color: theme.active, fontWeight: 600 }}>
-              Private Room: Free
+              {activeLanguage?.privateRoomFree}
             </Text>
           </View>
         </View>
@@ -196,7 +196,15 @@ const Vip = () => {
               <Text
                 style={{ color: theme.active, fontSize: 24, fontWeight: 700 }}
               >
-                {c?.duration}{" "}
+                {c?.duration?.includes("Weeks")
+                  ? c.duration.split(" ")[0] + " " + activeLanguage?.weeks
+                  : c?.duration?.includes("Week")
+                  ? c.duration.split(" ")[0] + " " + activeLanguage?.week
+                  : c?.duration?.includes("Months")
+                  ? c.duration.split(" ")[0] + " " + activeLanguage?.months
+                  : c?.duration?.includes("Month")
+                  ? c.duration.split(" ")[0] + " " + activeLanguage?.month
+                  : activeLanguage?.annually}{" "}
               </Text>
               <MaterialIcons name="diamond" size={24} color={theme.active} />
             </View>
@@ -208,9 +216,9 @@ const Vip = () => {
                 confirm === c?.duration
                   ? "Confirm (" + clearTimeoutValue + ")"
                   : c?.duration === currentUser?.vip?.duration
-                  ? "Active - Expires: " +
+                  ? `${activeLanguage?.active} - ${activeLanguage?.expires}: ` +
                     FormatDate(currentUser?.vip?.expiresAt, "onlyDate")
-                  : "Buy"
+                  : activeLanguage?.buy
               }
               style={{
                 width: "100%",

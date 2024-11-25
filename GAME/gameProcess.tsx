@@ -32,7 +32,7 @@ const GameProcess = ({
   /**
    * App context
    */
-  const { theme, haptics } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
 
   /**
    * Auth context
@@ -128,8 +128,8 @@ const GameProcess = ({
                   title={
                     gamePlayers.find((it: any) => it.userId === currentUser._id)
                       ?.readyToStart
-                      ? "Cancel - Not ready yet"
-                      : "Ready to start"
+                      ? activeLanguage?.not_ready_yet
+                      : activeLanguage?.ready_to_start
                   }
                   style={{
                     width: "100%",
@@ -157,7 +157,17 @@ const GameProcess = ({
                 fontWeight: "600",
               }}
             >
-              {game.value}{" "}
+              {game.value === "Day"
+                ? activeLanguage?.day
+                : game.value === "Users are confirming own roles.."
+                ? activeLanguage?.users_confirming_roles
+                : game.value === "Getting to know mafias"
+                ? activeLanguage?.getting_to_know_mafias
+                : game.value === "Night"
+                ? activeLanguage?.night
+                : game.value === "Common Time"
+                ? activeLanguage?.common_time
+                : ""}{" "}
               {game.value === "Day"
                 ? `${dayNumber}`
                 : game.value === "Night"
@@ -181,7 +191,7 @@ const GameProcess = ({
             parseInt(activeRoom.options.maxPlayers) !==
               totalReadyPlayers?.length ? (
               <Button
-                title={`Start play with ${totalReadyPlayers?.length} players
+                title={`${activeLanguage?.start_play} (${totalReadyPlayers?.length} ${activeLanguage?.players})
               `}
                 style={{
                   width: "100%",
@@ -203,7 +213,7 @@ const GameProcess = ({
               parseInt(activeRoom.options.maxPlayers) ===
                 totalReadyPlayers?.length ? (
               <Button
-                title={`Start play
+                title={`${activeLanguage?.start_play}
             `}
                 style={{
                   width: "100%",
@@ -223,7 +233,7 @@ const GameProcess = ({
                   marginTop: 4,
                 }}
               >
-                Start play
+                {activeLanguage?.start_play}
               </Text>
             ) : (
               ""
@@ -303,7 +313,7 @@ const GameProcess = ({
                 {changeSpeakerLoading ? (
                   <ActivityIndicator size={16} color={theme.active} />
                 ) : (
-                  "Skip"
+                  activeLanguage?.skip
                 )}
               </Text>
             </TouchableOpacity>

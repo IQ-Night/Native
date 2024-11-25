@@ -1,19 +1,8 @@
-import axios from "axios";
-import React, { useState } from "react";
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import Img from "../../../components/image";
+import { FontAwesome6, MaterialIcons } from "@expo/vector-icons";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { useAppContext } from "../../../context/app";
 import { useAuthContext } from "../../../context/auth";
-import { useNotificationsContext } from "../../../context/notifications";
-import GetTimesAgo from "../../../functions/getTimesAgo";
 import { FormatDate } from "../../../functions/formatDate";
-import { FontAwesome6, MaterialIcons } from "@expo/vector-icons";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -21,7 +10,7 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
   /**
    * App context
    */
-  const { apiUrl, theme } = useAppContext();
+  const { activeLanguage, theme } = useAppContext();
   /**
    * Auth context
    */
@@ -40,8 +29,8 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
             <View style={{ gap: 8, justifyContent: "center" }}>
               <Text
                 style={{
-                  color: theme.active,
-                  fontSize: 16,
+                  color: "green",
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -52,7 +41,7 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: 500,
                 }}
               >
@@ -60,7 +49,7 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               </Text>
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
@@ -68,16 +57,7 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               >
                 {FormatDate(item.createdAt, "")}
               </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
-              </Text>
+              {/* */}
             </View>
           )}
           {item?.type === "Buy Vip" && (
@@ -88,18 +68,27 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
                 <Text
                   style={{
                     color: theme.active,
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: 500,
                   }}
                 >
-                  VIP - {item?.duration}
+                  VIP -{" "}
+                  {item?.duration?.includes("Weeks")
+                    ? item.duration.split(" ")[0] + " " + activeLanguage?.weeks
+                    : item?.duration?.includes("Week")
+                    ? item.duration.split(" ")[0] + " " + activeLanguage?.week
+                    : item?.duration?.includes("Months")
+                    ? item.duration.split(" ")[0] + " " + activeLanguage?.months
+                    : item?.duration?.includes("Month")
+                    ? item.duration.split(" ")[0] + " " + activeLanguage?.month
+                    : activeLanguage?.annually}
                 </Text>
                 <MaterialIcons name="diamond" size={20} color={theme.active} />
               </View>
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: 500,
                 }}
               >
@@ -107,23 +96,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               </Text>
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -132,17 +111,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Open room
+                {activeLanguage?.openRoom}
               </Text>
               <Text
                 style={{
                   color: "red",
-                  fontSize: 16,
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -153,23 +132,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -178,17 +147,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Edit name
+                {activeLanguage?.changeName}
               </Text>
               <Text
                 style={{
                   color: "red",
-                  fontSize: 16,
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -199,23 +168,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -224,17 +183,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Change profile avatar
+                {activeLanguage?.changeAvatar}
               </Text>
               <Text
                 style={{
                   color: "red",
-                  fontSize: 16,
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -245,23 +204,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -270,17 +219,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Edit room with paid features
+                {activeLanguage?.edit_room_with_paid_features}
               </Text>
               <Text
                 style={{
                   color: "red",
-                  fontSize: 16,
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -291,23 +240,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -316,17 +255,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Create room with paid features
+                {activeLanguage?.create_room_with_paid_features}
               </Text>
               <Text
                 style={{
                   color: "red",
-                  fontSize: 16,
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -337,23 +276,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -362,17 +291,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Create clan with paid features
+                {activeLanguage?.create_clan_with_paid_features}
               </Text>
               <Text
                 style={{
                   color: "red",
-                  fontSize: 16,
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -383,23 +312,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -408,17 +327,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Change paid clan name
+                {activeLanguage?.change_paid_clan_name}
               </Text>
               <Text
                 style={{
                   color: "red",
-                  fontSize: 16,
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -429,23 +348,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -454,17 +363,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Change paid clan avatar
+                {activeLanguage?.change_paid_clan_avatar}
               </Text>
               <Text
                 style={{
                   color: "red",
-                  fontSize: 16,
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -475,23 +384,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -500,17 +399,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Change paid clan slogan
+                {activeLanguage?.change_paid_clan_slogan}
               </Text>
               <Text
                 style={{
                   color: "red",
-                  fontSize: 16,
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -521,23 +420,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -546,17 +435,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Turned on chat in clan
+                {activeLanguage?.turned_on_chat_in_clan}{" "}
               </Text>
               <Text
                 style={{
                   color: "red",
-                  fontSize: 16,
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -567,23 +456,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -592,17 +471,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Product Sold
+                {activeLanguage?.product_sold}{" "}
               </Text>
               <Text
                 style={{
-                  color: theme.active,
-                  fontSize: 16,
+                  color: "green",
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -613,23 +492,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -638,17 +507,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Product bought
+                {activeLanguage?.product_bought}
               </Text>
               <Text
                 style={{
                   color: "red",
-                  fontSize: 16,
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -659,23 +528,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}
@@ -684,17 +543,17 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
               <Text
                 style={{
                   color: theme.text,
-                  fontSize: 18,
+                  fontSize: 16,
 
                   fontWeight: 500,
                 }}
               >
-                Send gift!
+                {activeLanguage?.send_gift}
               </Text>
               <Text
                 style={{
                   color: "red",
-                  fontSize: 16,
+                  fontSize: 14,
 
                   fontWeight: 500,
                 }}
@@ -705,23 +564,13 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
 
               <Text
                 style={{
-                  color: theme.text,
+                  color: theme.active,
                   fontSize: 14,
 
                   fontWeight: 500,
                 }}
               >
                 {FormatDate(item.createdAt, "")}
-              </Text>
-              <Text
-                style={{
-                  color: "green",
-                  fontSize: 14,
-
-                  fontWeight: 500,
-                }}
-              >
-                Successfully
               </Text>
             </View>
           )}

@@ -12,6 +12,7 @@ import {
 import CountryFlag from "react-native-country-flag";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
+import * as Haptics from "expo-haptics";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -19,7 +20,7 @@ const ChoiceLanguage = ({ state, setState, setOpenPopup }: any) => {
   /**
    * App context
    */
-  const { theme, activeLanguage } = useAppContext();
+  const { theme, haptics } = useAppContext();
 
   /**
    * Auth context
@@ -52,6 +53,9 @@ const ChoiceLanguage = ({ state, setState, setOpenPopup }: any) => {
           <View style={{ width: "100%", alignItems: "center" }}>
             <Pressable
               onPress={() => {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
                 setState(item.code);
                 setOpenPopup("");
               }}

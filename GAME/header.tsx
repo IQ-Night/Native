@@ -36,7 +36,7 @@ const Header = ({
   openChat,
   unreadMessages,
 }: any) => {
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
   const { currentUser } = useAuthContext();
   const {
     activeRoom,
@@ -175,9 +175,21 @@ const Header = ({
   const currentUserRole = gamePlayers.find(
     (player: any) => player.userId === currentUser._id
   )?.role;
-  const roleLabel = roles?.find(
-    (r: any) => r.value === currentUserRole?.value
-  )?.label;
+  const roleLabel =
+    currentUserRole?.value === "mafia"
+      ? activeLanguage?.mafia
+      : currentUserRole?.value === "citizen"
+      ? activeLanguage?.citizen
+      : currentUserRole?.value === "doctor"
+      ? activeLanguage?.doctor
+      : currentUserRole?.value === "police"
+      ? activeLanguage?.police
+      : currentUserRole?.value === "serial-killer"
+      ? activeLanguage?.serialKiller
+      : currentUserRole?.value === "mafia-don"
+      ? activeLanguage?.mafiaDon
+      : "";
+
   return (
     <>
       <View
@@ -295,12 +307,15 @@ const Header = ({
           <MaterialCommunityIcons name="eye-off" size={18} color={theme.text} />
         </View>
       )}
-      <View style={{ height: 16, position: "absolute", top: 112 }}>
+      <View style={{ height: 20, position: "absolute", top: 112 }}>
         {gamePlayers.find((player: any) => player.userId === currentUser._id)
           ?.death ? (
-          <View>
-            <Text style={{ color: theme.text, fontSize: 16, fontWeight: 600 }}>
-              Your role is death! Spectator Mode!
+          <View style={{ alignItems: "center", gap: 4 }}>
+            <Text style={{ color: theme.text, fontSize: 14, fontWeight: 600 }}>
+              {activeLanguage?.your_role_is_death}!
+            </Text>
+            <Text style={{ color: theme.text, fontSize: 14, fontWeight: 600 }}>
+              {activeLanguage?.spectator_mode}!
             </Text>
           </View>
         ) : (
@@ -310,7 +325,6 @@ const Header = ({
                 <Text
                   style={{ color: theme.text, fontSize: 16, fontWeight: 600 }}
                 >
-                  Your Role:{" "}
                   <Text
                     style={{
                       color: theme.active,
@@ -354,11 +368,11 @@ const Header = ({
                     />
                   )}
                 </Text>
-                {currentUserRole.value === "serial-killer" && (
+                {currentUserRole?.value === "serial-killer" && (
                   <Text
-                    style={{ color: theme.text, fontSize: 16, fontWeight: 600 }}
+                    style={{ color: theme.text, fontSize: 14, fontWeight: 600 }}
                   >
-                    Kills left:{" "}
+                    {activeLanguage?.kills_left}:{" "}
                     <Text
                       style={{
                         color:
@@ -378,9 +392,9 @@ const Header = ({
             ) && (
               <View>
                 <Text
-                  style={{ color: theme.text, fontSize: 16, fontWeight: 600 }}
+                  style={{ color: theme.text, fontSize: 14, fontWeight: 600 }}
                 >
-                  You are in spectator mode
+                  {activeLanguage?.you_are_in_spectator_mode}
                 </Text>
               </View>
             )}
@@ -485,7 +499,7 @@ const Header = ({
               >
                 <FontAwesome5 name="door-open" size={12} color={theme.text} />
                 <Text style={{ color: theme.text, fontSize: 12 }}>
-                  {u} left the game
+                  {u} {activeLanguage?.left_the_game}
                 </Text>
               </Pressable>
             </Animated.View>
@@ -517,7 +531,7 @@ const Header = ({
                 fontWeight: 500,
               }}
             >
-              Are you sure to want to close the room?
+              {activeLanguage?.close_room_confirmation}
             </Text>
             <View
               style={{
@@ -527,7 +541,7 @@ const Header = ({
               }}
             >
               <Button
-                title="Cancel"
+                title={activeLanguage?.cancel}
                 style={{
                   backgroundColor: theme.text,
                   color: "white",
@@ -540,8 +554,8 @@ const Header = ({
                 loading={leaveLoading}
                 title={
                   currentUser?._id === activeRoom?.admin?.founder?.id
-                    ? "Close Room"
-                    : "Leave Room"
+                    ? activeLanguage?.close_room
+                    : activeLanguage?.leaveRoom
                 }
                 style={{
                   backgroundColor:

@@ -155,8 +155,7 @@ const ScreenManager = () => {
   /**
    * Auth state if current user is null
    */
-
-  if (currentUser == null) {
+  if (!currentUser) {
     return (
       <NavigationContainer>
         <AuthStackNavigator />
@@ -176,6 +175,8 @@ const ScreenManager = () => {
     <NavigationContainer ref={navigationRef} theme={MyTheme}>
       <Tab.Navigator
         screenOptions={({ route, navigation }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) || route.name;
+
           return {
             headerShown: false,
             tabBarStyle: {
@@ -183,6 +184,14 @@ const ScreenManager = () => {
               position: "absolute",
               borderTopWidth: 0,
               elevation: 0,
+              display:
+                routeName?.includes("Chat") ||
+                routeName === "Coins" ||
+                routeName === "Vip" ||
+                routeName === "User" ||
+                routeName === "Clan"
+                  ? "none"
+                  : "flex", // Hide tab bar if the Chat screen is active
             },
             tabBarShowLabel: false,
             tabBarIcon: ({ focused }) => {

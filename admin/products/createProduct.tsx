@@ -27,7 +27,7 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
 
   /**
    * Auth context
@@ -60,15 +60,15 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
   const types = [
     {
       value: "profile-avatar",
-      label: "Profile Avatar",
+      label: activeLanguage?.profileAvatar,
     },
     {
       value: "room-avatar",
-      label: "Room Avatar",
+      label: activeLanguage?.roomAvatar,
     },
     {
       value: "clan-avatar",
-      label: "Clan Avatar",
+      label: activeLanguage?.clanAvatar,
     },
   ];
 
@@ -157,7 +157,7 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
       <BlurView intensity={120} tint="dark" style={styles.container}>
         <BlurView intensity={120} tint="dark" style={styles.header}>
           <Text style={{ color: theme.active, fontSize: 18, fontWeight: 500 }}>
-            Create New Product
+            {activeLanguage?.create_product}
           </Text>
           <Ionicons
             onPress={() => {
@@ -184,7 +184,7 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
                 marginBottom: 4,
               }}
             >
-              Select Type*
+              {activeLanguage?.select_type}*
             </Text>
 
             <View style={{ gap: 8 }}>
@@ -245,9 +245,9 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
             </View>
           </View>
           <View style={{ gap: 8 }}>
-            <Text style={styles.title}>Title*</Text>
+            <Text style={styles.title}>{activeLanguage?.title}*</Text>
             <Input
-              placeholder="Enter Product's Title"
+              placeholder={activeLanguage?.title}
               value={productState.title}
               onChangeText={(text: string) =>
                 setProductState((prev: any) => ({ ...prev, title: text }))
@@ -256,7 +256,7 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
             />
           </View>
           <View style={{ gap: 8 }}>
-            <Text style={styles.title}>File*</Text>
+            <Text style={styles.title}>{activeLanguage?.avatar}*</Text>
             {/* <FontAwesome5 name="image" color={theme.text} size={64} /> */}
             <InputFile
               setFile={(e: any) =>
@@ -270,10 +270,10 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
               style={{ alignItems: "center", gap: 4, flexDirection: "row" }}
             >
               <FontAwesome5 name="coins" size={14} color={theme.active} />
-              <Text style={styles.title}>Price*</Text>
+              <Text style={styles.title}>{activeLanguage?.price}</Text>
             </View>
             <Input
-              placeholder="Add Price"
+              placeholder={activeLanguage?.price}
               value={productState.price}
               onChangeText={(text: string) =>
                 setProductState((prev: any) => ({ ...prev, price: text }))
@@ -283,13 +283,18 @@ const CreateProduct = ({ setCreateProduct, setProducts }: any) => {
           </View>
 
           <Button
-            title="Create"
+            title={activeLanguage?.create}
             loading={loading}
             style={{
               width: "100%",
               backgroundColor: theme.active,
               color: "white",
             }}
+            disabled={
+              !productState?.file ||
+              activeLanguage?.title?.length < 3 ||
+              activeLanguage?.type?.length < 1
+            }
             onPressFunction={HandleCreateProduct}
           />
         </ScrollView>

@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { Audio } from "expo-av";
 import { View } from "react-native";
+import { useAppContext } from "../context/app";
 
 const BgSound = () => {
+  const { bgSound } = useAppContext();
   const [sound, setSound] = useState<Audio.Sound | null>(null);
 
   // Load and play the background sound when the BgSound starts
   const playBackgroundSound = async () => {
     try {
+      // Set audio mode to allow playing in silent mode on iOS
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true, // Ensure it plays in silent mode on iOS
+        staysActiveInBackground: true,
+      });
+
       const { sound } = await Audio.Sound.createAsync(
         require("../assets/The Godfather Theme Song.mp3"), // Path to your sound file
         {
@@ -17,7 +26,7 @@ const BgSound = () => {
       );
 
       setSound(sound);
-      await sound.setVolumeAsync(0.1); // Set the volume (optional)
+      await sound.setVolumeAsync(0.3); // Set the volume (optional)
       await sound.playAsync(); // Play the sound
     } catch (error) {
       console.log("Error loading or playing sound", error);
@@ -37,13 +46,15 @@ const BgSound = () => {
   };
 
   useEffect(() => {
-    playBackgroundSound();
-
-    // Cleanup the sound on component unmount
-    return () => {
+    if (bgSound) {
+      playBackgroundSound();
+    } else {
       stopBackgroundSound();
+    }
+    return () => {
+      stopBackgroundSound(); // Clean up when the component unmounts
     };
-  }, []); // Empty dependency array to run only once on mount/unmount
+  }, [bgSound]); // Run whenever bgSound changes
 
   // Return an empty view or null since this component only handles audio
   return <View />; // Or you could return null if you don't want to render anything

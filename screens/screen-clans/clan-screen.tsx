@@ -5,9 +5,8 @@ import {
 } from "@expo/vector-icons";
 import axios from "axios";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Animated,
   Dimensions,
   Pressable,
   ScrollView,
@@ -20,14 +19,12 @@ import { ActivityIndicator } from "react-native-paper";
 import Img from "../../components/image";
 import { useAppContext } from "../../context/app";
 import { useAuthContext } from "../../context/auth";
-import { useClansContext } from "../../context/clans";
-import { useGameContext } from "../../context/game";
-import { FormatDate } from "../../functions/formatDate";
 import { useContentContext } from "../../context/content";
+import { useGameContext } from "../../context/game";
 import { useNotificationsContext } from "../../context/notifications";
+import { FormatDate } from "../../functions/formatDate";
 import { DefineUserLevel } from "../../functions/userLevelOptimizer";
 import UserPopup from "./userPopup";
-import Block from "../../admin/users/block-user";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -41,7 +38,7 @@ const Clan = ({ route, navigation }: any) => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
   /**
    * Auth context
    */
@@ -69,9 +66,8 @@ const Clan = ({ route, navigation }: any) => {
   const managers = item?.admin?.filter((a: any) => a.role === "manager")?.user;
   const wisers = item?.admin?.filter((a: any) => a.role === "wiser")?.user;
   const currentUserRole = item?.admin.find(
-    (a: any) => a.user?._id === currentUser?._id
+    (a: any) => a.user?.id === currentUser?._id
   )?.role;
-
   /**
    * Members
    */
@@ -228,27 +224,27 @@ const Clan = ({ route, navigation }: any) => {
   /**
    * current member clan status
    */
-  let userStatus: string | undefined;
+  let userStatus: any;
   if (
     item.members.find(
       (m: any) => m.userId === currentUser._id && m.status === "member"
     )
   ) {
-    userStatus = "member";
+    userStatus = { value: "member", label: activeLanguage?.member };
   } else if (
     item.members.find(
       (m: any) => m.userId === currentUser._id && m.status === "request"
     )
   ) {
-    userStatus = "Pending";
+    userStatus = { value: "pending", label: activeLanguage?.pending };
   } else if (
     item.members.find(
       (m: any) => m.userId === currentUser._id && m.status === "pending"
     )
   ) {
-    userStatus = "Ask by admin";
+    userStatus = { value: "Ask by admin", label: "Ask by admin" };
   } else {
-    userStatus = "Request";
+    userStatus = { value: "request", label: activeLanguage?.request };
   }
 
   /**
@@ -286,99 +282,101 @@ const Clan = ({ route, navigation }: any) => {
               fontWeight: 500,
             }}
           >
-            Founded At: {FormatDate(item.createdAt, "onlyDate")}
+            {activeLanguage?.foundedAt}:{" "}
+            {FormatDate(item.createdAt, "onlyDate")}
           </Text>
-          {currentUserRole !== "founder" && userStatus !== "Ask by admin" && (
-            <TouchableOpacity
-              onPress={() => {
-                if (haptics) {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                }
-                if (userStatus === "member") {
-                  LeaveClan();
-                } else if (userStatus === "Request") {
-                  JoinClan();
-                }
-              }}
-              activeOpacity={userStatus === "Pending" ? 1 : 0.8}
-              style={{
-                width: "50%",
-                height: 28,
-                borderRadius: 50,
-                backgroundColor:
-                  userStatus === "Request"
-                    ? theme.active
-                    : userStatus === "Ask by admin"
-                    ? "transparent"
-                    : "#888",
-                alignItems: "center",
-                padding: 4,
-                borderWidth: userStatus === "Ask by admin" ? 0 : 1.5,
-                borderColor: "rgba(255,255,255,0.4)",
-                justifyContent: "center",
-              }}
-            >
-              {sendingLoading || leavingLoading ? (
-                <ActivityIndicator size={16} color="white" />
-              ) : (
-                <View
-                  style={{
-                    alignItems: "center",
-                    flexDirection: "row",
-                  }}
-                >
-                  {(() => {
-                    if (userStatus === "Request") {
-                      return (
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 4,
-                          }}
-                        >
-                          <MaterialCommunityIcons
-                            name="door-open"
-                            size={18}
-                            style={{ color: "white" }}
-                          />
+          {currentUserRole !== "founder" &&
+            userStatus?.value !== "Ask by admin" && (
+              <TouchableOpacity
+                onPress={() => {
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                  if (userStatus?.value === "member") {
+                    LeaveClan();
+                  } else if (userStatus?.value === "request") {
+                    JoinClan();
+                  }
+                }}
+                activeOpacity={userStatus?.value === "pending" ? 1 : 0.8}
+                style={{
+                  width: "50%",
+                  height: 28,
+                  borderRadius: 50,
+                  backgroundColor:
+                    userStatus === "Request"
+                      ? theme.active
+                      : userStatus === "Ask by admin"
+                      ? "transparent"
+                      : "#888",
+                  alignItems: "center",
+                  padding: 4,
+                  borderWidth: userStatus?.value === "Ask by admin" ? 0 : 1.5,
+                  borderColor: "rgba(255,255,255,0.4)",
+                  justifyContent: "center",
+                }}
+              >
+                {sendingLoading || leavingLoading ? (
+                  <ActivityIndicator size={16} color="white" />
+                ) : (
+                  <View
+                    style={{
+                      alignItems: "center",
+                      flexDirection: "row",
+                    }}
+                  >
+                    {(() => {
+                      if (userStatus?.value === "request") {
+                        return (
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                          >
+                            <MaterialCommunityIcons
+                              name="door-open"
+                              size={18}
+                              style={{ color: "white" }}
+                            />
+                            <Text style={{ color: "white", fontWeight: 500 }}>
+                              Request to Join
+                            </Text>
+                          </View>
+                        );
+                      } else if (userStatus?.value === "pending") {
+                        return (
                           <Text style={{ color: "white", fontWeight: 500 }}>
-                            Request to Join
+                            {activeLanguage?.pending}...
                           </Text>
-                        </View>
-                      );
-                    } else if (userStatus === "Pending") {
-                      return (
-                        <Text style={{ color: "white", fontWeight: 500 }}>
-                          Pending...
-                        </Text>
-                      );
-                    } else if (userStatus === "member") {
-                      return (
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 4,
-                          }}
-                        >
-                          <MaterialIcons
-                            name="logout"
-                            size={18}
-                            style={{ color: "white" }}
-                          />
-                          <Text style={{ color: "white", fontWeight: 500 }}>
-                            Leave Clan
-                          </Text>
-                        </View>
-                      );
-                    }
-                  })()}
-                </View>
-              )}
-            </TouchableOpacity>
-          )}
-          {userStatus === "Ask by admin" && (
+                        );
+                      } else if (userStatus?.value === "member") {
+                        return (
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                          >
+                            <MaterialIcons
+                              name="logout"
+                              size={18}
+                              style={{ color: "white" }}
+                            />
+                            <Text style={{ color: "white", fontWeight: 500 }}>
+                              {activeLanguage?.leaveClan}
+                            </Text>
+                          </View>
+                        );
+                      }
+                    })()}
+                  </View>
+                )}
+              </TouchableOpacity>
+            )}
+          {userStatus?.value === "Ask by admin" && (
             <View style={{ gap: 8, width: "100%" }}>
               <Text style={{ fontWeight: 600, color: theme.text }}>
                 You have invited to Join?
@@ -452,8 +450,8 @@ const Clan = ({ route, navigation }: any) => {
               fontWeight: 600,
             }}
           >
-            <FontAwesome5 size={16} color={theme.text} name="users" /> Members (
-            {members.length})
+            <FontAwesome5 size={16} color={theme.text} name="users" />{" "}
+            {activeLanguage?.members} ({members.length})
           </Text>
         </View>
 
@@ -496,21 +494,22 @@ const Clan = ({ route, navigation }: any) => {
                   <Text style={{ color: theme.active, fontWeight: "500" }}>
                     {(() => {
                       const role = item?.admin.find(
-                        (m: any) => m.user._id === member._id
+                        (m: any) => m.user.id === member?._id
                       )?.role;
-                      return role
-                        ? role.charAt(0).toUpperCase() + role.slice(1)
-                        : ""; // Capitalize role if it exists
+                      let roleLabel;
+                      if (role === "founder") {
+                        roleLabel = activeLanguage?.founder;
+                      } else if (role === "director") {
+                        roleLabel = activeLanguage?.director;
+                      } else if (role === "manager") {
+                        roleLabel = activeLanguage?.manager;
+                      } else if (role === "wiser") {
+                        roleLabel = activeLanguage?.wiser;
+                      }
+                      return roleLabel; // Capitalize role if it exists
                     })()}
                   </Text>
-                  <Text
-                    style={{
-                      color: theme.text,
-                      fontWeight: 500,
-                    }}
-                  >
-                    Lvl: {level?.current}
-                  </Text>
+
                   <Text
                     style={{
                       color: theme.active,

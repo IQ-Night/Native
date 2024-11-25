@@ -11,7 +11,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { en, ka } from "../languages/languages";
+import { en, ka, ru } from "../languages/languages";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 /**
@@ -43,7 +43,7 @@ export const AppContextWrapper: React.FC<contextProps> = ({ children }) => {
    * app theme
    */
   const [appTheme, setAppTheme] = useState("dark");
-  const dark = { text: "#c7c7c7", active: "#F7A023" };
+  const dark = { text: "#c7c7c7", active: "#FFA833" };
   const light = { text: "black", active: "#F7A023" };
   const [theme, setTheme] = useState(dark);
 
@@ -64,16 +64,16 @@ export const AppContextWrapper: React.FC<contextProps> = ({ children }) => {
   useEffect(() => {
     if (language === "GE") {
       setActiveLanguage(ka);
-    } else if (language === "GE") {
+    } else if (language === "GB") {
       setActiveLanguage(en);
     } else {
-      setActiveLanguage(en);
+      setActiveLanguage(ru);
     }
   }, [language]);
 
   useEffect(() => {
     const GetLanguages = async () => {
-      const appLang = await AsyncStorage.getItem("IQ-Night:interfaceLanguage");
+      const appLang = await AsyncStorage.getItem("IQ-Night:language");
       setLanguage(appLang || "GE");
     };
     GetLanguages();
@@ -85,11 +85,31 @@ export const AppContextWrapper: React.FC<contextProps> = ({ children }) => {
   const [haptics, setHaptics] = useState(true);
   useEffect(() => {
     const GetHaptics = async () => {
-      const haptic = await AsyncStorage.getItem("IQ-Night:haptics");
-      setHaptics(haptic === "Active" ? true : false);
+      const hapticStorage = await AsyncStorage.getItem("IQ-Night:haptics");
+      if (hapticStorage) {
+        setHaptics(hapticStorage === "Active" ? true : false);
+      }
     };
     GetHaptics();
   }, []);
+
+  /**
+   * bg sound context
+   */
+  const [bgSound, setBgSound] = useState(false);
+  useEffect(() => {
+    const GetBgSound = async () => {
+      const soundStorage = await AsyncStorage.getItem("IQ-Night:bgSound");
+      if (soundStorage) {
+        setBgSound(soundStorage === "Active" ? true : false);
+      } else {
+        setBgSound(true);
+      }
+    };
+    GetBgSound();
+  }, []);
+
+  console.log(bgSound);
 
   /**
    * Alert context
@@ -112,6 +132,8 @@ export const AppContextWrapper: React.FC<contextProps> = ({ children }) => {
         activeLanguage,
         haptics,
         setHaptics,
+        bgSound,
+        setBgSound,
       }}
     >
       {children}

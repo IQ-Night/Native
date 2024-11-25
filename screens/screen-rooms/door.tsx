@@ -22,6 +22,7 @@ import { checkBanExpired } from "../../functions/checkBan";
 import { FormatDate } from "../../functions/formatDate";
 import { DefineUserLevel } from "../../functions/userLevelOptimizer";
 import { JoinButtonText } from "./joinButton";
+import GetTimesAgo from "../../functions/getTimesAgo";
 
 interface ConfigType {
   newbes: boolean;
@@ -50,7 +51,7 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
   /**
    * App context
    */
-  const { theme, haptics, apiUrl } = useAppContext();
+  const { activeLanguage, theme, haptics, apiUrl } = useAppContext();
   /**
    * Game context
    */
@@ -194,6 +195,7 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
                       item: {
                         _id: item.admin.founder.id,
                         cover: item.admin.founder?.cover,
+                        name: item.admin.founder?.name,
                       },
                     });
                     if (haptics) {
@@ -203,19 +205,10 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
                   style={{ marginTop: 6, justifyContent: "center" }}
                 >
                   <Text style={[styles.adminText, { color: theme.text }]}>
-                    By: {item.admin.founder.name}
+                    {activeLanguage?.host}: {item.admin.founder.name}
                   </Text>
                 </TouchableOpacity>
-                <View style={{ marginTop: 6, justifyContent: "center" }}>
-                  <Text style={[styles.adminText, { color: theme.text }]}>
-                    <MaterialCommunityIcons
-                      name="calendar"
-                      size={16}
-                      color={theme.text}
-                    />{" "}
-                    {FormatDate(item.createdAt, "withTime")}
-                  </Text>
-                </View>
+
                 <View
                   style={{
                     flexDirection: "row",
@@ -257,10 +250,20 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
                     { color: theme.text, marginTop: 8 },
                   ]}
                 >
-                  Lvl: {item?.rating.min}
+                  {activeLanguage.lvl}: {item?.rating.min}
                 </Text>
-
                 <View style={styles.joinButtonContainer}>
+                  <View style={{ marginTop: 0, justifyContent: "center" }}>
+                    <Text
+                      style={[
+                        styles.adminText,
+                        { fontSize: 10, color: theme.text },
+                      ]}
+                    >
+                      {activeLanguage?.lastGame}: {GetTimesAgo(item?.createdAt)}{" "}
+                      {activeLanguage?.ago}
+                    </Text>
+                  </View>
                   <Pressable
                     onPress={() => {
                       if (roomIsOpen?.status === "close") {
@@ -283,6 +286,16 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
                         }
                         name="lock"
                       />
+                    )}
+
+                    {roomIsOpen?.status === "open" ? (
+                      <FontAwesome5
+                        size={15}
+                        color={theme.active}
+                        name="door-open"
+                      />
+                    ) : (
+                      <FontAwesome5 size={15} color="#888" name="door-closed" />
                     )}
 
                     <JoinButtonText

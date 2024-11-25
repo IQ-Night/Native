@@ -165,7 +165,15 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
                 ref={passwordInputRef}
                 value={password}
               />
-              <Pressable style={{}} onPress={() => setOpenForgotPassword(true)}>
+              <Pressable
+                style={{}}
+                onPress={() => {
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                  setOpenForgotPassword(true);
+                }}
+              >
                 <Text
                   style={{
                     textDecorationLine: "underline",

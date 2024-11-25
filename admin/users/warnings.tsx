@@ -19,7 +19,7 @@ const Warnings = ({
   warningType,
   setWarningType,
 }: any) => {
-  const { theme } = useAppContext();
+  const { theme, language, activeLanguage } = useAppContext();
   // Animated values for scale and opacity
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -120,7 +120,11 @@ const Warnings = ({
                       letterSpacing: 0.5,
                     }}
                   >
-                    {item.en}
+                    {language === "GB"
+                      ? item?.en
+                      : language === "GE"
+                      ? item?.ka
+                      : item?.ru}
                   </Text>
                 </Pressable>
               );
@@ -128,7 +132,7 @@ const Warnings = ({
           </View>
 
           <Button
-            title="Send"
+            title={activeLanguage?.send}
             style={{
               width: "100%",
               backgroundColor: theme.active,

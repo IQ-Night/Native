@@ -1,17 +1,13 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useState } from "react";
 import { useAppContext } from "../../context/app";
-import {
-  FontAwesome,
-  FontAwesome5,
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from "@expo/vector-icons";
 import { roles } from "../../context/rooms";
 import { findMostFrequentVictim } from "../../GAME/mostVictims";
+import * as Haptics from "expo-haptics";
 
 const Days = ({ data, players }: any) => {
-  const { theme } = useAppContext();
+  const { theme, activeLanguage, haptics } = useAppContext();
   const [openDay, setOpenDay] = useState<any>(null);
   return (
     <View style={{ gap: 4 }}>
@@ -20,8 +16,18 @@ const Days = ({ data, players }: any) => {
           <Pressable
             onPress={
               openDay === day?.number
-                ? () => setOpenDay(null)
-                : () => setOpenDay(day?.number)
+                ? () => {
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
+                    setOpenDay(null);
+                  }
+                : () => {
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
+                    setOpenDay(day?.number);
+                  }
             }
             key={index}
             style={{
@@ -50,7 +56,7 @@ const Days = ({ data, players }: any) => {
                     fontWeight: "500",
                   }}
                 >
-                  Result:
+                  {activeLanguage?.result}:
                 </Text>
                 {(() => {
                   // Determine the most frequent victim
@@ -159,7 +165,7 @@ const Days = ({ data, players }: any) => {
                           marginLeft: 8,
                         }}
                       >
-                        No Players have left the game
+                        {activeLanguage?.no_players_left_game}
                       </Text>
                     );
                   }
@@ -176,80 +182,106 @@ const Days = ({ data, players }: any) => {
             {openDay === day?.number && (
               <View
                 style={{
-                  backgroundColor: "rgba(255,255,255,0.05)",
                   borderRadius: 8,
-                  padding: 12,
+                  marginTop: 12,
                 }}
               >
-                <Text
-                  style={{
-                    color: theme.active,
-                    fontWeight: "500",
-                    fontSize: 18,
-                  }}
-                >
-                  Actions:
-                </Text>
-                <View style={{ gap: 8, marginTop: 16, marginLeft: 8 }}>
-                  <Text style={{ color: theme.active, fontWeight: 500 }}>
-                    Nomination:
-                  </Text>
+                {day?.votes?.length > 0 && (
+                  <>
+                    <Text
+                      style={{
+                        color: theme.active,
+                        fontWeight: "500",
+                        fontSize: 18,
+                      }}
+                    >
+                      {activeLanguage?.actions}:
+                    </Text>
+                    <View style={{ gap: 8, marginTop: 16 }}>
+                      <Text style={{ color: theme.active, fontWeight: 500 }}>
+                        {activeLanguage?.nomination}:
+                      </Text>
 
-                  {day?.votes?.length > 0 && (
-                    <View style={{ gap: 2 }}>
-                      {day?.votes?.map((v: any, x: number) => {
-                        const killer = players?.find(
-                          (p: any) => p.userId === v.killer
-                        );
-                        const victim = players?.find(
-                          (p: any) => p.userId === v.victim
-                        );
-                        const killerRoleLabel = roles?.find(
-                          (r: any) => r.value === killer?.role?.value
-                        )?.label;
-                        const victimRoleLabel = roles?.find(
-                          (r: any) => r.value === victim?.role?.value
-                        )?.label;
+                      <View style={{ gap: 2 }}>
+                        {day?.votes?.map((v: any, x: number) => {
+                          const killer = players?.find(
+                            (p: any) => p.userId === v.killer
+                          );
+                          const victim = players?.find(
+                            (p: any) => p.userId === v.victim
+                          );
+                          const killerRoleLabel =
+                            killer?.role?.value === "mafia"
+                              ? activeLanguage?.mafia
+                              : killer?.role?.value === "citizen"
+                              ? activeLanguage?.citizen
+                              : killer?.role?.value === "doctor"
+                              ? activeLanguage?.doctor
+                              : killer?.role?.value === "police"
+                              ? activeLanguage?.police
+                              : killer?.role?.value === "serial-killer"
+                              ? activeLanguage?.serialKiller
+                              : activeLanguage?.mafiaDon;
 
-                        return (
-                          <View
-                            key={x}
-                            style={{
-                              flexDirection: "row",
-                              alignItems: "center",
-                              gap: 4,
-                            }}
-                          >
-                            <Text
-                              style={{ color: theme.text, fontWeight: "500" }}
-                            >
-                              N{killer?.playerNumber} {killerRoleLabel}
-                            </Text>
-                            <Text
+                          const victimRoleLabel =
+                            victim?.role?.value === "mafia"
+                              ? activeLanguage?.mafia
+                              : victim?.role?.value === "citizen"
+                              ? activeLanguage?.citizen
+                              : victim?.role?.value === "doctor"
+                              ? activeLanguage?.doctor
+                              : victim?.role?.value === "police"
+                              ? activeLanguage?.police
+                              : victim?.role?.value === "serial-killer"
+                              ? activeLanguage?.serialKiller
+                              : activeLanguage?.mafiaDon;
+
+                          return (
+                            <View
+                              key={x}
                               style={{
-                                color: theme.active,
-                                fontWeight: "500",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 4,
                               }}
                             >
-                              to
-                            </Text>
-                            <Text
-                              style={{ color: theme.text, fontWeight: "500" }}
-                            >
-                              N{victim?.playerNumber} {victimRoleLabel}
-                            </Text>
-                          </View>
-                        );
-                      })}
+                              <Text
+                                style={{ color: theme.text, fontWeight: "500" }}
+                              >
+                                N{killer?.playerNumber} {killerRoleLabel}
+                              </Text>
+                              <Text
+                                style={{
+                                  color: theme.active,
+                                  fontWeight: "500",
+                                }}
+                              >
+                                to
+                              </Text>
+                              <Text
+                                style={{ color: theme.text, fontWeight: "500" }}
+                              >
+                                N{victim?.playerNumber} {victimRoleLabel}
+                              </Text>
+                            </View>
+                          );
+                        })}
+                      </View>
                     </View>
-                  )}
-                </View>
-                <View style={{ gap: 8, marginTop: 16, marginLeft: 8 }}>
-                  <Text style={{ color: theme.active, fontWeight: 500 }}>
-                    Voting:
-                  </Text>
+                  </>
+                )}
+                {day?.lastVotes?.length > 0 && (
+                  <View
+                    style={{
+                      gap: 8,
+                      marginTop: 16,
+                      maxWidth: 200,
+                    }}
+                  >
+                    <Text style={{ color: theme.active, fontWeight: 500 }}>
+                      {activeLanguage?.voting}:
+                    </Text>
 
-                  {day?.lastVotes?.length > 0 && (
                     <View style={{ gap: 2 }}>
                       {day?.lastVotes?.map((v: any, x: number) => {
                         const votedBy = players?.find(
@@ -258,12 +290,31 @@ const Days = ({ data, players }: any) => {
                         const voteFor = players?.find(
                           (p: any) => p.userId === v.voteFor
                         );
-                        const votedByRoleLabel = roles?.find(
-                          (r: any) => r.value === votedBy?.role?.value
-                        )?.label;
-                        const voteForRoleLabel = roles?.find(
-                          (r: any) => r.value === voteFor?.role?.value
-                        )?.label;
+                        const votedByRoleLabel =
+                          votedBy?.role?.value === "mafia"
+                            ? activeLanguage?.mafia
+                            : votedBy?.role?.value === "citizen"
+                            ? activeLanguage?.citizen
+                            : votedBy?.role?.value === "doctor"
+                            ? activeLanguage?.doctor
+                            : votedBy?.role?.value === "police"
+                            ? activeLanguage?.police
+                            : votedBy?.role?.value === "serial-killer"
+                            ? activeLanguage?.serialKiller
+                            : activeLanguage?.mafiaDon;
+
+                        const voteForRoleLabel =
+                          voteFor?.role?.value === "mafia"
+                            ? activeLanguage?.mafia
+                            : voteFor?.role?.value === "citizen"
+                            ? activeLanguage?.citizen
+                            : voteFor?.role?.value === "doctor"
+                            ? activeLanguage?.doctor
+                            : voteFor?.role?.value === "police"
+                            ? activeLanguage?.police
+                            : voteFor?.role?.value === "serial-killer"
+                            ? activeLanguage?.serialKiller
+                            : activeLanguage?.mafiaDon;
 
                         return (
                           <View
@@ -296,14 +347,20 @@ const Days = ({ data, players }: any) => {
                         );
                       })}
                     </View>
-                  )}
-                </View>
-                <View style={{ gap: 8, marginTop: 16, marginLeft: 8 }}>
-                  <Text style={{ color: theme.active, fontWeight: 500 }}>
-                    Decisive Voting:
-                  </Text>
+                  </View>
+                )}
+                {day?.lastVotes2?.length > 0 && (
+                  <View
+                    style={{
+                      gap: 8,
+                      marginTop: 16,
+                      maxWidth: "100%",
+                    }}
+                  >
+                    <Text style={{ color: theme.active, fontWeight: 500 }}>
+                      {activeLanguage?.decisive_voting}:
+                    </Text>
 
-                  {day?.lastVotes2?.length > 0 && (
                     <View style={{ gap: 2 }}>
                       {day?.lastVotes2?.map((v: any, x: number) => {
                         const votedBy = players?.find(
@@ -312,12 +369,31 @@ const Days = ({ data, players }: any) => {
                         const voteFor = players?.find(
                           (p: any) => p.userId === v.voteFor
                         );
-                        const votedByRoleLabel = roles?.find(
-                          (r: any) => r.value === votedBy?.role?.value
-                        )?.label;
-                        const voteForRoleLabel = roles?.find(
-                          (r: any) => r.value === voteFor?.role?.value
-                        )?.label;
+                        const votedByRoleLabel =
+                          votedBy?.role?.value === "mafia"
+                            ? activeLanguage?.mafia
+                            : votedBy?.role?.value === "citizen"
+                            ? activeLanguage?.citizen
+                            : votedBy?.role?.value === "doctor"
+                            ? activeLanguage?.doctor
+                            : votedBy?.role?.value === "police"
+                            ? activeLanguage?.police
+                            : votedBy?.role?.value === "serial-killer"
+                            ? activeLanguage?.serialKiller
+                            : activeLanguage?.mafiaDon;
+
+                        const voteForRoleLabel =
+                          voteFor?.role?.value === "mafia"
+                            ? activeLanguage?.mafia
+                            : voteFor?.role?.value === "citizen"
+                            ? activeLanguage?.citizen
+                            : voteFor?.role?.value === "doctor"
+                            ? activeLanguage?.doctor
+                            : voteFor?.role?.value === "police"
+                            ? activeLanguage?.police
+                            : voteFor?.role?.value === "serial-killer"
+                            ? activeLanguage?.serialKiller
+                            : activeLanguage?.mafiaDon;
 
                         return (
                           <View
@@ -350,12 +426,12 @@ const Days = ({ data, players }: any) => {
                         );
                       })}
                     </View>
-                  )}
-                </View>
+                  </View>
+                )}
                 {day?.peopleDecide && (
                   <View style={{ gap: 8, marginTop: 16, marginLeft: 8 }}>
                     <Text style={{ color: theme.active, fontWeight: 500 }}>
-                      People Decide:{" "}
+                      {activeLanguage?.people_decide}:{" "}
                       <Text style={{ color: theme.text }}>
                         {(() => {
                           // Count the number of "Release all" and "Jail all" votes
@@ -368,11 +444,11 @@ const Days = ({ data, players }: any) => {
 
                           // Compare the counts and alert accordingly
                           if (releaseVotesCount > jailVotesCount) {
-                            return "Release All";
+                            return activeLanguage?.releaseAll;
                           } else if (jailVotesCount > releaseVotesCount) {
-                            return "Jail All";
+                            return activeLanguage?.jailAll;
                           } else {
-                            return "Draw & Release All";
+                            return activeLanguage?.draw_release_all;
                           }
                         })()}
                       </Text>
@@ -384,9 +460,18 @@ const Days = ({ data, players }: any) => {
                           const player = players?.find(
                             (p: any) => p.userId === v.player
                           );
-                          const playerRoleLabel = roles?.find(
-                            (r: any) => r.value === player?.role?.value
-                          )?.label;
+                          const playerRoleLabel =
+                            player?.role?.value === "mafia"
+                              ? activeLanguage?.mafia
+                              : player?.role?.value === "citizen"
+                              ? activeLanguage?.citizen
+                              : player?.role?.value === "doctor"
+                              ? activeLanguage?.doctor
+                              : player?.role?.value === "police"
+                              ? activeLanguage?.police
+                              : player?.role?.value === "serial-killer"
+                              ? activeLanguage?.serialKiller
+                              : activeLanguage?.mafiaDon;
 
                           return (
                             <View
@@ -431,7 +516,7 @@ const Days = ({ data, players }: any) => {
                       fontSize: 18,
                     }}
                   >
-                    Result:
+                    {activeLanguage?.result}:
                   </Text>
                   <View>
                     {(() => {
@@ -540,10 +625,9 @@ const Days = ({ data, players }: any) => {
                             style={{
                               color: theme.text,
                               fontWeight: 500,
-                              marginLeft: 8,
                             }}
                           >
-                            No Players have left the game
+                            {activeLanguage?.no_players_left_game}
                           </Text>
                         );
                       }

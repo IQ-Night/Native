@@ -99,7 +99,9 @@ export const GameContextWrapper: React.FC<contextProps> = ({ children }) => {
         };
         getRoom(); // Call the async function
       };
-      socket.current.on("userConnected", handleUserConnected);
+      if (socket.current) {
+        socket.current.on("userConnected", handleUserConnected);
+      }
 
       // Cleanup function to disconnect socket when component unmounts
       return () => {

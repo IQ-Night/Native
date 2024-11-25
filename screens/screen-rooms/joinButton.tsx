@@ -1,6 +1,7 @@
 import { StyleSheet, Text } from "react-native";
 import BanTimer from "../../components/banTimer";
 import { checkBanExpired } from "../../functions/checkBan";
+import { useAppContext } from "../../context/app";
 
 // Extracted Component for Ban Timer Message
 const BanMessage = ({ duration, createdAt, onExpire }: any) => (
@@ -25,6 +26,7 @@ export const JoinButtonText = ({
   setCurrentUser,
   setRooms,
 }: any) => {
+  const { activeLanguage } = useAppContext();
   // Check if the game is currently being played or if the room is open
   const isPlayingNow = gameLevel?.status === "In Play";
   const isRoomOpen = roomIsOpen?.status === "open";
@@ -86,7 +88,7 @@ export const JoinButtonText = ({
   return (
     <>
       {isPlayingNow ? (
-        <Text style={styles.joinButtonText}>Playing now</Text>
+        <Text style={styles.joinButtonText}>{activeLanguage?.playingNow}</Text>
       ) : (
         <Text
           style={[
@@ -94,7 +96,7 @@ export const JoinButtonText = ({
             { color: isRoomOpen ? theme.active : "#888", fontWeight: 600 },
           ]}
         >
-          {levelMismatch && <Text>Level doesn't match</Text>}
+          {levelMismatch && <Text>{activeLanguage?.lvlNotMatch}</Text>}
 
           {isUserBannedInApp ? (
             <BanMessage
@@ -123,10 +125,10 @@ export const JoinButtonText = ({
           ) : (
             <Text>
               {liveUsers?.some((u: any) => u.userId === item.admin.founder.id)
-                ? "Join"
+                ? activeLanguage?.join
                 : item.admin.founder.id === currentUser._id
-                ? "Open Room"
-                : "Closed"}
+                ? activeLanguage?.open
+                : activeLanguage?.closed}
             </Text>
           )}
         </Text>

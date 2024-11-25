@@ -52,6 +52,9 @@ const EditTitle = ({ navigation, item, setItem }: any) => {
   const [loading, setLoading] = useState(false);
 
   const EditTitle = async () => {
+    if (haptics) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+    }
     if (input?.length < 1) {
       return setUpdateClanState(null);
     }
@@ -120,6 +123,9 @@ const EditTitle = ({ navigation, item, setItem }: any) => {
 
   // Function to close the confirmation popup
   const closeState = () => {
+    if (haptics) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+    }
     Animated.timing(slideAnim, {
       toValue: 500, // Slide back down
       duration: 200,

@@ -18,6 +18,7 @@ import {
 import {
   Animated,
   Dimensions,
+  Easing,
   Platform,
   Pressable,
   Switch,
@@ -31,6 +32,7 @@ import { useAuthContext } from "./auth";
 import { useContentContext } from "./content";
 import { useNotificationsContext } from "./notifications";
 import { useNavigationState, useRoute } from "@react-navigation/native";
+import BgSound from "../components/backgroundMusic";
 
 /**
  * Profile context state
@@ -49,7 +51,16 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics, setHaptics, language } = useAppContext();
+  const {
+    activeLanguage,
+    apiUrl,
+    theme,
+    haptics,
+    setHaptics,
+    bgSound,
+    setBgSound,
+    language,
+  } = useAppContext();
 
   /**
    * auth user state
@@ -75,7 +86,10 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     try {
       setUpdateLoading(true);
       const response = await axios.patch(
-        apiUrl + "/api/v1/users/" + currentUser?._id + "?editType=name",
+        apiUrl +
+          "/api/v1/users/" +
+          currentUser?._id +
+          `?editType=${data?.name ? "name" : "country"}`,
         data
       );
       if (response.data.status === "success") {
@@ -83,20 +97,27 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
           setUpdateLoading(false);
           setUpdateState("");
 
-          if (currentUser?.editOptions?.totalFreeEditName > 0) {
+          if (data?.name) {
+            if (currentUser?.editOptions?.totalFreeEditName > 0) {
+              setCurrentUser((prev: any) => ({
+                ...prev,
+                name: data?.name,
+                editOptions: {
+                  ...prev.editOptions,
+                  totalFreeEditName: prev.editOptions.totalFreeEditName - 1,
+                },
+              }));
+            } else {
+              setCurrentUser((prev: any) => ({
+                ...prev,
+                name: data?.name,
+                coins: { ...prev.coins, total: prev.coins.total - 150 },
+              }));
+            }
+          } else if (data?.country) {
             setCurrentUser((prev: any) => ({
               ...prev,
-              name: data?.name,
-              editOptions: {
-                ...prev.editOptions,
-                totalFreeEditName: prev.editOptions.totalFreeEditName - 1,
-              },
-            }));
-          } else {
-            setCurrentUser((prev: any) => ({
-              ...prev,
-              name: data?.name,
-              coins: { ...prev.coins, total: prev.coins.total - 150 },
+              country: data?.country,
             }));
           }
         }, 200);
@@ -108,7 +129,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
   };
 
   // open state
-  const translateYState = useRef(new Animated.Value(0)).current;
+  const translateYState = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   useEffect(() => {
     if (updateState !== "") {
@@ -172,14 +193,71 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
   // delete confirm state
   const [deleteConfirm, setDeleteConfirm] = useState(false);
 
+  // Animation for confirmation popup
+  const slideAnimDelete = useRef(new Animated.Value(300)).current; // Start off-screen
+
+  const openDeleteConfirm = (data: any) => {
+    setDeleteConfirm(data);
+    Animated.timing(slideAnimDelete, {
+      toValue: 0,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeDeleteConfirm = () => {
+    Animated.timing(slideAnimDelete, {
+      toValue: 300, // Slide back down
+      duration: 300,
+      easing: Easing.in(Easing.ease),
+      useNativeDriver: true,
+    }).start(() => setDeleteConfirm(false));
+  };
+
   /**
    * Profile items
    */
 
   const items = [
     {
+      value: "Background Music",
+      label: activeLanguage?.backgroundMusic,
+      icon: (
+        <MaterialCommunityIcons
+          name="music"
+          size={22}
+          color={theme.text}
+          style={{ position: "relative", bottom: 1 }}
+        />
+      ),
+      type: "switch",
+      switch: (
+        <Pressable
+          onPress={async () => {
+            if (haptics) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+            }
+            if (bgSound) {
+              setBgSound(false);
+              await AsyncStorage.setItem("IQ-Night:bgSound", "UnActive");
+            } else {
+              setBgSound(true);
+              await AsyncStorage.setItem("IQ-Night:bgSound", "Active");
+            }
+          }}
+        >
+          {bgSound ? (
+            <MaterialIcons name="stop-circle" size={20} color={theme.text} />
+          ) : (
+            <MaterialIcons name="play-circle" size={20} color={theme.text} />
+          )}
+        </Pressable>
+      ),
+    },
+    {
       value: "My Clans",
-      label: "My Clans",
+      label: activeLanguage?.myClans,
       icon: (
         <Entypo
           name="flag"
@@ -192,7 +270,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     },
     {
       value: "Notifications",
-      label: "Notifications",
+      label: activeLanguage?.notifications,
       icon: (
         <MaterialIcons
           name="notifications"
@@ -205,7 +283,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     },
     {
       value: "Assets",
-      label: "Assets",
+      label: activeLanguage?.assets,
       icon: (
         <MaterialCommunityIcons
           name="folder-multiple-image"
@@ -244,7 +322,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     // },
     {
       value: "Country",
-      label: "Country",
+      label: activeLanguage?.country,
       icon: (
         <MaterialCommunityIcons
           name="earth"
@@ -268,7 +346,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     },
     {
       value: "Birthday",
-      label: "Birthday",
+      label: activeLanguage?.birthday,
       icon: (
         <MaterialIcons
           name="date-range"
@@ -309,7 +387,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     },
     {
       value: "Language",
-      label: "Language",
+      label: activeLanguage?.language,
       icon: (
         <MaterialIcons
           name="language"
@@ -335,7 +413,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     },
     {
       value: "Haptics",
-      label: "Haptics",
+      label: activeLanguage?.haptics,
       icon: (
         <MaterialCommunityIcons
           name="gesture-tap-button"
@@ -393,7 +471,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
 
     {
       value: "Invoices",
-      label: "Invoices",
+      label: activeLanguage?.invoices,
       icon: (
         <MaterialCommunityIcons
           name="file-document-multiple"
@@ -406,7 +484,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     },
     {
       value: "Change Password",
-      label: "Change Password",
+      label: activeLanguage?.changePassword,
       icon: (
         <MaterialIcons
           name="password"
@@ -419,7 +497,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     },
     {
       value: "About",
-      label: "About",
+      label: activeLanguage?.about,
       icon: (
         <MaterialIcons
           name="info"
@@ -432,7 +510,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     },
     {
       value: "Help",
-      label: "Help",
+      label: activeLanguage?.help,
       icon: (
         <MaterialIcons
           name="help"
@@ -443,22 +521,22 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
       ),
       type: "screen",
     },
-    {
-      value: "Delete Account",
-      label: "Delete Account",
-      icon: (
-        <MaterialIcons
-          name="delete"
-          size={22}
-          color={"red"}
-          style={{ position: "relative", bottom: 1 }}
-        />
-      ),
-      type: "",
-    },
+    // {
+    //   value: "Delete Account",
+    //   label: "Delete Account",
+    //   icon: (
+    //     <MaterialIcons
+    //       name="delete"
+    //       size={22}
+    //       color={"red"}
+    //       style={{ position: "relative", bottom: 1 }}
+    //     />
+    //   ),
+    //   type: "",
+    // },
     {
       value: "Logout",
-      label: "Logout",
+      label: activeLanguage?.logout,
       icon: (
         <MaterialIcons
           name="logout"
@@ -504,6 +582,9 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
         closeState,
         confirmAction,
         setConfirmAction,
+        openDeleteConfirm,
+        closeDeleteConfirm,
+        slideAnimDelete,
       }}
     >
       {children}

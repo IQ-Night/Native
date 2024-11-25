@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
   Animated,
   Keyboard,
@@ -6,104 +6,123 @@ import {
   StyleSheet,
   TextInput,
   View,
-  KeyboardEvent,
   Easing,
+  Text,
+  Platform,
 } from "react-native";
 import { BlurView } from "expo-blur";
-import * as Haptics from "expo-haptics";
+import { ActivityIndicator } from "react-native-paper";
 import { useAppContext } from "../../../context/app";
-import Header from "./header";
-import Input from "./input";
-import Messages from "./messages";
 import { useAuthContext } from "../../../context/auth";
 import { useGameContext } from "../../../context/game";
+import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
-import { ActivityIndicator } from "react-native-paper";
+import Input from "./input";
+import Messages from "./messages";
+import { useChatContext } from "../../../context/chat";
 
-const Chat = ({
-  loading,
-  setLoading,
-  messages,
-  setMessages,
-  totalMessages,
-  setTotalMessages,
-  page,
-  setPage,
-  setOpenChat,
-  setUnreadMessages,
-}: any) => {
-  const { haptics, theme, apiUrl } = useAppContext();
+const Chat = ({ route }: any) => {
+  const { theme, apiUrl } = useAppContext();
+  const { activeRoom } = useGameContext();
   const { currentUser } = useAuthContext();
-  const { activeRoom, socket } = useGameContext();
+  const { socket } = useGameContext();
 
-  const rotate = React.useRef(new Animated.Value(45)).current; // Correct initial rotation angle (in degrees)
-  const opacityAnim = React.useRef(new Animated.Value(0)).current; // Start invisible
-  const translateXAnim = React.useRef(new Animated.Value(500)).current; // Start off-screen to the right
-  const translateYAnim = React.useRef(new Animated.Value(-750)).current; // Start off-screen to the top
+  const [lastMessage, setLastMessage] = useState(
+    route?.params?.chat?.lastMessage
+  );
 
-  // Reference to TextInput for focusing the input and triggering keyboard
+  const navigation: any = useNavigation();
+
   const inputRef = useRef<TextInput>(null);
 
-  // Open chat animation
-  React.useEffect(() => {
-    Animated.parallel([
-      Animated.timing(rotate, {
-        toValue: 0, // Rotate to 0 degrees
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 1, // Fade in
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateXAnim, {
-        toValue: 0, // Move to the center
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateYAnim, {
-        toValue: 0, // Move to the center
-        duration: 500,
-        useNativeDriver: true,
-      }),
-    ]).start(() => inputRef?.current?.focus());
-  }, []);
+  // sender
+  const sender = route?.params?.chat?.members?.find(
+    (member: any) => member.id === currentUser?._id
+  );
 
-  const handleClose = () => {
-    if (haptics) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-    }
+  // receiver
+  const receiver = route?.params?.chat?.members?.find(
+    (member: any) => member.id !== currentUser?._id
+  );
 
-    inputRef?.current?.blur();
-    setKeyboardHeight(0);
-    setOpenChat(false);
+  const [loading, setLoading] = useState(true);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [totalMessages, setTotalMessages] = useState(0);
+  const [page, setPage] = useState(1);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  // Function to update the route's chat data
+  const updateChatRoute = (updatedChat: any) => {
+    navigation.setParams({ chat: updatedChat });
   };
+
+  const CheckChat = async () => {
+    try {
+      const response = await axios.get(
+        `${apiUrl}/api/v1/chats/members?user1=${sender?.id}&user2=${receiver?.id}`
+      );
+      if (response?.data.status === "success") {
+        updateChatRoute(response?.data.data.chat);
+      }
+    } catch (error: any) {
+      console.log(error.response?.data?.message);
+      setLoading(false);
+    }
+  };
+
+  // Fetch messages for the chat
+  const GetMessages = async () => {
+    try {
+      const response = await axios.get(
+        `${apiUrl}/api/v1/chats/${route?.params?.chat?._id}/messages?page=1`
+      );
+      if (response?.data.status === "success") {
+        setMessages(response.data.data.messages);
+        setTotalMessages(response.data.totalMessages);
+        setTimeout(() => {
+          setLoading(false);
+        }, 300);
+      }
+    } catch (error: any) {
+      console.log("Error fetching messages:", error.response?.data?.message);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (route?.params?.chat?._id) {
+      GetMessages();
+    } else {
+      if (route?.params?.type === "user") {
+        CheckChat();
+      }
+      setLoading(false);
+    }
+  }, [route.params.chat]);
 
   const AddNewMessages = async () => {
     if (totalMessages > messages?.length) {
       const newPage = page + 1;
       try {
         const response = await axios(
-          apiUrl + "/api/v1/rooms/" + activeRoom?._id + "/chat?page=" + newPage
+          `${apiUrl}/api/v1/rooms/${activeRoom?._id}/chat?page=${newPage}`
         );
         if (response.data.status === "success") {
           setTotalMessages(response.data.totalMessages);
           let messagesList = response.data.data.messages;
           setMessages((prevMessages: any) => {
-            // Create a Map with existing rooms using roomId as the key
             const messageMap = new Map(
               prevMessages.map((message: any) => [message.messageId, message])
             );
 
-            // Iterate over new rooms and add them to the Map if they don't already exist
-            messagesList.forEach((mewMessage: any) => {
-              if (!messageMap.has(mewMessage._id)) {
-                messageMap.set(mewMessage.messageId, mewMessage);
+            messagesList.forEach((newMessage: any) => {
+              if (!messageMap.has(newMessage._id)) {
+                messageMap.set(newMessage.messageId, newMessage);
               }
             });
 
-            // Convert the Map values back to an array
             const uniqueMessages = Array.from(messageMap.values());
 
             return uniqueMessages;
@@ -117,135 +136,148 @@ const Chat = ({
     }
   };
 
-  // keyboard configs
-
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
   useEffect(() => {
-    function onKeyboardDidShow(e: KeyboardEvent) {
-      // Remove type here if not using TypeScript
-      setKeyboardHeight(e.endCoordinates.height);
-    }
-
-    function onKeyboardDidHide() {
-      setKeyboardHeight(0);
-    }
-
-    const showSubscription = Keyboard.addListener(
-      "keyboardDidShow",
-      onKeyboardDidShow
-    );
-    const hideSubscription = Keyboard.addListener(
-      "keyboardDidHide",
-      onKeyboardDidHide
-    );
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
-
-  // Animation for confirmation popup
-  const slideAnim = useRef(new Animated.Value(0)).current; // Start off-screen
-
-  useEffect(() => {
-    // Define and type the animation
-    const slideAnimation: Animated.CompositeAnimation = Animated.timing(
-      slideAnim,
-      {
-        toValue: -keyboardHeight,
-        duration: 300,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
+    // Define the event handler
+    const handleSendMessage = (data: any) => {
+      if (data?.message?.sender?.userId !== currentUser?._id) {
+        setMessages((prev: any) => [data?.message, ...prev]);
       }
+    };
+
+    if (socket) {
+      // Attach the event listener
+      socket.on("sendMessage", handleSendMessage);
+
+      // Clean up by removing the event listener
+      return () => {
+        socket.off("sendMessage", handleSendMessage);
+      };
+    }
+  }, [socket, currentUser?._id]);
+
+  // Handle keyboard events
+  useEffect(() => {
+    const onKeyboardShow = (e: any) => {
+      const height = e.endCoordinates?.height || 0;
+      setKeyboardHeight(height);
+    };
+
+    const onKeyboardHide = () => {
+      setKeyboardHeight(0);
+    };
+
+    const showListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      onKeyboardShow
+    );
+    const hideListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      onKeyboardHide
     );
 
-    // Start the animation
-    slideAnimation.start();
-
-    // Cleanup function to stop the animation on component unmount
     return () => {
-      slideAnimation.stop();
+      showListener.remove();
+      hideListener.remove();
     };
+  }, [route]);
+
+  // Animate slide based on keyboard height
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: -keyboardHeight,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
   }, [keyboardHeight]);
 
-  return (
-    <Animated.View
-      style={[
-        styles.chatContainer,
-        {
-          transform: [
-            {
-              rotate: rotate.interpolate({
-                inputRange: [0, 45],
-                outputRange: ["0deg", "45deg"],
-              }),
-            },
-            { translateX: translateXAnim },
-            { translateY: translateYAnim },
-          ],
-          opacity: opacityAnim,
-        },
-      ]}
-    >
-      <BlurView
-        intensity={150}
-        tint="dark"
-        style={{
-          width: "100%",
-          height: "100%",
-        }}
-      >
-        <Pressable
-          style={{
-            width: "100%",
-            height: "100%",
+  /**
+   * Members
+   */
+  const [loadMembers, setLoadMembers] = useState(true);
+  const [members, setMembers] = useState<any>([]);
 
-            paddingTop: 56,
-          }}
-        >
-          <Header
-            handleClose={handleClose}
-            setMessages={setMessages}
-            totalMessages={messages?.length}
-          />
-          {/* Messages container with keyboard avoidance */}
+  const GetMembers = async ({ status }: any) => {
+    try {
+      const response = await axios.get(
+        apiUrl +
+          "/api/v1/clans/" +
+          route?.params?.chat?.type?.clan?._id +
+          "/members?status=" +
+          status
+      );
+
+      if (response.data.status === "success") {
+        setMembers(response.data.members);
+        setLoadMembers(false);
+      }
+    } catch (error: any) {
+      console.log(error.response.data.message);
+    }
+  };
+
+  useEffect(() => {
+    if (route?.params?.chat?.type?.value === "clan") {
+      GetMembers({ status: "member" });
+    }
+  }, [route?.params?.chat]);
+
+  useEffect(() => {
+    if (socket) {
+      // Define the event handler
+      const handleSeenMessage = (data: any) => {
+        setLastMessage(data?.chat?.lastMessage);
+      };
+
+      // Attach the event listener
+      socket.on("seenMessage", handleSeenMessage);
+
+      // Clean up by removing the event listener
+      return () => {
+        socket.off("seenMessage", handleSeenMessage);
+      };
+    }
+  }, [socket, currentUser?._id]);
+
+  return (
+    <View style={styles.chatContainer}>
+      <BlurView intensity={10} tint="dark" style={styles.fullScreen}>
+        <Pressable style={styles.fullScreen}>
           <Animated.View
             style={[
               styles.messagesContainer,
               { transform: [{ translateY: slideAnim }] },
             ]}
           >
-            {/* Messages section */}
             {loading ? (
-              <View
-                style={{
-                  position: "absolute",
-                  top: 200,
-                }}
-              >
-                <ActivityIndicator size={32} color={theme.active} />
+              <View style={styles.loader}>
+                <ActivityIndicator size={24} color={theme.active} />
               </View>
             ) : (
               <Messages
                 messages={messages}
                 setMessages={setMessages}
                 AddNewMessages={AddNewMessages}
-                setUnreadMessages={setUnreadMessages}
+                members={members}
+                chatId={route?.params?.chat?._id}
+                lastMessage={lastMessage}
+                chat={route?.params?.chat}
               />
             )}
-
-            {/* Input for new messages */}
 
             <Input
               setMessages={setMessages}
               inputRef={inputRef}
               keyboardHeight={keyboardHeight}
+              receiver={receiver}
+              chatId={route?.params?.chat?._id}
+              setChat={updateChatRoute}
+              setLastMessage={setLastMessage}
             />
           </Animated.View>
         </Pressable>
       </BlurView>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -253,6 +285,7 @@ export default Chat;
 
 const styles = StyleSheet.create({
   chatContainer: {
+    flex: 1,
     position: "absolute",
     top: 0,
     right: 0,
@@ -260,10 +293,19 @@ const styles = StyleSheet.create({
     height: "100%",
     zIndex: 100,
   },
-  messagesContainer: {
+  fullScreen: {
     width: "100%",
+    height: "100%",
+    paddingTop: 56,
+  },
+  messagesContainer: {
     flex: 1,
     justifyContent: "flex-end",
     alignItems: "center",
+    width: "100%",
+  },
+  loader: {
+    position: "absolute",
+    top: 200,
   },
 });

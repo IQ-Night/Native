@@ -34,7 +34,7 @@ const NominationWindow = ({
   /**
    * App context
    */
-  const { theme, apiUrl, haptics } = useAppContext();
+  const { theme, apiUrl, haptics, activeLanguage } = useAppContext();
 
   /**
    * Game Context
@@ -1175,7 +1175,7 @@ const NominationWindow = ({
         height: "100%",
         position: "absolute",
         top: 0,
-        zIndex: 50,
+        zIndex: 90,
         alignItems: "center",
         justifyContent: "center",
         paddingTop: "30%",
@@ -1312,10 +1312,17 @@ const NominationWindow = ({
       )}
       {!openDecideVoting && (
         <>
-          <Text style={{ fontSize: 24, fontWeight: "600", color: theme.text }}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "600",
+              color: theme.text,
+              textAlign: "center",
+            }}
+          >
             {voting === 1 || voting === 2
-              ? "Let's give a vote"
-              : "Players to speech"}
+              ? activeLanguage?.give_a_vote
+              : activeLanguage?.players_to_speech}
           </Text>
           <View
             style={{
@@ -1381,58 +1388,60 @@ const NominationWindow = ({
                     N{player?.playerNumber}
                   </Text>
                   {((voting === 1 && votingTimer > 1) ||
-                    (voting === 2 && votingTimer2 > 1)) && (
-                    <Pressable
-                      onPress={
-                        voting === 1 && !currentPlayerInRoom?.death
-                          ? () => GiveVote({ playerId: player.userId })
-                          : voting === 2 && !currentPlayerInRoom?.death
-                          ? () => GiveVote2({ playerId: player.userId })
-                          : () => alert("You can't voice")
-                      }
-                      style={{
-                        backgroundColor: votes?.find(
+                    (voting === 2 && votingTimer2 > 1)) &&
+                    currentPlayerInRoom?.type === "player" &&
+                    !currentPlayerInRoom?.death && (
+                      <Pressable
+                        onPress={
+                          voting === 1 && !currentPlayerInRoom?.death
+                            ? () => GiveVote({ playerId: player.userId })
+                            : voting === 2 && !currentPlayerInRoom?.death
+                            ? () => GiveVote2({ playerId: player.userId })
+                            : () => alert("You can't voice")
+                        }
+                        style={{
+                          backgroundColor: votes?.find(
+                            (v: any) =>
+                              v.votedBy === currentUser?._id &&
+                              v.voteFor === player?.userId
+                          )
+                            ? "#888"
+                            : theme.active,
+                          borderRadius: 50,
+                          padding: 4,
+                          paddingHorizontal: 24,
+                          borderStartColor: "green",
+                        }}
+                      >
+                        {votes?.find(
                           (v: any) =>
                             v.votedBy === currentUser?._id &&
                             v.voteFor === player?.userId
-                        )
-                          ? "#888"
-                          : theme.active,
-                        borderRadius: 50,
-                        padding: 4,
-                        paddingHorizontal: 24,
-                        borderStartColor: "green",
-                      }}
-                    >
-                      {votes?.find(
-                        (v: any) =>
-                          v.votedBy === currentUser?._id &&
-                          v.voteFor === player?.userId
-                      ) ? (
-                        <Text
-                          style={{
-                            color: "white",
-                            fontWeight: 600,
-                            width: 50,
-                            textAlign: "center",
-                          }}
-                        >
-                          Cancel
-                        </Text>
-                      ) : (
-                        <Text
-                          style={{
-                            color: "white",
-                            fontWeight: 600,
-                            width: 50,
-                            textAlign: "center",
-                          }}
-                        >
-                          Vote
-                        </Text>
-                      )}
-                    </Pressable>
-                  )}
+                        ) ? (
+                          <Text
+                            style={{
+                              color: "white",
+                              fontWeight: 600,
+                              minWidth: 50,
+                              textAlign: "center",
+                            }}
+                          >
+                            {activeLanguage?.cancel}
+                          </Text>
+                        ) : (
+                          <Text
+                            style={{
+                              color: "white",
+                              fontWeight: 600,
+                              minWidth: 50,
+                              textAlign: "center",
+                            }}
+                          >
+                            {activeLanguage?.vote}
+                          </Text>
+                        )}
+                      </Pressable>
+                    )}
                 </View>
               );
             })}
@@ -1463,7 +1472,7 @@ const NominationWindow = ({
                   }}
                 >
                   {votingTimer}
-                  s.
+                  {activeLanguage?.sec}
                 </Text>
               </View>
             )}
@@ -1494,7 +1503,7 @@ const NominationWindow = ({
                   }}
                 >
                   {votingTimer2}
-                  s.
+                  {activeLanguage?.sec}
                 </Text>
               </View>
             )}
@@ -1539,7 +1548,7 @@ const NominationWindow = ({
               }}
             >
               {justifyTimer2}
-              s.
+              {activeLanguage?.sec}
             </Text>
           </View>
         )}
@@ -1570,7 +1579,7 @@ const NominationWindow = ({
               }}
             >
               {justifyTimer}
-              s.
+              {activeLanguage?.sec}
             </Text>
           </View>
         )}
@@ -1595,7 +1604,7 @@ const NominationWindow = ({
                 {changeSpeakerLoading ? (
                   <ActivityIndicator size={16} color="white" />
                 ) : (
-                  "Skip"
+                  activeLanguage?.skip
                 )}
               </Text>
             </TouchableOpacity>

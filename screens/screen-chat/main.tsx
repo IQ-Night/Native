@@ -1,19 +1,39 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useEffect, useState } from "react";
-import { useAppContext } from "../../context/app";
-import { useAuthContext } from "../../context/auth";
+import {
+  Ionicons,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
-import { ActivityIndicator } from "react-native-paper";
-import Button from "../../components/button";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
+import { useRef, useState } from "react";
+import {
+  Animated,
+  Easing,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  Vibration,
+  View,
+} from "react-native";
+import { ActivityIndicator } from "react-native-paper";
+import DeleteConfirm from "../../components/deleteConfirm";
+import Img from "../../components/image";
+import { useAppContext } from "../../context/app";
+import { useAuthContext } from "../../context/auth";
+import { useChatContext } from "../../context/chat";
+import { useNotificationsContext } from "../../context/notifications";
+import GetTimesAgo from "../../functions/getTimesAgo";
+import CreateChat from "./createChat";
 
 const Chats = () => {
+  const navigation: any = useNavigation();
   /**
    * App context
    */
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
 
   /**
    * Auth context
@@ -21,105 +41,67 @@ const Chats = () => {
   const { currentUser } = useAuthContext();
 
   /**
-   * Chats
+   * Chat context
    */
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState(1);
-  const [totalChats, setTotalChats] = useState(null);
-  const [chats, setChats] = useState([]);
-
-  // get chats
-  const GetChats = async () => {
-    try {
-      const response = await axios.get(
-        apiUrl +
-          "/api/v1/chats?page=1&search=" +
-          search +
-          "userId=" +
-          currentUser?._id
-      );
-      if (response?.data?.status === "success") {
-        setChats(response?.data?.data?.chats);
-        setTotalChats(response?.data?.totalChats);
-        setPage(1);
-        setLoading(false);
-      }
-    } catch (error: any) {
-      console.log(error.response.data.message);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    GetChats();
-  }, [search]);
+  const { loading, setChats, chats, totalChats, setPage, page } =
+    useChatContext();
 
   /**
    * Create chat
    */
   const [openCreateChat, setOpenCreateChat] = useState(false);
 
-  //      /**
-  //    * chat
-  //    */
-  //   const [openChat, setOpenChat] = useState(false);
-  //   const [unreadMessages, setUnreadMessages] = useState(false);
+  /**
+   * notifications
+   */
+  const { chatNotifications } = useNotificationsContext();
 
-  //   /**
-  //    * messages state
-  //    */
-  //   const [loadingChat, setLoadingChat] = useState(true);
-  //   const [messages, setMessages] = useState<any>([]);
-  //   const [page, setPage] = useState(1);
-  //   const [totalMessages, setTotalMessages] = useState<any>(null);
+  /**
+   * Delete
+   */
+  const [loadingDelete, setLoadingDelete] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<any>(null);
 
-  //   useEffect(() => {
-  //     const GetChat = async () => {
-  //       try {
-  //         const response = await axios(
-  //           apiUrl + "/api/v1/clans/" + item?._id + "/chat?page=1"
-  //         );
-  //         if (response?.data.status === "success") {
-  //           setTotalMessages(response.data.totalMessages);
-  //           setMessages(response?.data?.data?.messages);
-  //           if (
-  //             !response?.data?.data?.lastMessagesSeen?.find(
-  //               (i: any) => i === currentUser?._id
-  //             )
-  //           ) {
-  //             setUnreadMessages(true);
-  //           }
-  //           setTimeout(() => {
-  //             setLoadingChat(false);
-  //           }, 1000);
-  //         }
-  //       } catch (error: any) {
-  //         console.log(error.response.data.message);
-  //         setLoading(false);
-  //       }
-  //     };
-  //     GetChat();
-  //   }, []);
+  // Animation for confirmation popup
+  const slideAnim = useRef(new Animated.Value(300)).current; // Start off-screen
 
-  //   useEffect(() => {
-  //     // Define the event handler
-  //     const handleSendMessage = (data: any) => {
-  //       if (data?.message?.sender?.userId !== currentUser?._id) {
-  //         setMessages((prev: any) => [data?.message, ...prev]);
-  //         setUnreadMessages(true);
-  //       }
-  //     };
+  const openDeleteConfirm = ({ chatId }: any) => {
+    setDeleteConfirm(chatId);
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  };
 
-  //     // Attach the event listener
-  //     socket.on("sendMessage", handleSendMessage);
+  const closeDeleteConfirm = () => {
+    Animated.timing(slideAnim, {
+      toValue: 300, // Slide back down
+      duration: 300,
+      easing: Easing.in(Easing.ease),
+      useNativeDriver: true,
+    }).start(() => setDeleteConfirm(null));
+  };
 
-  //     // Clean up by removing the event listener
-  //     return () => {
-  //       socket.off("sendMessage", handleSendMessage);
-  //     };
-  //   }, [socket, currentUser?._id]); // Add currentUser._id as a dependency
-
+  /// delete
+  const Delete = async () => {
+    try {
+      setLoadingDelete(true);
+      const response = await axios.delete(
+        apiUrl + "/api/v1/chats/" + deleteConfirm
+      );
+      if (response?.data?.status === "success") {
+        setChats((prev: any) =>
+          prev?.filter((p: any) => p?._id !== deleteConfirm)
+        );
+        closeDeleteConfirm();
+        setLoadingDelete(false);
+      }
+    } catch (error: any) {
+      console.log(error?.response?.data?.message);
+    }
+  };
   return (
     <View style={{ flex: 1, height: "100%" }}>
       {loading && (
@@ -128,6 +110,201 @@ const Chats = () => {
           color={theme.active}
           style={{ marginTop: 64 }}
         />
+      )}
+      {!loading && chats?.length < 1 && (
+        <Text
+          style={{
+            width: "100%",
+            color: "rgba(255,255,255,0.3)",
+            fontWeight: 500,
+            fontSize: 16,
+            marginVertical: 16,
+            textAlign: "center",
+            position: "absolute",
+          }}
+        >
+          {activeLanguage?.not_found}
+        </Text>
+      )}
+      {!loading && chats?.length > 0 && (
+        <ScrollView
+          onScroll={({ nativeEvent }) => {
+            const { layoutMeasurement, contentOffset, contentSize } =
+              nativeEvent;
+            const isCloseToBottom =
+              layoutMeasurement.height + contentOffset.y >=
+              contentSize.height - 350;
+
+            if (isCloseToBottom) {
+              if (totalChats > chats?.length) {
+                // AddInvoices();
+              }
+            }
+          }}
+          scrollEventThrottle={400}
+          contentContainerStyle={{ gap: 6 }}
+          // ref={scrollViewRefRooms}
+        >
+          {chats?.map((chat: any, index: number) => {
+            const user = chat?.members.find(
+              (member: any) => member.id !== currentUser?._id
+            );
+            return (
+              <Pressable
+                onPress={() => {
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                  navigation.navigate("Chat", { chat: chat });
+                }}
+                key={index}
+                delayLongPress={300}
+                onLongPress={() => {
+                  Vibration.vibrate();
+                  openDeleteConfirm({ chatId: chat?._id });
+                }}
+                style={{
+                  marginHorizontal: 8,
+                  borderRadius: 12,
+                  backgroundColor: "rgba(255,255,255,0.02)",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  padding: 8,
+                  gap: 12,
+                  borderWidth: 1,
+                  borderColor:
+                    chat?.lastMessage?.seen?.find(
+                      (s: any) => s === chat?.lastMessage?.receiver?.userId
+                    ) || chat?.lastMessage?.sender?.userId === currentUser?._id
+                      ? "rgba(255,255,255,0.05)"
+                      : theme.active,
+                }}
+              >
+                <View
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 100,
+                    overflow: "hidden",
+                  }}
+                >
+                  {chat?.type?.value === "user" ? (
+                    <Img uri={user?.cover} />
+                  ) : (
+                    <Img uri={chat?.type?.clan?.cover} />
+                  )}
+                </View>
+                <View style={{ gap: 4, width: "60%" }}>
+                  <Text
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={{
+                      maxWidth: "100%",
+                      fontSize: 16,
+                      fontWeight: 600,
+                      color:
+                        chat?.lastMessage?.seen?.find(
+                          (s: any) => s === chat?.lastMessage?.receiver?.userId
+                        ) ||
+                        chat?.lastMessage?.sender?.userId === currentUser?._id
+                          ? theme.text
+                          : theme?.active,
+                    }}
+                  >
+                    {chat?.type?.value === "user" ? (
+                      user?.name
+                    ) : (
+                      <Text>
+                        <Text style={{ color: theme.active }}>
+                          {activeLanguage?.clan}:
+                        </Text>{" "}
+                        {chat?.type?.clan?.title}{" "}
+                      </Text>
+                    )}
+                  </Text>
+                  {chat?.type?.value === "user" && (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
+                      {
+                        <Text
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                          style={{
+                            maxWidth: "100%",
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color:
+                              chat?.lastMessage?.seen?.find(
+                                (s: any) =>
+                                  s === chat?.lastMessage?.receiver?.userId
+                              ) ||
+                              chat?.lastMessage?.sender?.userId ===
+                                currentUser?._id
+                                ? theme.text
+                                : theme.active,
+                          }}
+                        >
+                          {chat?.lastMessage?.text}{" "}
+                        </Text>
+                      }
+                      <MaterialIcons
+                        name="done-all"
+                        color={
+                          chat?.lastMessage?.seen?.find(
+                            (s: any) =>
+                              s === chat?.lastMessage?.receiver?.userId
+                          )
+                            ? theme.active
+                            : "#888"
+                        }
+                        size={16}
+                      />
+                    </View>
+                  )}
+                </View>
+                <Text
+                  style={{
+                    marginLeft: "auto",
+                    marginBottom: chat?.type?.value === "user" ? "auto" : 0,
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: theme.active,
+                    margin: chat?.type?.value === "user" ? 8 : 0,
+                    marginRight: 8,
+                  }}
+                >
+                  {chat?.type?.value === "user" ? (
+                    GetTimesAgo(chat?.lastMessage?.createdAt)
+                  ) : (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <Ionicons name="people" size={14} color={theme.text} />
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 500,
+                          color: theme.text,
+                        }}
+                      >
+                        {chat?.type?.clan?.members?.length}
+                      </Text>
+                    </View>
+                  )}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
       )}
       <View style={styles.createIcon}>
         <View
@@ -177,16 +354,25 @@ const Chats = () => {
                 size={32}
                 color={theme.active}
               />
-
-              {/* <Text
-                  style={{ fontSize: 16, fontWeight: 600, color: theme.active }}
-                >
-                  Create
-                </Text> */}
             </Pressable>
           </BlurView>
         </View>
       </View>
+      {openCreateChat && (
+        <CreateChat
+          openState={openCreateChat}
+          setOpenState={setOpenCreateChat}
+        />
+      )}
+      {deleteConfirm && (
+        <DeleteConfirm
+          closeDeleteConfirm={closeDeleteConfirm}
+          text={activeLanguage?.chat_delete_confirmation}
+          Function={Delete}
+          loadingDelete={loadingDelete}
+          slideAnim={slideAnim}
+        />
+      )}
     </View>
   );
 };
@@ -199,9 +385,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     // right: 14,
     width: "100%",
-    bottom: 100,
+    bottom: 48,
     overflow: "hidden",
-    alignItems: "flex-end",
+    alignItems: "center",
     paddingHorizontal: 12,
   },
 });

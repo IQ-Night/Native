@@ -10,7 +10,7 @@ const Filter = ({ openFilter, setOpenFilter, translateYFilter }: any) => {
   /**
    * App context
    */
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
   /**
    * Rooms context
    */
@@ -49,7 +49,7 @@ const Filter = ({ openFilter, setOpenFilter, translateYFilter }: any) => {
                 <Text
                   style={{ fontSize: 16, fontWeight: 500, color: theme.text }}
                 >
-                  Languages: ({languageTotals.length})
+                  {activeLanguage?.languages}: ({languageTotals.length})
                 </Text>
               </View>
               <View
@@ -76,7 +76,7 @@ const Filter = ({ openFilter, setOpenFilter, translateYFilter }: any) => {
                   <Text
                     style={{ fontSize: 14, fontWeight: 500, color: theme.text }}
                   >
-                    ALL
+                    {activeLanguage?.all}
                   </Text>
                 </Pressable>
                 {languageTotals?.map((item: any, index: number) => {

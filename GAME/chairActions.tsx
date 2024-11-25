@@ -1,21 +1,19 @@
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
+import React from "react";
 import {
   Animated,
   Dimensions,
-  Easing,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import React, { useEffect } from "react";
-import { BlurView } from "expo-blur";
+import { ActivityIndicator } from "react-native-paper";
+import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
-import * as Haptics from "expo-haptics";
-import { useAppContext } from "../context/app";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { ActivityIndicator } from "react-native-paper";
-import Img from "../components/image";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -48,7 +46,7 @@ const ChaitActions = ({
   roles,
   speechTimer,
 }: any) => {
-  const { haptics, theme } = useAppContext();
+  const { haptics, theme, activeLanguage } = useAppContext();
   const { currentUser } = useAuthContext();
   const { gamePlayers } = useGameContext();
 
@@ -344,7 +342,7 @@ const ChaitActions = ({
                   fontSize: 12,
                 }}
               >
-                Mafia?
+                {activeLanguage?.mafia}?
               </Text>
               {dailyVotes > 0 && (
                 <Pressable
@@ -509,7 +507,7 @@ const ChaitActions = ({
                   fontSize: 12,
                 }}
               >
-                Vote
+                {activeLanguage?.vote}
               </Text>
               {dailyVotes > 0 && (
                 <Pressable
@@ -605,7 +603,22 @@ const ChaitActions = ({
               fontSize: 10,
             }}
           >
-            {roles?.find((r: any) => r.value === item?.role?.value)?.label}
+            {roles?.find((r: any) => r.value === item?.role?.value)?.value ===
+            "mafia"
+              ? activeLanguage?.mafia
+              : roles?.find((r: any) => r.value === item?.role?.value)
+                  ?.value === "citizen"
+              ? activeLanguage?.citizen
+              : roles?.find((r: any) => r.value === item?.role?.value)
+                  ?.value === "doctor"
+              ? activeLanguage?.doctor
+              : roles?.find((r: any) => r.value === item?.role?.value)
+                  ?.value === "police"
+              ? activeLanguage?.police
+              : roles?.find((r: any) => r.value === item?.role?.value)
+                  ?.value === "serial-killer"
+              ? activeLanguage?.serialKiller
+              : activeLanguage?.mafiaDon}
           </Text>
         </View>
       )}

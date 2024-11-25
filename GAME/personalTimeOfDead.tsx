@@ -1,11 +1,10 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useEffect, useState } from "react";
-import Button from "../components/button";
-import { useAppContext } from "../context/app";
 import { BlurView } from "expo-blur";
-import { useGameContext } from "../context/game";
-import { useAuthContext } from "../context/auth";
+import { useEffect } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
+import { useAppContext } from "../context/app";
+import { useAuthContext } from "../context/auth";
+import { useGameContext } from "../context/game";
 
 const PersonalTimeOfDead = ({
   game,
@@ -16,7 +15,7 @@ const PersonalTimeOfDead = ({
   /**
    * App context
    */
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
 
   /**
    * Auth context
@@ -50,7 +49,7 @@ const PersonalTimeOfDead = ({
         height: "100%",
         width: "100%",
         position: "absolute",
-        zIndex: 60,
+        zIndex: 90,
         justifyContent: "center",
         alignItems: "center",
         gap: 16,
@@ -64,7 +63,7 @@ const PersonalTimeOfDead = ({
           fontWeight: "600",
         }}
       >
-        Killed!
+        {activeLanguage?.killed}!
       </Text>
       <Text style={{ color: theme.text }}>{game.options[0]?.userName}</Text>
       <View
@@ -103,7 +102,7 @@ const PersonalTimeOfDead = ({
               {skipLastTimerLoading ? (
                 <ActivityIndicator size={16} color="white" />
               ) : (
-                "Skip"
+                activeLanguage?.skip
               )}
             </Text>
           </TouchableOpacity>

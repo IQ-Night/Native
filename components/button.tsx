@@ -10,6 +10,7 @@ interface ButtonProps {
     width: any;
     color: string;
     backgroundColor: string;
+    opacity?: any;
   };
   title?: any;
   icon?: any;
@@ -56,6 +57,7 @@ const Button: React.FC<ButtonProps> = ({
         shadowOpacity: 0.1,
         shadowRadius: 2,
         elevation: 3,
+        opacity: style.opacity,
       }}
     >
       {loading ? (

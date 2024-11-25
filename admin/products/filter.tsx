@@ -7,15 +7,15 @@ const Filter = ({ type, setType }: any) => {
   /**
    * App context
    */
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
   /**
    * Items
    */
   const items = [
-    { value: "", label: "All" },
-    { value: "profile-avatar", label: "Profile Avatars" },
-    { value: "room-avatar", label: "Room Avatars" },
-    { value: "clan-avatar", label: "Clan Avatars" },
+    { value: "", label: activeLanguage?.all },
+    { value: "profile-avatar", label: activeLanguage?.profileAvatar },
+    { value: "room-avatar", label: activeLanguage?.roomAvatar },
+    { value: "clan-avatar", label: activeLanguage?.clanAvatar },
   ];
   return (
     <ScrollView

@@ -1,14 +1,14 @@
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
   Pressable,
   StyleSheet,
   Text,
-  View,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
-import { LinearGradient } from "expo-linear-gradient";
-import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useAppContext } from "../context/app";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -21,7 +21,7 @@ interface PropsTypes {
 }
 
 const Alert: React.FC<PropsTypes> = ({ type, onClose, text }) => {
-  const { theme } = useAppContext();
+  const { theme, haptics } = useAppContext();
   // Initialize animated value
   const translateY = useRef(new Animated.Value(300)).current;
 
@@ -97,6 +97,9 @@ const Alert: React.FC<PropsTypes> = ({ type, onClose, text }) => {
             size={24}
             color="white"
             onPress={() => {
+              if (haptics) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              }
               setClose(false);
               setTimeout(() => {
                 onClose();

@@ -31,7 +31,7 @@ const User = ({ route, navigation, userItem, from }: any) => {
   /**
    * App context
    */
-  const { theme, apiUrl, haptics, setAlert } = useAppContext();
+  const { theme, apiUrl, haptics, setAlert, activeLanguage } = useAppContext();
 
   /**
    * Notification context
@@ -282,11 +282,13 @@ const User = ({ route, navigation, userItem, from }: any) => {
                   fontSize: 16,
                 }}
               >
-                {user?.admin?.role}
+                {user?.admin?.role === "Game Admin"
+                  ? activeLanguage?.game_admin
+                  : activeLanguage?.app_admin}
               </Text>
             )}
             <Text style={{ color: theme.text, fontWeight: 500, fontSize: 14 }}>
-              Lvl: {level?.current}
+              {activeLanguage?.lvl}: {level?.current}
             </Text>
             <Text
               style={{
@@ -306,7 +308,11 @@ const User = ({ route, navigation, userItem, from }: any) => {
         </View>
         <View>
           <View style={{ gap: 12 }}>
-            <ScrollView horizontal contentContainerStyle={{ gap: 8 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8 }}
+            >
               <Pressable
                 onPress={() => {
                   if (haptics)
@@ -330,7 +336,7 @@ const User = ({ route, navigation, userItem, from }: any) => {
                     fontSize: 16,
                   }}
                 >
-                  Clans
+                  {activeLanguage?.clans}
                 </Text>
               </Pressable>
 
@@ -369,7 +375,7 @@ const User = ({ route, navigation, userItem, from }: any) => {
                       fontSize: 16,
                     }}
                   >
-                    Warnings: {user?.warnings?.length}
+                    {activeLanguage?.warnings}: {user?.warnings?.length}
                   </Text>
                 </Pressable>
               )}
@@ -397,7 +403,7 @@ const User = ({ route, navigation, userItem, from }: any) => {
                     fontSize: 16,
                   }}
                 >
-                  Statistics
+                  {activeLanguage?.statistics}
                 </Text>
               </Pressable>
             </ScrollView>

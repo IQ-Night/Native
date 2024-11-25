@@ -24,7 +24,7 @@ import { useContentContext } from "../../context/content";
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const SendGift = ({ openState, setOpenState, user }: any) => {
-  const { theme, haptics, apiUrl, setAlert } = useAppContext();
+  const { theme, haptics, apiUrl, setAlert, activeLanguage } = useAppContext();
   const { currentUser, setCurrentUser } = useAuthContext();
   const { setConfirmAction } = useContentContext();
 
@@ -205,7 +205,7 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
             paddingBottom: 8,
           }}
         >
-          Select Gift
+          {activeLanguage?.select_gift}
         </Text>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -267,7 +267,8 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
                 marginVertical: 4,
               }}
             >
-              Coins / Total: {currentUser?.coins.total}{" "}
+              {activeLanguage?.coins} / {activeLanguage?.total}:{" "}
+              {currentUser?.coins.total}{" "}
               <FontAwesome5 name="coins" size={14} color={theme.active} />
             </Text>
             <View style={styles.gridContainer}>
@@ -300,7 +301,7 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
                 marginVertical: 4,
               }}
             >
-              Your Assets
+              {activeLanguage?.assets}
             </Text>
             <View style={styles.gridContainer}>
               {loading ? (
@@ -332,7 +333,7 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
                 marginVertical: 4,
               }}
             >
-              Explore Assets
+              {activeLanguage?.explore_assets}
             </Text>
             <View style={styles.gridContainer}>
               {loading ? (
@@ -373,7 +374,7 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
               successText: "Gift sent successfully!",
             })
           }
-          title="Send"
+          title={activeLanguage?.send}
           style={{
             width: "100%",
             backgroundColor: theme.active,
@@ -584,7 +585,7 @@ const VipItem = ({
   selectGift,
   setSelectGift,
 }: any) => {
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
   const navigation: any = useNavigation();
   /**
    * Auth context
@@ -642,7 +643,15 @@ const VipItem = ({
             fontSize: 16,
           }}
         >
-          {item.duration}
+          {item?.duration?.includes("Weeks")
+            ? item.duration.split(" ")[0] + " " + activeLanguage?.weeks
+            : item?.duration?.includes("Week")
+            ? item.duration.split(" ")[0] + " " + activeLanguage?.week
+            : item?.duration?.includes("Months")
+            ? item.duration.split(" ")[0] + " " + activeLanguage?.months
+            : item?.duration?.includes("Month")
+            ? item.duration.split(" ")[0] + " " + activeLanguage?.month
+            : activeLanguage?.annually}
         </Text>
       </View>
 

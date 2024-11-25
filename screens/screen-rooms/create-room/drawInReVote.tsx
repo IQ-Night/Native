@@ -7,7 +7,7 @@ const DrawInReVote = ({ roomState, setRoomState }: any) => {
   /**
    * App context
    */
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
   // styles
   const styles = createStyles(theme);
   return (
@@ -23,7 +23,7 @@ const DrawInReVote = ({ roomState, setRoomState }: any) => {
         },
       ]}
     >
-      <Text style={styles.title}>Draw in re-vote</Text>
+      <Text style={styles.title}>{activeLanguage?.drawInReVote}</Text>
       <View
         style={{
           flexDirection: "row",
@@ -62,8 +62,9 @@ const DrawInReVote = ({ roomState, setRoomState }: any) => {
                 roomState.drawInReVote === "Release all" ? "white" : theme.text,
               fontWeight: 600,
             }}
+            numberOfLines={1}
           >
-            Release all
+            {activeLanguage?.releaseAll}
           </Text>
         </Pressable>
         <Pressable
@@ -94,8 +95,9 @@ const DrawInReVote = ({ roomState, setRoomState }: any) => {
                 roomState.drawInReVote === "Jail all" ? "white" : theme.text,
               fontWeight: 600,
             }}
+            numberOfLines={1}
           >
-            Jail all
+            {activeLanguage?.jailAll}
           </Text>
         </Pressable>
         <Pressable
@@ -128,8 +130,9 @@ const DrawInReVote = ({ roomState, setRoomState }: any) => {
                   : theme.text,
               fontWeight: 600,
             }}
+            numberOfLines={1}
           >
-            People decide
+            {activeLanguage?.peopleDecide}
           </Text>
         </Pressable>
       </View>

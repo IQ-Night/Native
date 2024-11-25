@@ -1,18 +1,10 @@
-import React, { memo, useRef } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Pressable,
-} from "react-native";
+import { memo } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
+import { useAppContext } from "../../context/app";
+import { useContentContext } from "../../context/content";
 import { useRoomsContext } from "../../context/rooms";
 import Door from "./door";
-import { useAppContext } from "../../context/app";
-import { ActivityIndicator } from "react-native-paper";
-import { useContentContext } from "../../context/content";
-import * as Haptics from "expo-haptics";
 
 const List = memo(({ setDoorReview, navigation }: any) => {
   /**
@@ -67,7 +59,7 @@ const List = memo(({ setDoorReview, navigation }: any) => {
               navigation={navigation}
             />
           ))}
-          {!loadRooms && totalRooms > 0 && (
+          {!loadRooms && totalRooms > rooms?.length && (
             <View style={{ flex: 1, padding: 8, alignItems: "center", gap: 8 }}>
               <Pressable
                 style={{
@@ -91,34 +83,38 @@ const List = memo(({ setDoorReview, navigation }: any) => {
               {loadMore && <ActivityIndicator size={24} color={theme.active} />}
             </View>
           )}
+          <Text>
+            {totalRooms > rooms?.length && (
+              <Text
+                style={{
+                  width: "100%",
+                  padding: 16,
+                  gap: 8,
+                }}
+              >
+                {loadRooms && (
+                  <ActivityIndicator size={24} color={theme.active} />
+                )}
+              </Text>
+            )}
+          </Text>
 
-          {totalRooms > rooms?.length && (
-            <View
-              style={{
-                width: "100%",
-                padding: 16,
-                gap: 8,
-                alignItems: "center",
-              }}
-            >
-              {loadRooms && (
-                <ActivityIndicator size={24} color={theme.active} />
-              )}
-            </View>
-          )}
-
-          {rooms?.length < 1 && totalRooms && (
-            <Text
-              style={{
-                color: "rgba(255,255,255,0.3)",
-                fontWeight: 500,
-                fontSize: 16,
-                margin: 16,
-              }}
-            >
-              No Rooms Found!
-            </Text>
-          )}
+          <Text style={{ width: "100%" }}>
+            {rooms?.length < 1 && !loadRooms && totalRooms !== null && (
+              <Text
+                style={{
+                  width: "100%",
+                  color: "rgba(255,255,255,0.3)",
+                  fontWeight: 500,
+                  fontSize: 16,
+                  margin: 16,
+                  textAlign: "center",
+                }}
+              >
+                No Rooms Found!
+              </Text>
+            )}
+          </Text>
         </View>
       </ScrollView>
     </View>

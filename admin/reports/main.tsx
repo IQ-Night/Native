@@ -15,7 +15,7 @@ const Reports = () => {
   /**
    * App context
    */
-  const { apiUrl, theme } = useAppContext();
+  const { apiUrl, theme, activeLanguage, language } = useAppContext();
 
   /**
    * Reports team
@@ -135,7 +135,7 @@ const Reports = () => {
             margin: 16,
           }}
         >
-          No Reports Found!
+          {activeLanguage?.not_found}
         </Text>
       )}
       <ScrollView
@@ -201,7 +201,7 @@ const Reports = () => {
                         fontWeight: 500,
                       }}
                     >
-                      Sender:
+                      {activeLanguage?.sender}:
                     </Text>
                   </Pressable>
                   <Pressable
@@ -259,7 +259,7 @@ const Reports = () => {
                         fontWeight: 500,
                       }}
                     >
-                      Receiver:
+                      {activeLanguage?.receiver}:
                     </Text>
                   </Pressable>
 
@@ -305,8 +305,15 @@ const Reports = () => {
                     fontWeight: 500,
                   }}
                 >
-                  Report Type:{" "}
-                  {warnings?.find((w: any) => w.value === item?.reportType)?.en}
+                  {activeLanguage?.report_type}:{" "}
+                  {language === "GB"
+                    ? warnings?.find((w: any) => w.value === item?.reportType)
+                        ?.en
+                    : language === "GE"
+                    ? warnings?.find((w: any) => w.value === item?.reportType)
+                        ?.ka
+                    : warnings?.find((w: any) => w.value === item?.reportType)
+                        ?.ru}
                 </Text>
                 <Text
                   style={{ color: theme.text, fontSize: 16, fontWeight: 500 }}

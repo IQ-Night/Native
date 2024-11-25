@@ -2,11 +2,10 @@ import { FontAwesome, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useRef, useState } from "react";
+import _ from "lodash";
+import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -21,8 +20,10 @@ import Input from "../../components/input";
 import ChoiceLanguage from "../../components/popup-languages";
 import { useAppContext } from "../../context/app";
 import { useAuthContext } from "../../context/auth";
-import { roles, useRoomsContext } from "../../context/rooms";
-import NumberPicker from "./numberPicker";
+import { useContentContext } from "../../context/content";
+import { useGameContext } from "../../context/game";
+import DrawInReVote from "./create-room/drawInReVote";
+import Roles from "./create-room/edit-roles";
 import MaxMafias from "./create-room/maxMafias";
 import MaxPlayers from "./create-room/maxPlayers";
 import PersonalTime from "./create-room/personalTime";
@@ -31,11 +32,7 @@ import Private from "./create-room/private";
 import Rating from "./create-room/rating";
 import RoleInfo from "./create-room/roleInfo";
 import SpectatorMode from "./create-room/spectatorMode";
-import { useGameContext } from "../../context/game";
-import DrawInReVote from "./create-room/drawInReVote";
-import _ from "lodash";
-import Roles from "./create-room/edit-roles";
-import { useContentContext } from "../../context/content";
+import NumberPicker from "./numberPicker";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -148,6 +145,9 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
   // styles
   const styles = createStyles(theme);
 
+  /** Upload Avatar */
+  const [file, setFile] = useState<any>(null);
+
   /**
    * Numeric Popup
    */
@@ -229,7 +229,7 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
             ellipsizeMode="tail"
             numberOfLines={1}
           >
-            Edit room '
+            {activeLanguage?.editRoom} '
             {roomState?.title.length > 0
               ? roomState?.title
               : "Default: Room - 123..."}
@@ -256,7 +256,7 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
             >
-              <Text style={styles.title}>Cover</Text>
+              <Text style={styles.title}>{activeLanguage?.avatar}</Text>
             </View>
             <Pressable
               onPress={() => {
@@ -334,7 +334,7 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
             />
           </View>
           <View style={{ gap: 8 }}>
-            <Text style={styles.title}>Roles</Text>
+            <Text style={styles.title}>{activeLanguage?.roles}</Text>
             <Roles
               oldData={oldData}
               roomState={roomState}
@@ -355,7 +355,7 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
           />
           <Private roomState={roomState} setRoomState={setRoomState} />
           <View style={styles.fieldContainer}>
-            <Text style={styles.title}>Language</Text>
+            <Text style={styles.title}>{activeLanguage?.language}</Text>
             <Pressable
               onPress={() => {
                 setOpenPopup("choiceLanguage");
@@ -382,14 +382,14 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
             setNumericPopup={setNumericPopup}
           />
           <View style={styles.fieldContainer}>
-            <Text style={styles.title}>Spectator Mode</Text>
+            <Text style={styles.title}>{activeLanguage?.spectatorMode}</Text>
             <SpectatorMode roomState={roomState} setRoomState={setRoomState} />
           </View>
           <PersonalTime roomState={roomState} setRoomState={setRoomState} />
           <DrawInReVote roomState={roomState} setRoomState={setRoomState} />
           <View style={{ marginVertical: 8 }}>
             <View style={styles.fieldContainer}>
-              <Text style={styles.title}>Rules</Text>
+              <Text style={styles.title}>{activeLanguage?.rules}</Text>
               <Pressable
                 style={styles.numericValue}
                 onPress={() => {
@@ -399,7 +399,9 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
                   }
                 }}
               >
-                <Text style={{ color: theme.text, fontWeight: 500 }}>Add</Text>
+                <Text style={{ color: theme.text, fontWeight: 500 }}>
+                  {activeLanguage?.add}
+                </Text>
               </Pressable>
             </View>
             {roomState.rules?.length > 0 && (
@@ -473,7 +475,11 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
               )
             }
             disabled={_.isEqual(oldData, roomState)}
-            title={_.isEqual(oldData, roomState) ? "No changes" : "Edit & Save"}
+            title={
+              _.isEqual(oldData, roomState)
+                ? activeLanguage?.noChanges
+                : activeLanguage?.editAndSave
+            }
             loading={loading}
             style={{
               width: "100%",
@@ -557,6 +563,8 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
                 setState={setRoomState}
                 type="room-avatar"
                 setTotalPrice={setTotalPrice}
+                file={file}
+                setFile={setFile}
               />
             )}
             {openPopup === "choiceLanguage" && (

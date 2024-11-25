@@ -19,7 +19,7 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
   /**
    * App context
    */
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
   /**
    * Auth context
    */
@@ -186,9 +186,11 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                     fontWeight: 500,
                   }}
                 >
-                  Founder:{" "}
+                  {activeLanguage?.founder}:{" "}
                   {founder.id === currentUser?._id ? (
-                    <Text style={{ color: theme.active }}>You</Text>
+                    <Text style={{ color: theme.active }}>
+                      {activeLanguage?.you}
+                    </Text>
                   ) : (
                     founder.name
                   )}

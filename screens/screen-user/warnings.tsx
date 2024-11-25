@@ -1,21 +1,10 @@
-import { BlurView } from "expo-blur";
-import React, { useEffect, useRef } from "react";
-import {
-  Animated,
-  Easing,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { useAppContext } from "../../context/app";
 import { warnings } from "../../context/content";
 import { FormatDate } from "../../functions/formatDate";
-import { MaterialIcons } from "@expo/vector-icons";
 
 const Warnings = ({ list }: any) => {
-  const { theme } = useAppContext();
+  const { theme, language } = useAppContext();
 
   return (
     <View style={styles.container}>
@@ -59,7 +48,11 @@ const Warnings = ({ list }: any) => {
                     letterSpacing: 0.5,
                   }}
                 >
-                  {warning?.en}
+                  {language === "GB"
+                    ? warning?.en
+                    : language === "GE"
+                    ? warning?.ka
+                    : warning?.ru}
                 </Text>
                 <Text
                   style={{

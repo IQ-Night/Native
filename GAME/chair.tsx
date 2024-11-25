@@ -43,7 +43,7 @@ const Chair = ({
   /**
    * App context
    */
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
 
   /**
    * Auth context
@@ -561,7 +561,7 @@ const Chair = ({
                 textAlign: "center",
               }}
             >
-              You
+              {activeLanguage?.you}
             </Text>
           </BlurView>
         </View>
@@ -594,50 +594,52 @@ const Chair = ({
                 textAlign: "center",
               }}
             >
-              Host{" "}
+              {activeLanguage?.host}{" "}
               <Text style={{ color: theme.text }}>
-                {item?.userId === currentUser._id && "(You)"}
+                {item?.userId === currentUser._id && `(${activeLanguage?.you})`}
               </Text>
             </Text>
           </BlurView>
         </View>
       )}
-      {item?.admin?.active && (
-        <View
-          style={{
-            borderRadius: 50,
-            overflow: "hidden",
-            position: "absolute",
-            top: 0,
-            right: -10,
-            zIndex: 50,
-          }}
-        >
-          <BlurView
-            intensity={80}
-            tint="dark"
+      {item?.admin?.active &&
+        item?.userId !== activeRoom?.admin?.founder?.id && (
+          <View
             style={{
-              padding: 3,
-              paddingHorizontal: 6,
+              borderRadius: 50,
+              overflow: "hidden",
+              position: "absolute",
+              top: 0,
+              right: -10,
+              zIndex: 50,
             }}
           >
-            <Text
-              numberOfLines={1}
+            <BlurView
+              intensity={80}
+              tint="dark"
               style={{
-                color: theme.active,
-                fontWeight: "600",
-                fontSize: 10,
-                textAlign: "center",
+                padding: 3,
+                paddingHorizontal: 6,
               }}
             >
-              Admin{" "}
-              <Text style={{ color: theme.text }}>
-                {item?.userId === currentUser._id && "(You)"}
+              <Text
+                numberOfLines={1}
+                style={{
+                  color: theme.active,
+                  fontWeight: "600",
+                  fontSize: 10,
+                  textAlign: "center",
+                }}
+              >
+                {activeLanguage?.admin}{" "}
+                <Text style={{ color: theme.text }}>
+                  {item?.userId === currentUser._id &&
+                    `(${activeLanguage?.you})`}
+                </Text>
               </Text>
-            </Text>
-          </BlurView>
-        </View>
-      )}
+            </BlurView>
+          </View>
+        )}
       {((activePlayerToSpeech?.userId === item?.userId &&
         game.value === "Day") ||
         game.value === "Common Time") && (
@@ -787,7 +789,7 @@ const Chair = ({
             }}
           >
             <Text style={{ color: "#666", fontSize: 12, fontWeight: 500 }}>
-              Empty
+              {activeLanguage?.empty}
             </Text>
           </View>
         </>

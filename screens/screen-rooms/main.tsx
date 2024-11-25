@@ -26,7 +26,7 @@ const Rooms = ({ navigation }: any) => {
   /**
    * App state
    */
-  const { haptics, theme } = useAppContext();
+  const { haptics, theme, activeLanguage } = useAppContext();
   /**
    * App state
    */
@@ -167,6 +167,7 @@ const Rooms = ({ navigation }: any) => {
           setIsFocused={setIsFocused}
           inputRef={inputRef}
           tab="Rooms"
+          tabTitle={activeLanguage?.rooms}
           totalData={totalRooms}
           filterStatus={filterStatus}
         />
@@ -215,78 +216,76 @@ const Rooms = ({ navigation }: any) => {
         </BlurView>
       )} */}
 
-      {totalRooms && (
-        <View
-          style={{
-            // Box shadow for iOS
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.2,
-            shadowRadius: 2,
-            // Elevation for Android
-            elevation: 4,
-          }}
-        >
-          <View style={styles.createIcon}>
-            <View
+      <View
+        style={{
+          // Box shadow for iOS
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.2,
+          shadowRadius: 2,
+          // Elevation for Android
+          elevation: 4,
+        }}
+      >
+        <View style={styles.createIcon}>
+          <View
+            style={{
+              borderRadius: 50,
+              overflow: "hidden",
+              justifyContent: "center",
+              alignItems: "center",
+              width: 52,
+              aspectRatio: 1,
+            }}
+          >
+            <BlurView
+              intensity={120}
+              tint="dark"
               style={{
-                borderRadius: 50,
-                overflow: "hidden",
+                gap: 16,
                 justifyContent: "center",
                 alignItems: "center",
-                width: 52,
-                aspectRatio: 1,
+                width: "100%",
               }}
             >
-              <BlurView
-                intensity={120}
-                tint="dark"
+              <Pressable
+                onPress={() => {
+                  setCreateRoom(true);
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                }}
                 style={{
-                  gap: 16,
+                  // borderWidth: 1.5,
+                  // borderColor: "rgba(255,255,255,0.05)",
+
+                  borderRadius: 50,
+                  width: "100%",
+                  flexDirection: "row",
                   justifyContent: "center",
                   alignItems: "center",
-                  width: "100%",
+                  height: "100%",
+                  gap: 4,
+                  padding: 4,
                 }}
               >
-                <Pressable
-                  onPress={() => {
-                    setCreateRoom(true);
-                    if (haptics) {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                    }
-                  }}
-                  style={{
-                    // borderWidth: 1.5,
-                    // borderColor: "rgba(255,255,255,0.05)",
+                <MaterialCommunityIcons
+                  name="plus"
+                  // style={{ position: "absolute", zIndex: 60, left: 19 }}
+                  size={32}
+                  color={theme.active}
+                />
 
-                    borderRadius: 50,
-                    width: "100%",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "100%",
-                    gap: 4,
-                    padding: 4,
-                  }}
-                >
-                  <MaterialCommunityIcons
-                    name="plus"
-                    // style={{ position: "absolute", zIndex: 60, left: 19 }}
-                    size={32}
-                    color={theme.active}
-                  />
-
-                  {/* <Text
+                {/* <Text
                   style={{ fontSize: 16, fontWeight: 600, color: theme.active }}
                 >
                   Create
                 </Text> */}
-                </Pressable>
-              </BlurView>
-            </View>
+              </Pressable>
+            </BlurView>
           </View>
         </View>
-      )}
+      </View>
 
       {openFilter && (
         <View style={[styles.screen]}>

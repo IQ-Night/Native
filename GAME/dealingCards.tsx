@@ -11,7 +11,7 @@ const DealingCards = ({ timeController, loading, setLoading }: any) => {
   /**
    * App context
    */
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
 
   /**
    * Auth context
@@ -40,9 +40,18 @@ const DealingCards = ({ timeController, loading, setLoading }: any) => {
   const currentUserRole = gamePlayers.find(
     (user: any) => user.userId === currentUser._id
   )?.role;
-  const roleLabel = roles?.find(
-    (r: any) => r.value === currentUserRole?.value
-  )?.label;
+  const roleLabel =
+    currentUserRole?.value === "mafia"
+      ? activeLanguage?.mafia
+      : currentUserRole?.value === "citizen"
+      ? activeLanguage?.citizen
+      : currentUserRole?.value === "doctor"
+      ? activeLanguage?.doctor
+      : currentUserRole?.value === "police"
+      ? activeLanguage?.police
+      : currentUserRole?.value === "serial-killer"
+      ? activeLanguage?.serialKiller
+      : activeLanguage?.mafiaDon;
 
   return (
     <BlurView
@@ -51,7 +60,7 @@ const DealingCards = ({ timeController, loading, setLoading }: any) => {
       style={{
         position: "absolute",
         top: 0,
-        zIndex: 60,
+        zIndex: 90,
         width: "100%",
         height: "100%",
       }}
@@ -82,7 +91,9 @@ const DealingCards = ({ timeController, loading, setLoading }: any) => {
           <Button
             loading={loading}
             title={
-              timeController > 0 ? `Confirm ${timeController}s.` : "Confirm"
+              timeController > 0
+                ? `${activeLanguage?.confirm} ${timeController} ${activeLanguage?.sec}`
+                : activeLanguage?.confirm
             }
             onPressFunction={ConfirmRole}
             style={{

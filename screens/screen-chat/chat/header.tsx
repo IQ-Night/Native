@@ -9,7 +9,7 @@ import { ActivityIndicator } from "react-native-paper";
 import { useAuthContext } from "../../../context/auth";
 
 const Header = ({ handleClose, setMessages, totalMessages }: any) => {
-  const { theme, apiUrl } = useAppContext();
+  const { theme, apiUrl, activeLanguage } = useAppContext();
   const { activeRoom } = useGameContext();
   const { currentUser } = useAuthContext();
   const [loading, setLoading] = useState(false);
@@ -128,8 +128,8 @@ const Header = ({ handleClose, setMessages, totalMessages }: any) => {
               }}
             >
               {clearState === "confirm"
-                ? `Confirm (${clearTimeoutValue}s)`
-                : "Clear all"}
+                ? `${activeLanguage?.confirm} (${clearTimeoutValue}s)`
+                : activeLanguage?.clear_all}
             </Text>
           )}
         </Pressable>

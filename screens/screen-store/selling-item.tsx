@@ -24,7 +24,7 @@ const Item = ({ item, setState, setOpenBuyItem }: any) => {
   /**
    * App context
    */
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
   /**
    * Auth context
    */
@@ -41,15 +41,15 @@ const Item = ({ item, setState, setOpenBuyItem }: any) => {
   const types = [
     {
       value: "profile-avatar",
-      label: "Profile Avatar",
+      label: activeLanguage?.profileAvatar,
     },
     {
       value: "room-avatar",
-      label: "Room Avatar",
+      label: activeLanguage?.roomAvatar,
     },
     {
       value: "clan-avatar",
-      label: "Clan Avatar",
+      label: activeLanguage?.clanAvatar,
     },
   ];
 

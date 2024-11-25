@@ -1,21 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  Animated,
-  Dimensions,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import List from "./list";
-import { BlurView } from "expo-blur";
-import { Ionicons } from "@expo/vector-icons";
-import CreateClan from "./createClan";
 import * as Haptics from "expo-haptics";
-import { useAppContext } from "../../../context/app";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Dimensions, StyleSheet, View } from "react-native";
 import Button from "../../../components/button";
-import ConfirmAction from "../../../components/confirmAction";
-import { useProfileContext } from "../../../context/profile";
+import { useAppContext } from "../../../context/app";
+import CreateClan from "./createClan";
+import List from "./list";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -23,7 +12,7 @@ const MyClans = ({ navigation }: any) => {
   /**
    * App context
    */
-  const { haptics, theme } = useAppContext();
+  const { haptics, theme, activeLanguage } = useAppContext();
   /**
    * Create clan opening
    */
@@ -83,7 +72,7 @@ const MyClans = ({ navigation }: any) => {
             }}
           >
             <Button
-              title="Create Clan"
+              title={activeLanguage?.create_new_clan}
               onPressFunction={() => {
                 setCreateClan(true);
                 if (haptics) {

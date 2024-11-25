@@ -15,6 +15,9 @@ import * as Haptics from "expo-haptics";
 import { useAuthContext } from "../context/auth";
 import Reports from "../admin/reports/main";
 import BlackList from "../admin/blackList/main";
+import Incomes from "../admin/incomes/main";
+import IncomeStats from "../admin/incomes/statistics";
+import { useNavigation } from "@react-navigation/native";
 
 const AdminStackNavigator = () => {
   /**
@@ -25,10 +28,12 @@ const AdminStackNavigator = () => {
   /**
    * App context
    */
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
 
   // auth stack
   const { currentUser } = useAuthContext();
+
+  const navigation: any = useNavigation();
 
   return (
     <>
@@ -50,11 +55,72 @@ const AdminStackNavigator = () => {
             headerShown: false,
           }}
         />
-        <AdminStack.Screen name="Management" component={Management} />
-        <AdminStack.Screen name="Users" component={Users} />
-        <AdminStack.Screen name="Black List" component={BlackList} />
-        <AdminStack.Screen name="Products" component={Products} />
-        <AdminStack.Screen name="Reports" component={Reports} />
+        <AdminStack.Screen
+          name="Incomes"
+          component={Incomes}
+          options={({ route }: any) => ({
+            title: activeLanguage?.incomes,
+            headerRight: () => (
+              <Pressable
+                onPress={() => {
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                  navigation.navigate("IncomeStats");
+                }}
+                style={{ padding: 4, marginRight: 12 }}
+              >
+                <MaterialCommunityIcons
+                  color={theme.active}
+                  size={20}
+                  name="chart-bar"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <AdminStack.Screen
+          name="IncomeStats"
+          options={({ route }: any) => ({
+            title: activeLanguage?.statistics,
+          })}
+          component={IncomeStats}
+        />
+        <AdminStack.Screen
+          name="Management"
+          options={({ route }: any) => ({
+            title: activeLanguage?.management,
+          })}
+          component={Management}
+        />
+        <AdminStack.Screen
+          name="Users"
+          options={({ route }: any) => ({
+            title: activeLanguage?.users,
+          })}
+          component={Users}
+        />
+        <AdminStack.Screen
+          name="Black List"
+          options={({ route }: any) => ({
+            title: activeLanguage?.blacklist,
+          })}
+          component={BlackList}
+        />
+        <AdminStack.Screen
+          name="Products"
+          options={({ route }: any) => ({
+            title: activeLanguage?.products,
+          })}
+          component={Products}
+        />
+        <AdminStack.Screen
+          name="Reports"
+          options={({ route }: any) => ({
+            title: activeLanguage?.reports,
+          })}
+          component={Reports}
+        />
         <AdminStack.Screen
           name="User"
           component={User}
@@ -65,7 +131,7 @@ const AdminStackNavigator = () => {
         <AdminStack.Screen
           name="Clan"
           component={Clan}
-          options={({ route, navigation }: any) => ({
+          options={({ route }: any) => ({
             headerTitle: () => (
               <View
                 style={{

@@ -1,29 +1,29 @@
-import React, { useEffect, useRef, useState } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import axios from "axios";
+import { BlurView } from "expo-blur";
+import { useEffect, useRef, useState } from "react";
 import {
+  Animated,
+  Easing,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
-  Animated,
-  Easing,
-  ScrollView,
 } from "react-native";
-import { BlurView } from "expo-blur";
-import { useAppContext } from "../../context/app";
-import Button from "../../components/button";
-import { warnings } from "../../context/content";
-import axios from "axios";
 import { ActivityIndicator } from "react-native-paper";
-import Img from "../../components/image";
 import BanTimer from "../../components/banTimer";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Button from "../../components/button";
+import Img from "../../components/image";
+import { useAppContext } from "../../context/app";
 import { useGameContext } from "../../context/game";
-import { useNavigation } from "@react-navigation/native";
+import DeleteConfirm from "../../components/deleteConfirm";
 
 const BlackList = ({}: any) => {
   const navigation: any = useNavigation();
 
-  const { theme, apiUrl } = useAppContext();
+  const { theme, apiUrl, activeLanguage } = useAppContext();
   const { socket } = useGameContext();
 
   const [loading, setLoading] = useState(true);
@@ -102,7 +102,7 @@ const BlackList = ({}: any) => {
           </View>
         )}
         {blackList?.length < 1 && !loading && (
-          <Text style={styles.noUsersText}>Black list not found!</Text>
+          <Text style={styles.noUsersText}> {activeLanguage?.not_found}</Text>
         )}
         {!loading && blackList?.length > 0 && (
           <View
@@ -153,47 +153,13 @@ const BlackList = ({}: any) => {
         )}
       </View>
       {deleteConfirm && (
-        <BlurView
-          intensity={20}
-          tint="dark"
-          style={{
-            width: "100%",
-            height: "100%",
-            position: "absolute",
-            top: 0,
-          }}
-        >
-          <Pressable
-            onPress={closeDeleteConfirm}
-            style={{ width: "100%", height: "100%" }}
-          >
-            <Animated.View
-              style={[
-                styles.confirmPopup,
-                { transform: [{ translateY: slideAnim }] },
-              ]}
-            >
-              <BlurView intensity={120} tint="dark" style={styles.confirmBlur}>
-                <Text style={styles.confirmText}>
-                  Are you sure you want to remove this user from the blacklist?
-                </Text>
-                <View style={styles.confirmButtons}>
-                  <Button
-                    title="Cancel"
-                    style={styles.cancelButton}
-                    onPressFunction={closeDeleteConfirm}
-                  />
-                  <Button
-                    loading={loadingDelete}
-                    title="Remove"
-                    style={styles.removeButton}
-                    onPressFunction={Remove}
-                  />
-                </View>
-              </BlurView>
-            </Animated.View>
-          </Pressable>
-        </BlurView>
+        <DeleteConfirm
+          closeDeleteConfirm={closeDeleteConfirm}
+          text={activeLanguage?.user_delete_confirmation}
+          Function={Remove}
+          loadingDelete={loadingDelete}
+          slideAnim={slideAnim}
+        />
       )}
     </View>
   );
@@ -268,46 +234,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 18,
     letterSpacing: 0.5,
-  },
-  confirmPopup: {
-    height: 300,
-    zIndex: 80,
-    position: "absolute",
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.8)",
-    width: "100%",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    overflow: "hidden",
-  },
-  confirmBlur: {
-    width: "100%",
-    height: 300,
-    padding: 24,
-    paddingTop: 48,
-    gap: 32,
-  },
-  confirmText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
-    lineHeight: 28,
-  },
-  confirmButtons: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 16,
-  },
-  cancelButton: {
-    width: "45%",
-    backgroundColor: "#888",
-    color: "white",
-  },
-  removeButton: {
-    width: "45%",
-    backgroundColor: "red",
-    color: "white",
   },
 });

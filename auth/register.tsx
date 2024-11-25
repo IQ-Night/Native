@@ -261,9 +261,21 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
                 style={{
                   marginTop: 8,
                 }}
-                onPress={() => navigation.navigate("Login")}
+                onPress={() => {
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                  navigation.navigate("Login");
+                }}
               >
-                <Text style={{ color: theme.text }}>
+                <Text
+                  style={{
+                    color: theme.active,
+                    fontWeight: 600,
+                    fontSize: 16,
+                    marginTop: 4,
+                  }}
+                >
                   {activeLanguage.login}
                 </Text>
               </TouchableOpacity>

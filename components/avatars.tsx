@@ -41,7 +41,7 @@ const Avatars = ({
   /**
    * App context
    */
-  const { theme, apiUrl, haptics } = useAppContext();
+  const { theme, apiUrl, haptics, activeLanguage } = useAppContext();
   /**
    * Auth context
    */
@@ -182,25 +182,26 @@ const Avatars = ({
             onPress={() => Keyboard.dismiss()}
           >
             <Text style={{ color: theme.text, fontSize: 24, fontWeight: 600 }}>
-              Confirm upload
+              {activeLanguage?.confirmUpload}
             </Text>
             <View style={{ gap: 8, height: 200, paddingHorizontal: 12 }}>
               <CheckboxWithLabel
                 isChecked={addForSale}
                 setIsChecked={setAddForSale}
-                label="Add for sale"
+                label={activeLanguage?.addForSale}
               />
               <Text
                 style={{ color: theme.text, fontSize: 14, fontWeight: 600 }}
               >
-                You can sale your asset to people.
+                {activeLanguage?.addForSaleText}
               </Text>
               {addForSale && (
                 <View style={{ marginTop: 8, gap: 8 }}>
                   <Text
                     style={{ color: theme.text, fontSize: 14, fontWeight: 600 }}
                   >
-                    Price <FontAwesome5 name="coins" size={14} color="orange" />
+                    {activeLanguage?.price}{" "}
+                    <FontAwesome5 name="coins" size={14} color="orange" />
                   </Text>
 
                   <Input
@@ -217,7 +218,7 @@ const Avatars = ({
               style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
             >
               <Button
-                title="Cancel"
+                title={activeLanguage?.cancel}
                 onPressFunction={() => setOpenAddForSale(false)}
                 style={{
                   width: "45%",
@@ -228,7 +229,7 @@ const Avatars = ({
 
               <Button
                 loading={uploadLoading}
-                title="Confirm"
+                title={activeLanguage?.confirm}
                 onPressFunction={HandleUpload}
                 style={{
                   width: "45%",
@@ -321,7 +322,7 @@ const Avatars = ({
                 }}
               >
                 <Text style={{ color: "white", fontWeight: 500, fontSize: 12 }}>
-                  Upload Image
+                  {activeLanguage?.upload}
                 </Text>
               </Pressable>
             )}

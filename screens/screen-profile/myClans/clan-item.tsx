@@ -25,7 +25,7 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
 
   /**
    * Auth context
@@ -325,9 +325,11 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                     fontWeight: 500,
                   }}
                 >
-                  Founder:{" "}
+                  {activeLanguage?.founder}:{" "}
                   {founder?.id === currentUser?._id ? (
-                    <Text style={{ color: theme.active }}>You</Text>
+                    <Text style={{ color: theme.active }}>
+                      {activeLanguage?.you}
+                    </Text>
                   ) : (
                     founder?.name
                   )}
@@ -364,7 +366,9 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                       {loading === "delete" ? (
                         <ActivityIndicator size={16} color="white" />
                       ) : (
-                        <Text style={{ color: "white" }}>Remove</Text>
+                        <Text style={{ color: "white" }}>
+                          {activeLanguage?.remove}
+                        </Text>
                       )}
                     </Pressable>
                     <Pressable
@@ -381,7 +385,9 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                       {loading === "join" ? (
                         <ActivityIndicator size={16} color="white" />
                       ) : (
-                        <Text style={{ color: "white" }}>Confirm</Text>
+                        <Text style={{ color: "white" }}>
+                          {activeLanguage?.confirm}
+                        </Text>
                       )}
                     </Pressable>
                   </View>

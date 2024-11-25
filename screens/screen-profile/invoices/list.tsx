@@ -8,7 +8,7 @@ import { useAppContext } from "../../../context/app";
 const List = ({ setDeleteItem }: any) => {
   const { invoices, totalInvoices, AddInvoices, loading } =
     useInvoicesContext();
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
 
   return (
     <ScrollView
@@ -43,7 +43,7 @@ const List = ({ setDeleteItem }: any) => {
               textAlign: "center",
             }}
           >
-            Not Found!
+            {activeLanguage?.not_found}
           </Text>
         )}
         {!loading &&

@@ -8,7 +8,7 @@ import { useGameContext } from "../../context/game";
 import axios from "axios";
 
 const Input = ({ setMessages, inputRef, keyboardHeight }: any) => {
-  const { theme, apiUrl, haptics } = useAppContext();
+  const { theme, apiUrl, haptics, activeLanguage } = useAppContext();
   const { activeRoom } = useGameContext();
   const { currentUser } = useAuthContext();
 
@@ -64,7 +64,7 @@ const Input = ({ setMessages, inputRef, keyboardHeight }: any) => {
       ]}
     >
       <TextInput
-        placeholder="Type here..."
+        placeholder={activeLanguage?.typeHere}
         placeholderTextColor={"#888"}
         value={input}
         onChangeText={setInput}

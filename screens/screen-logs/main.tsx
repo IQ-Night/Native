@@ -1,4 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import axios from "axios";
+import * as Haptics from "expo-haptics";
+import { useEffect, useState } from "react";
 import {
   Animated,
   Pressable,
@@ -7,16 +10,12 @@ import {
   Text,
   View,
 } from "react-native";
-import { useAppContext } from "../../context/app";
 import { ActivityIndicator } from "react-native-paper";
-import axios from "axios";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import Img from "../../components/image";
+import { useAppContext } from "../../context/app";
 import { FormatDate } from "../../functions/formatDate";
-import * as Haptics from "expo-haptics";
 import Days from "./days";
 import Nights from "./nights";
-import Img from "../../components/image";
-import { roles } from "../../context/rooms";
 
 const Logs = ({ route, item }: any) => {
   let room = route?.params.room;
@@ -24,7 +23,7 @@ const Logs = ({ route, item }: any) => {
     room = item;
   }
 
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
 
   const [loadLogs, setLoadLogs] = useState(true);
   const [logs, setLogs] = useState<any>([]);
@@ -214,7 +213,7 @@ const Logs = ({ route, item }: any) => {
                       ]}
                     >
                       <Text style={{ color: theme.text }}>
-                        Game N{item?.number}
+                        {activeLanguage?.game} N{item?.number}
                       </Text>
                       <Text style={{ color: theme.text }}>
                         {item?.createdAt && FormatDate(item?.createdAt, "date")}
@@ -249,7 +248,7 @@ const Logs = ({ route, item }: any) => {
                             fontWeight: 500,
                           }}
                         >
-                          Game N{activeState?.number}
+                          {activeLanguage?.game} N{activeState?.number}
                         </Text>
                         <Text
                           style={{
@@ -258,9 +257,15 @@ const Logs = ({ route, item }: any) => {
                             fontWeight: 500,
                           }}
                         >
-                          Winners:{" "}
+                          {activeLanguage?.winner}:{" "}
                           <Text style={{ color: theme.active }}>
-                            {activeState?.result?.winners}
+                            {activeState?.result?.winners === "Mafia"
+                              ? activeLanguage?.mafia
+                              : activeState?.result?.winners === "Citizens"
+                              ? activeLanguage?.citizen
+                              : activeState?.result?.winners === "Serial Killer"
+                              ? activeLanguage?.serialKiller
+                              : "No winners"}
                           </Text>
                         </Text>
                         <Text
@@ -270,7 +275,7 @@ const Logs = ({ route, item }: any) => {
                             fontWeight: 500,
                           }}
                         >
-                          Finished At:{" "}
+                          {activeLanguage?.finishedAt}:{" "}
                           {activeState?.gameLevel?.finishedAt &&
                             FormatDate(
                               activeState?.gameLevel?.finishedAt,
@@ -284,7 +289,7 @@ const Logs = ({ route, item }: any) => {
                             fontWeight: 500,
                           }}
                         >
-                          Players:
+                          {activeLanguage?.playersMore}:
                         </Text>
                         <View
                           style={{
@@ -325,11 +330,17 @@ const Logs = ({ route, item }: any) => {
                                     fontWeight: 500,
                                   }}
                                 >
-                                  {
-                                    roles?.find(
-                                      (r: any) => r.value === p?.role?.value
-                                    )?.label
-                                  }
+                                  {p?.role?.value === "mafia"
+                                    ? activeLanguage?.mafia
+                                    : p?.role?.value === "citizen"
+                                    ? activeLanguage?.citizen
+                                    : p?.role?.value === "doctor"
+                                    ? activeLanguage?.doctor
+                                    : p?.role?.value === "police"
+                                    ? activeLanguage?.police
+                                    : p?.role?.value === "serial-killer"
+                                    ? activeLanguage?.serialKiller
+                                    : activeLanguage?.mafiaDon}
                                 </Text>
                                 {(p?.role?.value.includes("mafia") &&
                                   item?.result?.winners === "Mafia") ||
@@ -371,8 +382,22 @@ const Logs = ({ route, item }: any) => {
                           <Pressable
                             onPress={
                               selectPeriod === "Days"
-                                ? () => setSelectPeriod(null)
-                                : () => setSelectPeriod("Days")
+                                ? () => {
+                                    if (haptics) {
+                                      Haptics.impactAsync(
+                                        Haptics.ImpactFeedbackStyle.Soft
+                                      );
+                                    }
+                                    setSelectPeriod(null);
+                                  }
+                                : () => {
+                                    if (haptics) {
+                                      Haptics.impactAsync(
+                                        Haptics.ImpactFeedbackStyle.Soft
+                                      );
+                                    }
+                                    setSelectPeriod("Days");
+                                  }
                             }
                             style={{
                               padding: 6,
@@ -393,14 +418,28 @@ const Logs = ({ route, item }: any) => {
                                 fontWeight: 500,
                               }}
                             >
-                              Days
+                              {activeLanguage?.days}
                             </Text>
                           </Pressable>
                           <Pressable
                             onPress={
                               selectPeriod === "Nights"
-                                ? () => setSelectPeriod(null)
-                                : () => setSelectPeriod("Nights")
+                                ? () => {
+                                    if (haptics) {
+                                      Haptics.impactAsync(
+                                        Haptics.ImpactFeedbackStyle.Soft
+                                      );
+                                    }
+                                    setSelectPeriod(null);
+                                  }
+                                : () => {
+                                    if (haptics) {
+                                      Haptics.impactAsync(
+                                        Haptics.ImpactFeedbackStyle.Soft
+                                      );
+                                    }
+                                    setSelectPeriod("Nights");
+                                  }
                             }
                             style={{
                               padding: 6,
@@ -421,7 +460,7 @@ const Logs = ({ route, item }: any) => {
                                 fontWeight: 500,
                               }}
                             >
-                              Nights
+                              {activeLanguage?.nights}
                             </Text>
                           </Pressable>
                         </View>
@@ -450,7 +489,7 @@ const Logs = ({ route, item }: any) => {
               <Text style={styles.noLogsText}>
                 {!loadLogs &&
                   (!totalLogs || totalLogs === 0) &&
-                  "No History Found!"}
+                  activeLanguage?.not_found}
               </Text>
             </View>
             {loadLogs && (

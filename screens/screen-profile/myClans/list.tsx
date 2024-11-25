@@ -10,7 +10,7 @@ const List = ({ navigation }: any) => {
   /**
    * App context
    */
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
 
   /**
    * Profile context
@@ -39,7 +39,7 @@ const List = ({ navigation }: any) => {
               textAlign: "center",
             }}
           >
-            Not Found!
+            {activeLanguage?.not_found}
           </Text>
         )}
         {clans?.map((item: any, index: number) => {

@@ -39,7 +39,7 @@ const CreateClan = ({ setCreateClan }: any) => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics, setAlert } = useAppContext();
+  const { apiUrl, theme, haptics, setAlert, activeLanguage } = useAppContext();
 
   /**
    * Auth context
@@ -201,10 +201,15 @@ const CreateClan = ({ setCreateClan }: any) => {
       <BlurView intensity={120} tint="dark" style={styles.container}>
         <BlurView intensity={120} tint="dark" style={styles.header}>
           <Text style={{ color: theme.active, fontSize: 18, fontWeight: 500 }}>
-            Create New Clan
+            {activeLanguage?.create_new_clan}
           </Text>
           <Ionicons
-            onPress={() => setCreateClan(false)}
+            onPress={() => {
+              if (haptics) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              }
+              setCreateClan(false);
+            }}
             name="caret-down-outline"
             color={theme.active}
             size={24}
@@ -215,7 +220,7 @@ const CreateClan = ({ setCreateClan }: any) => {
           contentContainerStyle={{ gap: 16, paddingBottom: 160 }}
         >
           <Pressable onPress={(e) => e.stopPropagation()} style={{ gap: 8 }}>
-            <Text style={styles.title}>Cover</Text>
+            <Text style={styles.title}>{activeLanguage?.avatar}</Text>
             <Pressable
               onPress={(e) => {
                 setOpenPopup("avatars");
@@ -293,7 +298,7 @@ const CreateClan = ({ setCreateClan }: any) => {
                           fontSize: 12,
                         }}
                       >
-                        Default Free
+                        {activeLanguage?.defaultFree}
                       </Text>
                     </Pressable>
                   </View>
@@ -303,7 +308,8 @@ const CreateClan = ({ setCreateClan }: any) => {
           </Pressable>
           <Pressable onPress={(e) => e.stopPropagation()} style={{ gap: 8 }}>
             <Text style={styles.title}>
-              Title{"  "}
+              {activeLanguage?.title}
+              {"  "}
               {totalPrice?.title > 0 && (
                 <>
                   <FontAwesome5 name="coins" size={14} color={theme.active} />{" "}
@@ -332,7 +338,7 @@ const CreateClan = ({ setCreateClan }: any) => {
           </Pressable>
           <Pressable onPress={(e) => e.stopPropagation()} style={{ gap: 8 }}>
             <Text style={styles.title}>
-              Slogan {"  "}
+              {activeLanguage?.slogan} {"  "}
               {totalPrice?.slogan > 0 && (
                 <>
                   <FontAwesome5 name="coins" size={14} color={theme.active} />{" "}
@@ -349,7 +355,7 @@ const CreateClan = ({ setCreateClan }: any) => {
               )}
             </Text>
             <Input
-              placeholder="Slogan"
+              placeholder={activeLanguage?.slogan}
               value={clanState.slogan}
               onChangeText={(text: string) =>
                 setClanState((prev: any) => ({ ...prev, slogan: text }))
@@ -363,7 +369,7 @@ const CreateClan = ({ setCreateClan }: any) => {
             onPress={(e) => e.stopPropagation()}
             style={styles.fieldContainer}
           >
-            <Text style={styles.title}>Language</Text>
+            <Text style={styles.title}>{activeLanguage?.language}</Text>
             <Pressable
               onPress={() => {
                 setOpenPopup("choiceLanguage");
@@ -388,7 +394,7 @@ const CreateClan = ({ setCreateClan }: any) => {
             onPress={(e) => e.stopPropagation()}
             style={styles.fieldContainer}
           >
-            <Text style={styles.title}>Chat </Text>
+            <Text style={styles.title}>{activeLanguage?.chat} </Text>
             {totalPrice?.chat > 0 && (
               <View
                 style={{
@@ -435,7 +441,7 @@ const CreateClan = ({ setCreateClan }: any) => {
             )}
           </Pressable>
           <Button
-            title="Create"
+            title={activeLanguage?.create}
             loading={loading}
             style={{
               width: "100%",
