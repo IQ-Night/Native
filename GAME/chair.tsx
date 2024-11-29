@@ -1,20 +1,18 @@
-import {
-  FontAwesome5,
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
+import { useEffect, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import Img from "../components/image";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
-import * as Haptics from "expo-haptics";
-import { BlurView } from "expo-blur";
 import { roles } from "../context/rooms";
-import { ActivityIndicator } from "react-native-paper";
 import ChaitActions from "./chairActions";
+import VideoComponent from "./videoComponent";
+import { useVideoConnectionContext } from "../context/videoConnection";
+import { ActivityIndicator } from "react-native-paper";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -55,6 +53,10 @@ const Chair = ({
    */
   const { activeRoom, gamePlayers, socket, spectators, setGamePlayers } =
     useGameContext();
+  /**
+   * Video context
+   */
+  const { setOpenVideo, loading } = useVideoConnectionContext();
 
   const userInPlay = gamePlayers.find(
     (player: any) => player.userId === currentUser._id
@@ -520,7 +522,7 @@ const Chair = ({
 
   return (
     <Pressable
-      onPress={() => setOpenUser(item)}
+      // onPress={() => setOpenUser(item)}
       style={[
         {
           position: "relative",
@@ -661,9 +663,12 @@ const Chair = ({
           <View
             style={{
               width: (SCREEN_WIDTH * 0.9 - 72) / 4,
-              aspectRatio: 1,
+              height: (SCREEN_WIDTH * 0.9 - 72) / 4,
               overflow: "hidden",
               position: "relative",
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: loading === item?.userId ? 0.7 : 1,
             }}
           >
             <View
@@ -710,16 +715,54 @@ const Chair = ({
               speechTimer={speechTimer}
               textColor={textColor}
             />
+            {loading === item?.userId && (
+              <View
+                style={{
+                  width: (SCREEN_WIDTH * 0.9 - 72) / 4,
+                  height: (SCREEN_WIDTH * 0.9 - 72) / 4,
+                  overflow: "hidden",
+                  borderRadius: 100,
+                  position: "absolute",
+                  zIndex: 20,
+                  borderWidth: 2,
+                  borderColor: textColor,
+                }}
+              >
+                <BlurView
+                  intensity={5}
+                  tint="dark"
+                  style={{
+                    width: (SCREEN_WIDTH * 0.9 - 72) / 4,
+                    height: (SCREEN_WIDTH * 0.9 - 72) / 4,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <ActivityIndicator size={20} color={theme.active} />
+                </BlurView>
+              </View>
+            )}
             <View
               style={{
-                width: "100%",
-                height: "100%",
+                display:
+                  game?.value !== "night" ||
+                  (game?.value === "night" &&
+                    activePlayerToSpeech?.userId === currentUser?._id)
+                    ? "flex"
+                    : "none",
+                width: (SCREEN_WIDTH * 0.9 - 72) / 4,
+                height: (SCREEN_WIDTH * 0.9 - 72) / 4,
                 borderRadius: 50,
                 overflow: "hidden",
                 borderWidth: 2,
                 borderColor: textColor,
               }}
             >
+              <VideoComponent
+                userId={item?.userId}
+                setOpenVideo={setOpenVideo}
+              />
+
               <Img uri={item.userCover} />
             </View>
           </View>

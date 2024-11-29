@@ -3,19 +3,17 @@ import {
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
-import { ActivityIndicator } from "react-native-paper";
-import Search from "./search";
+import { Badge } from "react-native-elements";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
-import { useGameContext } from "../context/game";
-import { useNavigation } from "@react-navigation/native";
-import { Badge } from "react-native-elements";
-import { useNotificationsContext } from "../context/notifications";
 import { useChatContext } from "../context/chat";
+import { useGameContext } from "../context/game";
+import Search from "./search";
 
 const Header = ({
   list,

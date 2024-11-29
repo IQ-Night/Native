@@ -7,6 +7,11 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"],
+    "entryPoint": "./index.js",
+    "sdkVersion": "52.0.0",
+    "platforms": ["ios", "android"],
+    "developmentClient": true,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -14,14 +19,15 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "y",
-      "newArchEnabled": true
+      "bundleIdentifier": "com.iqnight.app",
+      "newArchEnabled": false,
+      "buildNumber": "1.0.6"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/mafia4.jpg",
         "backgroundColor": "#ffffff",
-        "newArchEnabled": true
+        "newArchEnabled": false
       }
     },
     "web": {

@@ -1,19 +1,18 @@
-import React, { useEffect, useRef, useState } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React from "react";
 import {
+  Animated,
   StyleSheet,
   Text,
-  View,
-  Animated,
   TouchableOpacity,
+  View,
 } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
 import Button from "../components/button";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { ActivityIndicator } from "react-native-paper";
-import { BlurView } from "expo-blur";
-import { roles } from "../context/rooms";
+import { useVideoConnectionContext } from "../context/videoConnection";
 
 const GameProcess = ({
   game,
@@ -44,6 +43,10 @@ const GameProcess = ({
    */
   const { spectators, gamePlayers, socket, activeRoom, loadingSpectate } =
     useGameContext();
+  /**
+   * Video connection context
+   */
+  const { startCall } = useVideoConnectionContext();
 
   /** Mark the player as ready to start */
   const ReadyToStart = async () => {

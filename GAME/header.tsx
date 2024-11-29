@@ -24,6 +24,7 @@ import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
 import { roles } from "../context/rooms";
 import { Badge } from "react-native-elements";
+import { useVideoConnectionContext } from "../context/videoConnection";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -49,6 +50,7 @@ const Header = ({
     setGamePlayers,
     setSpectators,
   } = useGameContext();
+  const { startCall, video, setVideo } = useVideoConnectionContext();
 
   // Store fade animations for each item
   const [fadeAnims, setFadeAnims] = useState<Animated.Value[]>([]);
@@ -89,6 +91,7 @@ const Header = ({
   const leaveRoom = (roomId: any, userId: any) => {
     if (socket) {
       setLeaveLoading(true);
+
       socket.emit("leaveRoom", roomId, userId);
     }
   };
@@ -125,6 +128,11 @@ const Header = ({
             setConfirm(false);
           }
         }
+        // Emit to notify the server
+        socket.emit("off-video", {
+          roomId: activeRoom?._id,
+          userId: currentUser?._id,
+        });
       };
 
       // Handle receiving all users when joining the room
@@ -139,7 +147,6 @@ const Header = ({
 
   // disable voice & video
   const [voice, setVoice] = useState(true);
-  const [video, setVideo] = useState(true);
 
   // switch to spectator
   const changeToSpectator = async () => {
@@ -189,7 +196,6 @@ const Header = ({
       : currentUserRole?.value === "mafia-don"
       ? activeLanguage?.mafiaDon
       : "";
-
   return (
     <>
       <View
@@ -401,67 +407,81 @@ const Header = ({
           </>
         )}
       </View>
-
-      <Pressable
-        style={{ position: "absolute", top: 110, right: 18, zIndex: 70 }}
-      >
-        <MaterialCommunityIcons
-          onPress={() => {
-            if (haptics) {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-            }
-            setVoice((prev: any) => !prev);
-          }}
-          name={voice ? "volume-high" : "volume-off"}
-          size={26}
-          color={theme.text}
-        />
-      </Pressable>
-
-      <Pressable
-        style={{ position: "absolute", top: 148, right: 18, zIndex: 70 }}
-      >
-        <MaterialCommunityIcons
-          onPress={() => {
-            if (haptics) {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-            }
-            setVideo((prev: any) => !prev);
-          }}
-          name={video ? "video" : "video-off"}
-          size={26}
-          color={theme.text}
-        />
-      </Pressable>
-
-      <Pressable
-        style={{ position: "absolute", top: 186, right: 18, zIndex: 70 }}
-        onPress={() => {
-          if (haptics) {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-          }
-          setOpenChat(true);
+      <View
+        style={{
+          position: "absolute",
+          top: 110,
+          right: 18,
+          zIndex: 70,
+          gap: 16,
         }}
       >
-        {unreadMessages && unreadMessages !== "empty" && (
-          <Badge
-            status="success"
-            badgeStyle={{
-              backgroundColor: theme.active,
-              position: "absolute",
-              zIndex: 50,
-              right: -2,
-              top: -2,
-            }}
-          />
+        {currentUserType === "player" && (
+          <Pressable>
+            <MaterialCommunityIcons
+              onPress={() => {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+                setVoice((prev: any) => !prev);
+              }}
+              name={voice ? "volume-high" : "volume-off"}
+              size={26}
+              color={theme.text}
+            />
+          </Pressable>
         )}
 
-        <MaterialCommunityIcons
-          name="chat"
-          size={26}
-          color={openChat ? theme.active : theme.text}
-        />
-      </Pressable>
+        {currentUserType === "player" && (
+          <Pressable>
+            <MaterialCommunityIcons
+              onPress={() => {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+                if (video) {
+                  startCall(false);
+                  setVideo(false);
+                } else {
+                  startCall(true);
+                  setVideo(true);
+                }
+              }}
+              name={video ? "video" : "video-off"}
+              size={26}
+              color={theme.text}
+            />
+          </Pressable>
+        )}
+
+        <Pressable
+          onPress={() => {
+            if (haptics) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+            }
+            setOpenChat(true);
+          }}
+        >
+          {unreadMessages && unreadMessages !== "empty" && (
+            <Badge
+              status="success"
+              badgeStyle={{
+                backgroundColor: theme.active,
+                position: "absolute",
+                zIndex: 50,
+                right: -2,
+                top: -2,
+              }}
+            />
+          )}
+
+          <MaterialCommunityIcons
+            name="chat"
+            size={26}
+            color={openChat ? theme.active : theme.text}
+          />
+        </Pressable>
+      </View>
 
       {message?.type === "User Left Game" && (
         <View

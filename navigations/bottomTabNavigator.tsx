@@ -37,6 +37,7 @@ import LiderboardStackNavigator from "./liderboardStack";
 import ProfileStackNavigator from "./profileStack";
 import RoomssStackNavigator from "./roomStack";
 import StoreStackNavigator from "./storeStack";
+import { VideoConnectionContextWrapper } from "../context/videoConnection";
 
 const Tab = createBottomTabNavigator();
 
@@ -166,7 +167,9 @@ const ScreenManager = () => {
   if (activeRoom) {
     return (
       <NavigationContainer>
-        <Game />
+        <VideoConnectionContextWrapper>
+          <Game />
+        </VideoConnectionContextWrapper>
       </NavigationContainer>
     );
   }

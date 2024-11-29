@@ -1,31 +1,24 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useRef, useState } from "react";
-import {
-  Animated,
-  Dimensions,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import Button from "../components/button";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Dimensions, StyleSheet, View } from "react-native";
+import Block from "../admin/users/block-user";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
 import { roles } from "../context/rooms";
 import LogsModal from "../screens/screen-logs/logs-modal";
-import Ban from "./room-ban";
-import User from "../screens/screen-user/main";
 import AttentionWindow from "./attentionWindow";
+import Chat from "./chat/main";
+import ConfirmRoles from "./confirmRoles";
 import DealingCards from "./dealingCards";
 import GameProcess from "./gameProcess";
 import Header from "./header";
 import { findMostFrequentVictim } from "./mostVictims";
 import NominationWindow from "./nominationWindow";
 import PersonalTimeOfDead from "./personalTimeOfDead";
+import Ban from "./room-ban";
 import Spectators from "./spectators";
 import Table from "./table";
 import CommonTimer from "./timers/commonTimer";
@@ -34,10 +27,10 @@ import useGettingKnowsMafias from "./timers/gettingKnowsMafiasTimer";
 import LastWordTimer from "./timers/lastWordTimer";
 import NightTimer from "./timers/nightTimer";
 import SpeechTimer from "./timers/speechTimer";
-import Block from "../admin/users/block-user";
 import UserPopup from "./userPopup";
-import ConfirmRoles from "./confirmRoles";
-import Chat from "./chat/main";
+import VideoComponent from "./videoComponent";
+import OpenVideo from "./openedVideo";
+import { useVideoConnectionContext } from "../context/videoConnection";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -1377,6 +1370,12 @@ const Game = () => {
       };
     }
   }, [socket, currentUser?._id]); // Add currentUser._id as a dependency
+
+  /**
+   * open video to big screen
+   */
+  const { openVideo, setOpenVideo } = useVideoConnectionContext();
+  console.log(openVideo);
   return (
     <BlurView
       intensity={50}
@@ -1415,6 +1414,9 @@ const Game = () => {
           openChat={openChat}
           unreadMessages={unreadMessages}
         />
+        {openVideo && (
+          <OpenVideo streamUrl={openVideo} setOpenVideo={setOpenVideo} />
+        )}
         {game.value === "Dealing Cards" && (
           <DealingCards
             timeController={dealingCardsTimer}

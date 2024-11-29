@@ -13,6 +13,8 @@ export default function App() {
   //   Montserrat_400Regular,
   //   Montserrat_700Bold,
   // });
+  console.log("App entry loaded successfully");
+
   return (
     <AppContextWrapper>
       <AuthContextWrapper>
