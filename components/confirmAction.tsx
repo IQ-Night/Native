@@ -1,3 +1,6 @@
+import { FontAwesome5 } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Easing,
@@ -6,20 +9,15 @@ import {
   Text,
   View,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
-import { BlurView } from "expo-blur";
 import { useAppContext } from "../context/app";
-import { color } from "react-native-elements/dist/helpers";
-import Button from "./button";
-import { FontAwesome5 } from "@expo/vector-icons";
 import { useAuthContext } from "../context/auth";
+import Button from "./button";
 
 const ConfirmAction = ({ openState, setOpenState, Function, money }: any) => {
   const { currentUser } = useAuthContext();
   const { theme, setAlert, activeLanguage } = useAppContext();
   const slideAnim = useRef(new Animated.Value(220)).current; // Start off-screen
   const [countdown, setCountdown] = useState(5); // Timer countdown state
-
   // Animation to slide the popup in and out
   useEffect(() => {
     if (openState) {
@@ -66,19 +64,12 @@ const ConfirmAction = ({ openState, setOpenState, Function, money }: any) => {
     if (currentUser?.coins?.total < parseInt(openState?.price)) {
       return setAlert({
         active: true,
-        text: "You don't have enough coins to change cover!",
+        text: activeLanguage?.notEnoughCoinsChangeCover,
         type: "error",
       });
     }
     Function(); // Run the provided function
     closeComponent(); // Close popup
-    setAlert({
-      active: true,
-      text: openState?.successText
-        ? openState?.successText
-        : "Complete successfully!",
-      type: "success",
-    });
   };
 
   return (
@@ -132,7 +123,7 @@ const ConfirmAction = ({ openState, setOpenState, Function, money }: any) => {
               }}
             >
               <Button
-                title={`${activeLanguage?.cancel} ${countdown}s`}
+                title={`${activeLanguage?.cancel} ${countdown}${activeLanguage?.sec}`}
                 onPressFunction={closeComponent}
                 style={{
                   width: "45%",
@@ -143,24 +134,36 @@ const ConfirmAction = ({ openState, setOpenState, Function, money }: any) => {
 
               <Button
                 title={
-                  <Text
-                    style={{
-                      color: theme.text,
-                      fontWeight: 600,
-                      marginVertical: 6,
-                    }}
-                  >
-                    {activeLanguage?.confirm} {openState?.price}{" "}
-                    {money === "money" ? (
-                      "$"
-                    ) : (
-                      <FontAwesome5
-                        name="coins"
-                        size={14}
-                        color={theme.active}
-                      />
-                    )}
-                  </Text>
+                  openState?.price > 0 ? (
+                    <Text
+                      style={{
+                        color: theme.text,
+                        fontWeight: 600,
+                        marginVertical: 6,
+                      }}
+                    >
+                      {activeLanguage?.confirm} {openState?.price}{" "}
+                      {money === "money" ? (
+                        "$"
+                      ) : (
+                        <FontAwesome5
+                          name="coins"
+                          size={14}
+                          color={theme.active}
+                        />
+                      )}
+                    </Text>
+                  ) : (
+                    <Text
+                      style={{
+                        color: theme.text,
+                        fontWeight: 600,
+                        marginVertical: 6,
+                      }}
+                    >
+                      {activeLanguage?.confirm}
+                    </Text>
+                  )
                 }
                 onPressFunction={handleConfirm}
                 style={{

@@ -53,7 +53,12 @@ const Game = () => {
     message,
     setMessage,
     setLoadingSpectate,
+    currentUserRadio,
   } = useGameContext();
+  /**
+   * Video context
+   */
+  const { setVideo, startCall, setMicrophone } = useVideoConnectionContext();
 
   /**
    * Auth context
@@ -86,10 +91,6 @@ const Game = () => {
           setGamePlayers(
             data?.usersInRoom?.filter((u: any) => u.type === "player")
           );
-          const host = data?.usersInRoom.filter(
-            (u: any) => u.status !== "offline"
-          )[0];
-
           if (data?.message) {
             setMessage({
               type: data.message.type,
@@ -458,13 +459,15 @@ const Game = () => {
 
   // save data in db for app close scenarions
   const SaveAfterLeaveDataInDB = async (passData: any, roomId: any) => {
-    try {
-      await axios.patch(
-        apiUrl + "/api/v1/rooms/" + roomId + "/afterLeaveData",
-        passData
-      );
-    } catch (error: any) {
-      console.log(error.response.data.message);
+    if (roomId) {
+      try {
+        await axios.patch(
+          apiUrl + "/api/v1/rooms/" + roomId + "/afterLeaveData",
+          passData
+        );
+      } catch (error: any) {
+        console.log(error.response.data.message);
+      }
     }
   };
 
@@ -618,6 +621,9 @@ const Game = () => {
   // Start of the night
   useEffect(() => {
     if (game.value === "Night") {
+      setMicrophone(currentUserRadio);
+    }
+    if (game.value === "Night" && !game?.reJoin) {
       const host = game?.players.filter((u: any) => u.status !== "offline")[0];
 
       setLoadingSpectate(false);
@@ -668,6 +674,7 @@ const Game = () => {
         setActiveRoom((prev: any) => ({
           ...prev,
           lastGame: data?.room?.lastGame,
+          reJoin: false,
         }));
 
         // Determine the most frequent victim
@@ -908,6 +915,7 @@ const Game = () => {
   useEffect(() => {
     if (socket) {
       const handleUpdateRoom = (data: any) => {
+        console.log("update");
         setActiveRoom(data?.room);
         setDays(data?.room?.lastGame?.days || []);
         setNights(data?.room?.lastGame?.nights || []);
@@ -960,9 +968,7 @@ const Game = () => {
         if (exitData?.gameOver) {
           setAttention({
             active: true,
-            value:
-              "Game over - Winners " +
-              `${"'" + exitData.gameOver.winners + "'"}`,
+            value: "Game over - Winners -" + `${exitData.gameOver.winners}`,
           });
 
           const UpdateRating = async () => {
@@ -1196,6 +1202,8 @@ const Game = () => {
   const [loadingReJoin, setLoadingReJoin] = useState(false);
   useEffect(() => {
     const GetGamePosition = async () => {
+      setVideo(false);
+      startCall(false);
       try {
         setLoadingReJoin(true);
         const response = await axios.get(
@@ -1204,6 +1212,7 @@ const Game = () => {
         if (response.data.status === "success") {
           const lastGame = response.data.data.room.lastGame;
           const gameLevel = response.data.data.room.lastGame.gameLevel;
+
           if (gameLevel?.level === "Day") {
             setGame({
               value: "Day",
@@ -1248,8 +1257,32 @@ const Game = () => {
                 subLevel: gameLevel?.subLevel,
               });
             }
+            setLoadingReJoin(false);
+          } else if (gameLevel?.level === "Night") {
+            setGame({
+              value: "Night",
+              options: [],
+              players: lastGame?.players,
+              reJoin: true,
+            });
+            setNightNumber(
+              lastGame?.nights[lastGame?.nights?.length - 1].number
+            );
+            setLoadingReJoin(false);
+          } else if (gameLevel?.level === "Common Time") {
+            setGame({
+              value: "Common Time",
+              options: [],
+              players: lastGame?.players,
+              reJoin: true,
+            });
+            setNightNumber(
+              lastGame?.nights[lastGame?.nights?.length - 1].number
+            );
+            setLoadingReJoin(false);
+          } else {
+            setLoadingReJoin(false);
           }
-          setLoadingReJoin(false);
         }
       } catch (error: any) {
         console.log(error);
@@ -1375,7 +1408,6 @@ const Game = () => {
    * open video to big screen
    */
   const { openVideo, setOpenVideo } = useVideoConnectionContext();
-  console.log(openVideo);
   return (
     <BlurView
       intensity={50}
@@ -1415,7 +1447,11 @@ const Game = () => {
           unreadMessages={unreadMessages}
         />
         {openVideo && (
-          <OpenVideo streamUrl={openVideo} setOpenVideo={setOpenVideo} />
+          <OpenVideo
+            streamUrl={openVideo?.video}
+            user={openVideo?.user}
+            setOpenVideo={setOpenVideo}
+          />
         )}
         {game.value === "Dealing Cards" && (
           <DealingCards
@@ -1449,6 +1485,7 @@ const Game = () => {
             setOpenNominationsWindow={setOpenNominationsWindow}
             dayNumber={dayNumber}
             setDayNumber={setDayNumber}
+            game={game}
             setGame={setGame}
             setDays={setDays}
             setAttention={setAttention}
@@ -1476,6 +1513,7 @@ const Game = () => {
           dayNumber={dayNumber}
           days={days}
           nights={nights}
+          setNights={setNights}
           nightNumber={nightNumber}
           speechTimer={speechTimer}
           loadingReJoin={loadingReJoin}

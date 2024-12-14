@@ -35,7 +35,7 @@ const Management = () => {
   const [manageRoles, setManageRoles] = useState<any>(null);
   return (
     <>
-      <View style={{ padding: 16 }}>
+      <View style={{ alignItems: "center" }}>
         {management?.map((member: any, index: number) => {
           return (
             <UserItem

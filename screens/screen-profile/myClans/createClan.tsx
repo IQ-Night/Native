@@ -2,6 +2,7 @@ import {
   FontAwesome,
   FontAwesome5,
   Ionicons,
+  MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
 import axios from "axios";
@@ -111,7 +112,7 @@ const CreateClan = ({ setCreateClan }: any) => {
     if (currentUser?.coins?.total < totalPrice?.all) {
       return setAlert({
         active: true,
-        text: "You don't have enough coins to create clan!",
+        text: activeLanguage?.notEnoughCoinsCreateClan,
         type: "error",
       });
     }
@@ -200,7 +201,7 @@ const CreateClan = ({ setCreateClan }: any) => {
     >
       <BlurView intensity={120} tint="dark" style={styles.container}>
         <BlurView intensity={120} tint="dark" style={styles.header}>
-          <Text style={{ color: theme.active, fontSize: 18, fontWeight: 500 }}>
+          <Text style={{ color: theme.active, fontSize: 18, fontWeight: 700 }}>
             {activeLanguage?.create_new_clan}
           </Text>
           <Ionicons
@@ -228,7 +229,11 @@ const CreateClan = ({ setCreateClan }: any) => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
                 }
               }}
-              style={{ flexDirection: "row", alignItems: "center", gap: 16 }}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 16,
+              }}
             >
               <View
                 style={{
@@ -236,20 +241,28 @@ const CreateClan = ({ setCreateClan }: any) => {
                   overflow: "hidden",
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: 8,
+                  gap: 12,
                 }}
               >
-                <BlurView
-                  intensity={10}
-                  tint="light"
+                <View
                   style={{
-                    padding: 4,
+                    borderRadius: 8,
+                    overflow: "hidden",
                   }}
                 >
-                  <View style={styles.image}>
-                    <Img uri={clanState.cover} />
-                  </View>
-                </BlurView>
+                  <BlurView
+                    intensity={10}
+                    tint="light"
+                    style={{
+                      padding: 4,
+                    }}
+                  >
+                    <View style={styles.image}>
+                      <Img uri={clanState.cover} />
+                    </View>
+                  </BlurView>
+                </View>
+
                 {totalPrice.cover > 0 && (
                   <View style={{ gap: 8 }}>
                     <View
@@ -289,6 +302,9 @@ const CreateClan = ({ setCreateClan }: any) => {
                         paddingHorizontal: 12,
                         backgroundColor: "rgba(255,255,255,0.1)",
                         borderRadius: 50,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
                       }}
                     >
                       <Text
@@ -300,6 +316,11 @@ const CreateClan = ({ setCreateClan }: any) => {
                       >
                         {activeLanguage?.defaultFree}
                       </Text>
+                      <MaterialCommunityIcons
+                        name="reload"
+                        size={16}
+                        color="white"
+                      />
                     </Pressable>
                   </View>
                 )}
@@ -367,7 +388,7 @@ const CreateClan = ({ setCreateClan }: any) => {
           </Pressable>
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            style={styles.fieldContainer}
+            style={[styles.fieldContainer]}
           >
             <Text style={styles.title}>{activeLanguage?.language}</Text>
             <Pressable
@@ -377,7 +398,7 @@ const CreateClan = ({ setCreateClan }: any) => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
                 }
               }}
-              style={{ width: 80, marginLeft: "auto", alignItems: "center" }}
+              style={{ width: 50, alignItems: "center" }}
             >
               <View style={{ borderRadius: 2, overflow: "hidden" }}>
                 <CountryFlag
@@ -404,7 +425,7 @@ const CreateClan = ({ setCreateClan }: any) => {
                   marginLeft: 4,
                 }}
               >
-                <FontAwesome5 name="coins" size={14} color={theme.active} />{" "}
+                <FontAwesome5 name="coins" size={14} color={theme.active} />
                 <Text
                   style={{
                     fontWeight: 500,
@@ -412,6 +433,7 @@ const CreateClan = ({ setCreateClan }: any) => {
                     fontSize: 14,
                   }}
                 >
+                  {" "}
                   1500
                 </Text>
               </View>
@@ -424,9 +446,11 @@ const CreateClan = ({ setCreateClan }: any) => {
                   transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
                   marginLeft: "auto",
                 }}
-                onValueChange={async () =>
-                  setClanState((prev: any) => ({ ...prev, chat: !prev.chat }))
-                }
+                onValueChange={async () => {
+                  const newState = { ...clanState, chat: !clanState.chat };
+                  console.log(newState);
+                  setClanState(newState);
+                }}
               />
             ) : (
               <Pressable
@@ -565,7 +589,8 @@ const createStyles = (theme: any) =>
       width: 100,
       height: 100,
       resizeMode: "cover",
-      borderRadius: 6,
+      borderRadius: 8,
+      overflow: "hidden",
     },
     popupContainer: {
       height: "100%",

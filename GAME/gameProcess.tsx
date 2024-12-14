@@ -286,7 +286,7 @@ const GameProcess = ({
                   fontSize: 14,
                 }}
               >
-                {timeController + "s."}
+                {timeController + activeLanguage?.sec}
               </Text>
             </View>
           </View>

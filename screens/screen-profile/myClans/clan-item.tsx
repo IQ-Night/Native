@@ -85,7 +85,7 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
         item?.admin.map((a: any) => {
           return SendNotification({
             userId: a?.user?._id,
-            type: "Does't accept to join to clan",
+            type: "joinRequestDenied",
           });
         });
       }
@@ -133,7 +133,7 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
         item?.admin?.map((a: any) => {
           return SendNotification({
             userId: a?.user?._id,
-            type: "joined to clan",
+            type: "joinedClan",
           });
         });
       }

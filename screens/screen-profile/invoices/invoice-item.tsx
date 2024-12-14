@@ -45,7 +45,7 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
                   fontWeight: 500,
                 }}
               >
-                {item?.price} $
+                {item?.price}USD
               </Text>
               <Text
                 style={{
@@ -73,14 +73,14 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
                   }}
                 >
                   VIP -{" "}
-                  {item?.duration?.includes("Weeks")
-                    ? item.duration.split(" ")[0] + " " + activeLanguage?.weeks
-                    : item?.duration?.includes("Week")
-                    ? item.duration.split(" ")[0] + " " + activeLanguage?.week
-                    : item?.duration?.includes("Months")
-                    ? item.duration.split(" ")[0] + " " + activeLanguage?.months
-                    : item?.duration?.includes("Month")
-                    ? item.duration.split(" ")[0] + " " + activeLanguage?.month
+                  {item?.Vip?.includes("1 Week")
+                    ? 1 + " " + activeLanguage?.week
+                    : item?.Vip?.includes("1 Month")
+                    ? 1 + " " + activeLanguage?.month
+                    : item?.Vip?.includes("3 Months")
+                    ? 3 + " " + activeLanguage?.months
+                    : item?.Vip?.includes("6 Month")
+                    ? 6 + " " + activeLanguage?.month
                     : activeLanguage?.annually}
                 </Text>
                 <MaterialIcons name="diamond" size={20} color={theme.active} />
@@ -92,7 +92,7 @@ const InvoiceItem = ({ item, setDeleteItem }: any) => {
                   fontWeight: 500,
                 }}
               >
-                {item?.price} $
+                {item?.price}USD
               </Text>
               <Text
                 style={{

@@ -57,7 +57,7 @@ const InputPopup = (props: any) => {
                     styles.modalText,
                     {
                       fontSize: 16,
-                      color: theme.primaryText,
+                      color: theme.text,
                       fontWeight: "bold",
                       letterSpacing: 0.1,
                     },
@@ -83,9 +83,9 @@ const InputPopup = (props: any) => {
               <View style={styles.buttonsContainer}>
                 <Button
                   style={{
-                    width: (SCREEN_WIDTH / 100) * 38,
-                    color: theme.secondaryText,
-                    backgroundColor: theme.background2,
+                    width: (SCREEN_WIDTH / 100) * 44,
+                    color: theme.text,
+                    backgroundColor: "#888",
                   }}
                   icon=""
                   title={activeLanguage.cancel}
@@ -94,8 +94,8 @@ const InputPopup = (props: any) => {
                 />
                 <Button
                   style={{
-                    width: (SCREEN_WIDTH / 100) * 38,
-                    color: theme.buttonText,
+                    width: (SCREEN_WIDTH / 100) * 44,
+                    color: "white",
                     backgroundColor: theme.active,
                   }}
                   icon=""
@@ -127,9 +127,9 @@ const styles = StyleSheet.create({
   modalView: {
     backgroundColor: "white",
     borderRadius: 10,
-    padding: 20,
+    padding: 12,
     alignItems: "center",
-    width: "90%",
+    width: "96%",
     // marginTop: 100,
   },
   modalText: {

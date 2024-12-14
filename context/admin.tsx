@@ -9,6 +9,7 @@ import { Dimensions } from "react-native";
 import { useAppContext } from "./app";
 import { useAuthContext } from "./auth";
 import axios from "axios";
+import { useGameContext } from "./game";
 
 /**
  * Admin context state
@@ -29,21 +30,26 @@ export const AdminContextWrapper: React.FC<contextProps> = ({ children }) => {
    */
   const { apiUrl } = useAppContext();
   /**
+   * Game context
+   */
+  const { socket } = useGameContext();
+  /**
    * auth user state
    */
   const { currentUser, setCurrentUser } = useAuthContext();
 
   // unread notifications
-  const [adminNotifications, setAdminNotifications] = useState([]);
+  const [reportsNotifications, setReportsNotifications] = useState([]);
+  const [ticketsNotifications, setTicketNotifications] = useState([]);
   const [loadingAdminNotifications, setLoadingAdminNotifications] =
     useState(false);
-
   const GetAdminNotifications = async () => {
     try {
       setLoadingAdminNotifications(true);
       const response = await axios.get(apiUrl + "/api/v1/admin/notifications");
       if (response?.data?.status === "success") {
-        setAdminNotifications(response?.data?.data?.notifications);
+        setTicketNotifications(response?.data?.data?.reports);
+        setTicketNotifications(response?.data?.data?.tickets);
         setLoadingAdminNotifications(false);
       }
     } catch (error: any) {
@@ -58,12 +64,27 @@ export const AdminContextWrapper: React.FC<contextProps> = ({ children }) => {
     }
   }, [currentUser]);
 
+  useEffect(() => {
+    if (socket) {
+      socket.on("rerenderedAdmin", () => {
+        GetAdminNotifications();
+      });
+
+      // Clean up the listener when component unmounts or socket changes
+      return () => {
+        socket.off("rerenderedAdmin");
+      };
+    }
+  }, [socket]);
+
   return (
     <Admin.Provider
       value={{
-        adminNotifications,
+        reportsNotifications,
+        setReportsNotifications,
         GetAdminNotifications,
-        setAdminNotifications,
+        ticketsNotifications,
+        setTicketNotifications,
         loadingAdminNotifications,
       }}
     >

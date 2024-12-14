@@ -30,6 +30,14 @@ const Menu = ({ navigation }: any) => {
       label: activeLanguage?.blacklist,
     },
     {
+      screen: "Messages",
+      label: activeLanguage?.notifications,
+    },
+    {
+      screen: "Coupons",
+      label: activeLanguage?.coupons,
+    },
+    {
       screen: "Reports",
       label: activeLanguage?.reports,
     },

@@ -283,7 +283,7 @@ const Clan = ({ route, navigation }: any) => {
         item?.admin?.map((a: any) => {
           return SendNotification({
             userId: a?.user?.id,
-            type: "Left clan",
+            type: "leftClan",
           });
         });
       }
@@ -326,7 +326,7 @@ const Clan = ({ route, navigation }: any) => {
         closeDeleteConfirm();
         SendNotification({
           userId: deleteConfirm,
-          type: "Admin has deleted you from clan",
+          type: "removedFromClan",
         });
       }
     } catch (error: any) {
@@ -373,7 +373,8 @@ const Clan = ({ route, navigation }: any) => {
         );
         SendNotification({
           userId: userId,
-          type: "Admin dont accept to join to clan " + "'" + item.title + "'",
+          type: "joinRequestDeclinedByAdmin",
+          title: item?.title,
         });
       }
     } catch (error: any) {
@@ -427,7 +428,8 @@ const Clan = ({ route, navigation }: any) => {
         );
         SendNotification({
           userId: userId,
-          type: "Admin confirmed to join to clan " + "'" + item.title + "'",
+          type: "joinRequestApprovedByAdmin",
+          title: item?.title,
         });
       }
     } catch (error: any) {
@@ -647,7 +649,7 @@ const Clan = ({ route, navigation }: any) => {
                       if (needToPay) {
                         setConfirmAction({
                           active: true,
-                          text: "Are you sure to want turn on chat?",
+                          text: activeLanguage?.confirm_turn_chat,
                           Function: () => ActiveChat(true),
                           price: 1500,
                         });

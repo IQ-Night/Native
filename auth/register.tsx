@@ -1,11 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import * as Haptics from "expo-haptics";
 import React, { useRef, useState } from "react";
 import {
   Dimensions,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -16,10 +18,9 @@ import {
 import Button from "../components/button";
 import Input from "../components/input";
 import { useAppContext } from "../context/app";
-import VerifyCodePopup from "./inputPopup";
 import { useAuthContext } from "../context/auth";
-import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
+import Countries from "./countries";
+import VerifyCodePopup from "./inputPopup";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -30,7 +31,8 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
    * App context
    */
 
-  const { apiUrl, setAlert, activeLanguage, theme, haptics } = useAppContext();
+  const { apiUrl, setAlert, activeLanguage, theme, haptics, language } =
+    useAppContext();
 
   /**
    * Auth context
@@ -42,6 +44,7 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
    */
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [country, setCountry] = useState("GE");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -139,12 +142,10 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
             email: email,
             password: password,
             confirmPassword: confirmPassword,
-            coins: { total: 200 },
             registerDevice: Platform.OS === "android" ? "android" : "ios",
             registerType: "email",
-            pushNotificationToken: pushNotificationToken
-              ? JSON.parse(pushNotificationToken)
-              : "",
+            country: country,
+            language: language,
           })
           .then(async (data) => {
             if (data) {
@@ -190,6 +191,9 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
     }
   };
 
+  // open countries
+  const [openCountries, setOpenCountries] = useState(false);
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, width: "100%" }}
@@ -232,6 +236,44 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
               ref={emailInputRef}
               value={email}
             />
+            <Pressable
+              style={{
+                width: "100%",
+                height: 50,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 12,
+                borderRadius: 10,
+                backgroundColor: "rgba(255,255,255,0.1)",
+              }}
+              onPress={() => {
+                setOpenCountries(true);
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.text,
+                  fontWeight: 500,
+                  fontSize: 16,
+                }}
+              >
+                {activeLanguage?.country}:
+              </Text>
+              <Text
+                style={{
+                  color: theme.active,
+                  fontWeight: 500,
+                  fontSize: 16,
+                }}
+              >
+                {countries?.find((c: any) => c.code === country)?.name}
+              </Text>
+            </Pressable>
+
             <Input
               placeholder={`${activeLanguage.password}*`}
               onChangeText={(text: string) => setPassword(text)}
@@ -302,11 +344,31 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
               onPressFunction={SendEmail}
             />
           </View>
+          {openCountries && (
+            <Countries
+              country={country}
+              setCountry={setCountry}
+              setOpenCountries={setOpenCountries}
+            />
+          )}
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };
+
+const countries = [
+  { code: "GE", name: "Georgia" },
+  { code: "UA", name: "Ukraine" },
+  { code: "AZ", name: "Azerbaijan" },
+  { code: "AM", name: "Armenia" },
+  { code: "TR", name: "Turkey" },
+  { code: "US", name: "United States" },
+  { code: "CA", name: "Canada" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "FR", name: "France" },
+  { code: "DE", name: "Germany" },
+];
 
 export default Register;
 
@@ -316,7 +378,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 25,
   },
   inputContainer: {
     flex: 1,
@@ -326,6 +387,7 @@ const styles = StyleSheet.create({
     gap: 8,
     position: "relative",
     bottom: 48,
+    paddingHorizontal: 8,
   },
   inputSpacing: {
     height: 8, // Adjust the height for spacing

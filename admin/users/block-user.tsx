@@ -78,10 +78,9 @@ const Block = ({ userId, userName, setOpenBlock, setOpenUser, from }: any) => {
         if (socket) {
           socket.emit("rerenderAuthUser", { userId });
         }
-        const duration = convertDuration(selectedDuration);
         SendNotification({
           userId: userId,
-          type: "You'r blocked in app by admin for " + duration + "",
+          type: "blockedInApp",
         });
         closeBlock();
         if (setOpenUser) {
@@ -90,7 +89,7 @@ const Block = ({ userId, userName, setOpenBlock, setOpenUser, from }: any) => {
         setAlert({
           active: true,
           type: "success",
-          text: "Block added successfully!",
+          text: activeLanguage?.blockAdded,
         });
       }
     } catch (error: any) {

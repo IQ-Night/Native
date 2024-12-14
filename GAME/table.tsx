@@ -22,6 +22,7 @@ const Table = ({
   days,
   speechTimer,
   nights,
+  setNights,
   nightNumber,
   loadingPlayer,
   loadingReJoin,
@@ -175,6 +176,7 @@ const Table = ({
                         days={days}
                         speechTimer={speechTimer}
                         nights={nights}
+                        setNights={setNights}
                         nightNumber={nightNumber}
                         loadingPlayer={loadingPlayer}
                         safePlayer={safePlayer}

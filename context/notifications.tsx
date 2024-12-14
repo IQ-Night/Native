@@ -10,6 +10,7 @@ import { useAppContext } from "./app";
 import axios from "axios";
 import { useContentContext } from "./content";
 import { useGameContext } from "./game";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 /**
  * Notifications context state
  */
@@ -53,6 +54,7 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
   );
 
   const [clansNotifications, setClansNotifications] = useState<any>([]);
+  const [supportTickets, setSupportTickets] = useState<any>([]);
 
   useEffect(() => {
     const GetNotifications = async () => {
@@ -63,6 +65,7 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
         if (response.data.status === "success") {
           setNotifications(response.data.data.notifications);
           setClansNotifications(response.data.data.clansNotifications);
+          setSupportTickets(response.data.data.tickets);
           setTotalNotifications(response.data.total);
           setPage(1);
         }
@@ -167,7 +170,11 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
   });
 
   let clansTotalBadge = totalRequests + totalPending;
-  let totalBadge = unreadNotifications.length + totalRequests + totalPending;
+  let totalBadge =
+    unreadNotifications.length +
+    totalRequests +
+    totalPending +
+    supportTickets?.length;
 
   useEffect(() => {
     if (socket) {
@@ -186,7 +193,15 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
    * Send notification
    */
   // send notifications to user
-  const SendNotification = async ({ userId, type }: any) => {
+  const SendNotification = async ({
+    userId,
+    type,
+    title,
+    name,
+    newRole,
+    warnings,
+    warningType,
+  }: any) => {
     try {
       const response = await axios.post(
         apiUrl + "/api/v1/users/" + userId + "/notifications",
@@ -195,6 +210,11 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
           receiver: userId,
           type: type,
           status: "unread",
+          title,
+          name,
+          newRole,
+          warnings,
+          warningType,
         }
       );
       if (response.data.status === "success") {
@@ -225,6 +245,32 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
       setLoading(false);
     }
   };
+
+  /**
+   * unauth user notifications
+   */
+  const [noAuthTickets, setNoAuthTickets] = useState([]);
+  useEffect(() => {
+    const GetNouAuthTickets = async () => {
+      const noAuthId = await AsyncStorage.getItem("IQ-Night:noAuthUserId");
+      if (noAuthId) {
+        try {
+          const response = await axios.get(
+            apiUrl + "/api/v1//tickets/noauth/" + noAuthId
+          );
+          if (response.data.status === "success") {
+            setNoAuthTickets(response.data.data.tickets);
+          }
+        } catch (error: any) {
+          console.log(error.response.data.message);
+        }
+      }
+    };
+    if (!currentUser) {
+      GetNouAuthTickets();
+    }
+  }, [currentUser]);
+
   return (
     <Notifications.Provider
       value={{
@@ -243,6 +289,10 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
         clearState,
         setClearState,
         ClearNotifications,
+        supportTickets,
+        setSupportTickets,
+        noAuthTickets,
+        setNoAuthTickets,
       }}
     >
       {children}

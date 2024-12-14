@@ -5,6 +5,8 @@ import { ActivityIndicator } from "react-native-paper";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
+import VideoComponent from "./videoComponent";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const PersonalTimeOfDead = ({
   game,
@@ -76,9 +78,44 @@ const PersonalTimeOfDead = ({
           justifyContent: "center",
         }}
       >
-        <Text style={{ color: theme.text }}>
-          Video {timeController > 0 && timeController + "s."}
-        </Text>
+        <VideoComponent userId={game.options[0].userId} game={game} />
+      </View>
+
+      <View
+        style={{
+          minWidth: 64,
+          height: 24,
+          alignItems: "center",
+          backgroundColor: "rgba(255,255,255,0.05)",
+          borderRadius: 50,
+          borderWidth: 1,
+          borderColor: "rgba(255,255,255,0.1)",
+          justifyContent: "center",
+          marginTop: 24,
+        }}
+      >
+        <View
+          style={{
+            minWidth: 64,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+
+            paddingHorizontal: 10,
+            gap: 3,
+          }}
+        >
+          <MaterialCommunityIcons name="timer" size={16} color={theme.active} />
+          <Text
+            style={{
+              color: theme.text,
+              fontWeight: "600",
+              fontSize: 14,
+            }}
+          >
+            {timeController > 0 && timeController + "s."}
+          </Text>
+        </View>
       </View>
 
       {game.options[0].userId === currentUser?._id && (

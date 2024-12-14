@@ -18,7 +18,7 @@ const BirthdayWindow = () => {
   /**
    * Auth context
    */
-  const { currentUser } = useAuthContext();
+  const { currentUser, setCurrentUser } = useAuthContext();
 
   /**
    * Profile context
@@ -33,8 +33,8 @@ const BirthdayWindow = () => {
   );
   const onChange = (event: any, selectedDate: any) => {
     setBirthDay(selectedDate);
+    setCurrentUser((prev: any) => ({ ...prev, birthday: selectedDate }));
   };
-
   return (
     <View
       style={{

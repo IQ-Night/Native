@@ -189,7 +189,7 @@ const DailyStats = ({
           >
             {activeLanguage?.total} {activeLanguage?.price}:{" "}
             <Text style={{ color: "green" }}>
-              {parseFloat(coins?.total) || 0 + parseInt(vips?.total) || 0}$
+              {parseFloat(coins?.total) || 0 + parseInt(vips?.total) || 0}USD
             </Text>
           </Text>
           <View
@@ -206,13 +206,13 @@ const DailyStats = ({
             <Text style={{ fontSize: 12, color: theme.text, fontWeight: 600 }}>
               Vips:{" "}
               <Text style={{ color: "green" }}>
-                {parseFloat(vips?.total) || 0}$
+                {parseFloat(vips?.total) || 0}USD
               </Text>
             </Text>
             <Text style={{ fontSize: 12, color: theme.text, fontWeight: 600 }}>
               {activeLanguage?.coins}:{" "}
               <Text style={{ color: "green" }}>
-                {parseFloat(coins?.total) || 0}$
+                {parseFloat(coins?.total) || 0}USD
               </Text>
             </Text>
           </View>
@@ -244,7 +244,7 @@ const DailyStats = ({
                   <Text
                     style={{ fontWeight: "500", color: "white", fontSize: 10 }}
                   >
-                    {item?.totalIncome}$
+                    {item?.totalIncome}USD
                   </Text>
                   <View
                     style={{

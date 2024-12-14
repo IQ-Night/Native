@@ -17,7 +17,7 @@ const ManagementConfig = ({
   setOpenConfig,
   setItem,
 }: any) => {
-  const { theme, apiUrl, haptics } = useAppContext();
+  const { theme, apiUrl, haptics, activeLanguage } = useAppContext();
   const { GetClans, setConfirm, setClans } = useProfileContext();
   const oldRole = clan?.admin.find(
     (a: any) => a.user.id === openConfig?._id
@@ -54,12 +54,9 @@ const ManagementConfig = ({
         setItem((prev: any) => ({ ...prev, admin: response.data.data.admin }));
         SendNotification({
           userId: openConfig?._id,
-          type:
-            "Founder has given new role '" +
-            newRole +
-            "' in clan '" +
-            clan?.title +
-            "' ",
+          type: "newRoleByFounder",
+          newRole,
+          title: clan?.title,
         });
       }
     } catch (error: any) {
@@ -114,17 +111,14 @@ const ManagementConfig = ({
             if (m?.userId === openConfig?._id) {
               return SendNotification({
                 userId: m.userId,
-                type:
-                  "Founder has given you main founder role" +
-                  "' in clan '" +
-                  clan?.title +
-                  "' ",
+                type: "mainFounderRoleAssigned",
+                title: clan?.title,
               });
             } else {
               return SendNotification({
                 userId: m.userId,
-                type:
-                  "Founder has changed " + "' in clan '" + clan?.title + "'",
+                type: "founderChanged",
+                title: clan?.title,
               });
             }
           }
@@ -352,8 +346,8 @@ const ManagementConfig = ({
                 ? () =>
                     setConfirm({
                       active: true,
-                      text: "After give the founde role to user, you no longer will be founder of this clan. are you sure?",
-                      confirmText: "Change Founder",
+                      text: activeLanguage?.after_founder_change,
+                      confirmText: activeLanguage?.changeFounder,
                       confirmAction: () => ChangeFounder(newRole),
                     })
                 : SaveRole

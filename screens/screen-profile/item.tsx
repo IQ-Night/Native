@@ -19,7 +19,8 @@ const Item = ({ item, style, navigation }: any) => {
   /**
    * notifications state
    */
-  const { clansTotalBadge, unreadNotifications } = useNotificationsContext();
+  const { clansTotalBadge, unreadNotifications, supportTickets } =
+    useNotificationsContext();
 
   return (
     <Pressable
@@ -44,6 +45,14 @@ const Item = ({ item, style, navigation }: any) => {
       {item.value === "My Clans" && clansTotalBadge > 0 && (
         <Badge
           value={clansTotalBadge}
+          status="success"
+          badgeStyle={{ backgroundColor: theme.active }}
+          containerStyle={{}}
+        />
+      )}
+      {item.value === "Help" && supportTickets?.length > 0 && (
+        <Badge
+          value={supportTickets?.length}
           status="success"
           badgeStyle={{ backgroundColor: theme.active }}
           containerStyle={{}}

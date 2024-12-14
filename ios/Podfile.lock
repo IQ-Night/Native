@@ -6,28 +6,28 @@ PODS:
   - EXAV (15.0.1):
     - ExpoModulesCore
     - ReactCommon/turbomodule/core
-  - EXConstants (17.0.2):
+  - EXConstants (17.0.3):
     - ExpoModulesCore
   - EXImageLoader (5.0.0):
     - ExpoModulesCore
     - React-Core
   - EXJSONUtils (0.14.0)
-  - EXManifests (0.15.2):
+  - EXManifests (0.15.4):
     - ExpoModulesCore
-  - EXNotifications (0.29.7):
+  - EXNotifications (0.29.11):
     - ExpoModulesCore
-  - Expo (52.0.4):
+  - Expo (52.0.17):
     - ExpoModulesCore
-  - expo-dev-client (5.0.1):
+  - expo-dev-client (5.0.5):
     - EXManifests
     - expo-dev-launcher
     - expo-dev-menu
     - expo-dev-menu-interface
     - EXUpdatesInterface
-  - expo-dev-launcher (5.0.13):
+  - expo-dev-launcher (5.0.18):
     - DoubleConversion
     - EXManifests
-    - expo-dev-launcher/Main (= 5.0.13)
+    - expo-dev-launcher/Main (= 5.0.18)
     - expo-dev-menu
     - expo-dev-menu-interface
     - ExpoModulesCore
@@ -53,7 +53,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - expo-dev-launcher/Main (5.0.13):
+  - expo-dev-launcher/Main (5.0.18):
     - DoubleConversion
     - EXManifests
     - expo-dev-launcher/Unsafe
@@ -82,7 +82,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - expo-dev-launcher/Unsafe (5.0.13):
+  - expo-dev-launcher/Unsafe (5.0.18):
     - DoubleConversion
     - EXManifests
     - expo-dev-menu
@@ -110,10 +110,10 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - expo-dev-menu (6.0.8):
+  - expo-dev-menu (6.0.13):
     - DoubleConversion
-    - expo-dev-menu/Main (= 6.0.8)
-    - expo-dev-menu/ReactNativeCompatibles (= 6.0.8)
+    - expo-dev-menu/Main (= 6.0.13)
+    - expo-dev-menu/ReactNativeCompatibles (= 6.0.13)
     - glog
     - hermes-engine
     - RCT-Folly (= 2024.01.01.00)
@@ -133,8 +133,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - expo-dev-menu-interface (1.9.1)
-  - expo-dev-menu/Main (6.0.8):
+  - expo-dev-menu-interface (1.9.2)
+  - expo-dev-menu/Main (6.0.13):
     - DoubleConversion
     - EXManifests
     - expo-dev-menu-interface
@@ -160,7 +160,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - expo-dev-menu/ReactNativeCompatibles (6.0.8):
+  - expo-dev-menu/ReactNativeCompatibles (6.0.13):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -181,7 +181,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - expo-dev-menu/SafeAreaView (6.0.8):
+  - expo-dev-menu/SafeAreaView (6.0.13):
     - DoubleConversion
     - ExpoModulesCore
     - glog
@@ -203,7 +203,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - expo-dev-menu/Vendored (6.0.8):
+  - expo-dev-menu/Vendored (6.0.13):
     - DoubleConversion
     - expo-dev-menu/SafeAreaView
     - glog
@@ -235,7 +235,7 @@ PODS:
     - ExpoModulesCore
   - ExpoDevice (7.0.1):
     - ExpoModulesCore
-  - ExpoFileSystem (18.0.2):
+  - ExpoFileSystem (18.0.4):
     - ExpoModulesCore
   - ExpoFont (13.0.1):
     - ExpoModulesCore
@@ -245,15 +245,15 @@ PODS:
     - EXImageLoader
     - ExpoModulesCore
     - SDWebImageWebPCoder
-  - ExpoImagePicker (16.0.1):
+  - ExpoImagePicker (16.0.3):
     - ExpoModulesCore
   - ExpoKeepAwake (14.0.1):
     - ExpoModulesCore
   - ExpoLinearGradient (14.0.1):
     - ExpoModulesCore
-  - ExpoLinking (7.0.2):
+  - ExpoLinking (7.0.3):
     - ExpoModulesCore
-  - ExpoModulesCore (2.0.1):
+  - ExpoModulesCore (2.1.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -276,7 +276,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - ExpoWebBrowser (14.0.0):
+  - ExpoWebBrowser (14.0.1):
     - ExpoModulesCore
   - EXUpdatesInterface (1.0.0):
     - ExpoModulesCore
@@ -300,7 +300,7 @@ PODS:
   - libwebp/webp (1.3.2):
     - libwebp/sharpyuv
   - lottie-ios (4.5.0)
-  - lottie-react-native (7.0.0):
+  - lottie-react-native (7.1.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -322,6 +322,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - PurchasesHybridCommon (13.12.0):
+    - RevenueCat (= 5.12.0)
   - RCT-Folly (2024.01.01.00):
     - boost
     - DoubleConversion
@@ -1559,7 +1561,7 @@ PODS:
     - Yoga
   - react-native-safe-area-context (4.12.0):
     - React-Core
-  - react-native-webrtc (124.0.3):
+  - react-native-webrtc (124.0.4):
     - JitsiWebRTC (~> 124.0.0)
     - React-Core
   - React-nativeconfig (0.76.1)
@@ -1829,6 +1831,9 @@ PODS:
     - React-logger (= 0.76.1)
     - React-perflogger (= 0.76.1)
     - React-utils (= 0.76.1)
+  - ReactNativeIncallManager (4.2.0):
+    - React-Core
+  - RevenueCat (5.12.0)
   - RNCAsyncStorage (1.23.1):
     - React-Core
   - RNCPicker (2.9.0):
@@ -1856,6 +1861,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNPurchases (8.4.0):
+    - PurchasesHybridCommon (= 13.12.0)
+    - React-Core
   - RNScreens (4.0.0):
     - DoubleConversion
     - glog
@@ -1983,10 +1991,12 @@ DEPENDENCIES:
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNPurchases (from `../node_modules/react-native-purchases`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -1996,6 +2006,8 @@ SPEC REPOS:
     - JitsiWebRTC
     - libwebp
     - lottie-ios
+    - PurchasesHybridCommon
+    - RevenueCat
     - SDWebImage
     - SDWebImageWebPCoder
     - SocketRocket
@@ -2188,6 +2200,8 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  ReactNativeIncallManager:
+    :path: "../node_modules/react-native-incall-manager"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCPicker:
@@ -2196,6 +2210,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/datetimepicker"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNPurchases:
+    :path: "../node_modules/react-native-purchases"
   RNScreens:
     :path: "../node_modules/react-native-screens"
   RNSVG:
@@ -2208,31 +2224,31 @@ SPEC CHECKSUMS:
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   EXApplication: e1ad9c950c98b2b134578092c948b10b403f3ea7
   EXAV: 9773c9799767c9925547b05e41a26a0240bb8ef2
-  EXConstants: 33cb635065c7c1fe09a0fce5c8ddde8a0a2860c4
+  EXConstants: dd2fe64c6cdb1383b694c309a63028a8e9f2be6d
   EXImageLoader: 759063a65ab016b836f73972d3bb25404888713d
   EXJSONUtils: 01fc7492b66c234e395dcffdd5f53439c5c29c93
-  EXManifests: f293a2f776506540805140fdac283e382b48e75d
-  EXNotifications: 97a84c66aedb7a3b8b8a57eb7112f8cdde86119e
-  Expo: 250b6bc7a5c85c4b15babff1b1b2ca2c9f7dd549
-  expo-dev-client: 9e8cad129a71706847453d1c55ff6264017faf44
-  expo-dev-launcher: 6b384911d9de2895a1a51c0b8e3c91447fd15886
-  expo-dev-menu: da19a01b054d576d3e6622ce7931389d4e10c7eb
-  expo-dev-menu-interface: 1495ca112a4961f9fbaf586ae952faaafdbd967b
+  EXManifests: f30a0c5d3d6cad8db9c01bab579e0aa0df5d3cb2
+  EXNotifications: e27ed9ad086026ef0cdd5ddbf9be60abd18232c8
+  Expo: a49e904c6f4edc8c3a5bde3fb75df5a64a53f555
+  expo-dev-client: 49ce02cb369ab60bcb203f0ac2f8bf39f004dfc9
+  expo-dev-launcher: 5bf20d136a40edb11de7284aa7fec893f9c365a5
+  expo-dev-menu: aba0644936340f546aec9abb651c7924cee6b43e
+  expo-dev-menu-interface: 4baf2f8b3b79ce37cf4b900e4b3ba6df3384f0a1
   ExpoAppleAuthentication: 59b0f5cf600284dd03b0d595c112acd067e0eb69
   ExpoAsset: 8138f2a9ec55ae1ad7c3871448379f7d97692d15
   ExpoBlur: 562b3da84d3cd79016c411671eaf71a404266415
   ExpoCrypto: 8465f71eb3798c194c0a509d4a76e5c429656d83
   ExpoDevice: e24dd19a43065182eb246bc0e7f84186862f1e83
-  ExpoFileSystem: 10e1ccf88aef9f3cb5aea1a121272164a24edd6f
+  ExpoFileSystem: dc2679a2b5d4c465ca881129074da95faee943d5
   ExpoFont: 7522d869d84ee2ee8093ee997fef5b86f85d856b
   ExpoHaptics: e636188d1d5f7ccb79f3c1bfab47aaf5a1768c73
   ExpoImageManipulator: 774eb1a17c5db07944d6f9000650d422ebb3ce47
-  ExpoImagePicker: d31c8c93a5d0cd45e8993453c58f679f0ea60368
+  ExpoImagePicker: 440a560c9bfc63edae854d08b9f12f75bd11c112
   ExpoKeepAwake: 783e68647b969b210a786047c3daa7b753dcac1f
   ExpoLinearGradient: 7ca3b1d1625a1ab85c129abce4a3cdc78a9500a3
-  ExpoLinking: 05ab69d3b5b1b0600d6a1a043d8d1ea3bb61a71a
-  ExpoModulesCore: a4c49482afe320c5de0475ed0825b0640549c7e8
-  ExpoWebBrowser: ea83cc6f03bec1938c3b8fb4dcb9df71960fba36
+  ExpoLinking: a8332a219379ba80f8e612d5a5de4a3da446886e
+  ExpoModulesCore: 6b1ed7e4e5ab279a1825f40ef0140db84f6aad0f
+  ExpoWebBrowser: f08aaf1c8a02af8a768d83793186cb6d2c69f529
   EXUpdatesInterface: 1dcebac98ac5dad4289e6ff2bd5616822e894397
   FBLazyVector: 7075bb12898bc3998fd60f4b7ca422496cc2cdf7
   fmt: 10c6e61f4be25dc963c36bd73fc7b1705fe975be
@@ -2241,7 +2257,8 @@ SPEC CHECKSUMS:
   JitsiWebRTC: d0ae5fd6a81e771bfd82c2ee6c6bb542ebd65ee8
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
-  lottie-react-native: 2a3335e7f3cfdc881f400b08c7e9e84d18920db1
+  lottie-react-native: e23d9bcc85c8730e79e96bdf589a1996d7d388a9
+  PurchasesHybridCommon: 34be8fccff5e253c67ab624965e2cbda7f640632
   RCT-Folly: bf5c0376ffe4dd2cf438dcf86db385df9fdce648
   RCTDeprecation: fde92935b3caa6cb65cbff9fbb7d3a9867ffb259
   RCTRequired: 75c6cee42d21c1530a6f204ba32ff57335d19007
@@ -2272,7 +2289,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 3146a13424f9fec2ea1f1462d49d566e4d69b732
   React-microtasksnativemodule: 8fa0a3d8542f6ae7712deebe0802ee17a623718b
   react-native-safe-area-context: 142fade490cbebbe428640b8cbdb09daf17e8191
-  react-native-webrtc: 41f6602490c618e3ec0e2108e46b84e2c731c127
+  react-native-webrtc: 48295e7228279470c4f5acb38570e170723bd3b2
   React-nativeconfig: 93fe8c85a8c40820c57814e30f3e44b94c995a7b
   React-NativeModulesApple: b3e076fd0d7b73417fe1e8c8b26e3c57ae9b74aa
   React-perflogger: 1c55bcd3c392137cbaf0d21d8bb87ce9a0cebb15
@@ -2300,10 +2317,13 @@ SPEC CHECKSUMS:
   React-utils: 5362bd16a9563f9916e7a56c011ddc533507650f
   ReactCodegen: 865bafc5c17ec2181620ced1a32c39c38ab2951d
   ReactCommon: 422e364463f33e336fc4db196aeb50fd801d90d6
+  ReactNativeIncallManager: bfc9c67358cd524882a7c4116dcb311ac2293d4b
+  RevenueCat: 459e3e60c895e20c0e7a2d767bece11140854306
   RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
   RNCPicker: f963e01f78e546a93b98aa201501713dbda14e94
   RNDateTimePicker: 40ffda97d071a98a10fdca4fa97e3977102ccd14
   RNGestureHandler: aa9690789023c9be8f06aa90e10ce637ea788f4d
+  RNPurchases: aafcf568c3ae6cdc70c654fb74b452cd9f9bc2cb
   RNScreens: de948b09c9a30f3ea52f9840dd6f8ce92b4e33d3
   RNSVG: 8b1a777d54096b8c2a0fd38fc9d5a454332bbb4d
   SDWebImage: 73c6079366fea25fa4bb9640d5fb58f0893facd8

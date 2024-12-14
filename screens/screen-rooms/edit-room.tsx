@@ -1,10 +1,16 @@
-import { FontAwesome, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import {
+  FontAwesome,
+  FontAwesome5,
+  Ionicons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import axios from "axios";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import _ from "lodash";
 import { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   Dimensions,
   Pressable,
   ScrollView,
@@ -170,7 +176,7 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
       return setAlert({
         active: true,
         type: "error",
-        text: "Pin code is not defined!",
+        text: activeLanguage?.pinCodeNotDefined,
       });
     }
 
@@ -214,6 +220,32 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
    */
   const [openPopup, setOpenPopup] = useState("");
 
+  // open state
+  const translateYState = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  useEffect(() => {
+    if (openPopup === "avatars")
+      Animated.timing(translateYState, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+  }, [openPopup]);
+
+  const closeState = () => {
+    if (haptics) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+    }
+    Animated.timing(translateYState, {
+      toValue: SCREEN_HEIGHT,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      // Once the animation is complete, update the state
+      setOpenPopup("");
+    });
+  };
+
   return (
     <View style={{ flex: 1, width: "100%" }}>
       <BlurView intensity={120} tint="dark" style={styles.container}>
@@ -221,19 +253,17 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
           <Text
             style={{
               color: theme.active,
-              fontSize: 18,
-              fontWeight: 500,
-              maxWidth: "80%",
+              fontSize: 20,
+              fontWeight: 700,
+              maxWidth: "100%",
               overflow: "hidden",
             }}
             ellipsizeMode="tail"
             numberOfLines={1}
           >
-            {activeLanguage?.editRoom} '
             {roomState?.title.length > 0
               ? roomState?.title
               : "Default: Room - 123..."}
-            '
           </Text>
           <Ionicons
             onPress={() => {
@@ -542,47 +572,56 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
               zIndex: 50,
               height: "100%",
               width: "100%",
-              paddingTop: 72,
+              paddingTop: 56,
             }}
           >
-            <FontAwesome
-              name="close"
-              size={32}
-              color={theme.active}
-              style={{ position: "absolute", top: 48, right: 16, zIndex: 60 }}
-              onPress={() => {
-                setOpenPopup("");
-                if (haptics) {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                }
+            <Animated.View
+              style={{
+                transform: [{ translateY: translateYState }],
+                width: "100%",
+                height: "100%",
+                alignItems: "center",
               }}
-            />
-            {openPopup === "avatars" && (
-              <Avatars
-                state={roomState}
-                setState={setRoomState}
-                type="room-avatar"
-                setTotalPrice={setTotalPrice}
-                file={file}
-                setFile={setFile}
+            >
+              <MaterialIcons
+                name="arrow-drop-down"
+                size={40}
+                color={theme.active}
+                // style={{ position: "absolute", top: 48, right: 16, zIndex: 60 }}
+                onPress={() => {
+                  closeState();
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                }}
               />
-            )}
-            {openPopup === "choiceLanguage" && (
-              <ChoiceLanguage
-                state={roomState.language}
-                setState={(e: any) =>
-                  setRoomState((prev: any) => ({ ...prev, language: e }))
-                }
-                setOpenPopup={setOpenPopup}
-              />
-            )}
-            {openPopup === "rules" && (
-              <Rules
-                roomState={roomState}
-                setRoomState={setRoomState}
-                setOpenPopup={setOpenPopup}
-              />
-            )}
+              {openPopup === "avatars" && (
+                <Avatars
+                  state={roomState}
+                  setState={setRoomState}
+                  type="room-avatar"
+                  setTotalPrice={setTotalPrice}
+                  file={file}
+                  setFile={setFile}
+                />
+              )}
+              {openPopup === "choiceLanguage" && (
+                <ChoiceLanguage
+                  state={roomState.language}
+                  setState={(e: any) =>
+                    setRoomState((prev: any) => ({ ...prev, language: e }))
+                  }
+                  setOpenPopup={setOpenPopup}
+                />
+              )}
+              {openPopup === "rules" && (
+                <Rules
+                  roomState={roomState}
+                  setRoomState={setRoomState}
+                  setOpenPopup={setOpenPopup}
+                />
+              )}
+            </Animated.View>
           </BlurView>
         )}
       </BlurView>
@@ -632,7 +671,7 @@ const createStyles = (theme: any) =>
       paddingHorizontal: 12,
       backgroundColor: "rgba(255,255,255,0.1)",
       borderRadius: 8,
-      width: 80,
+      width: 100,
       height: "100%",
       alignItems: "center",
       justifyContent: "center",

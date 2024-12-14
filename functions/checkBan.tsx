@@ -24,15 +24,20 @@ export const convertDuration = (selectedDuration: any) => {
     const days = Math.floor(hours / 24);
     return `${days} day${days !== 1 ? "s" : ""}`;
   }
-  // Convert to weeks if more than 168 hours (1 week)
+  // Convert to weeks if more than 168 hours (1 week) and less than 720 hours
   else if (hours >= 168 && hours < 720) {
     const weeks = Math.floor(hours / 168);
     return `${weeks} week${weeks !== 1 ? "s" : ""}`;
   }
-  // Convert to months if more than 720 hours (30 days)
-  else if (hours >= 720) {
+  // Convert to months if more than 720 hours (30 days) and less than 8760 hours (1 year)
+  else if (hours >= 720 && hours < 8760) {
     const months = Math.floor(hours / 720);
     return `${months} month${months !== 1 ? "s" : ""}`;
+  }
+  // Convert to years if more than 8760 hours (1 year)
+  else if (hours >= 8760) {
+    const years = Math.floor(hours / 8760);
+    return `${years} year${years !== 1 ? "s" : ""}`;
   }
   // Default to hours
   return `${hours} hour${hours !== 1 ? "s" : ""}`;

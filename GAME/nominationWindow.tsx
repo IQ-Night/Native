@@ -20,6 +20,7 @@ import VotingTimer2 from "./timers/votingTimer2";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { ActivityIndicator } from "react-native-paper";
 import * as Haptics from "expo-haptics";
+import VideoComponent from "./videoComponent";
 
 const NominationWindow = ({
   data,
@@ -30,6 +31,7 @@ const NominationWindow = ({
   setDays,
   setAttention,
   SaveAfterLeaveDataInDB,
+  game,
 }: any) => {
   /**
    * App context
@@ -843,7 +845,7 @@ const NominationWindow = ({
               player: player,
               list,
             });
-          }, 10000);
+          }, 3000);
         } else {
           if (currentUser._id === host?.userId) {
             let player = newData.players?.find(
@@ -929,7 +931,7 @@ const NominationWindow = ({
                 roomId: activeRoom._id,
               });
             }
-          }, 5000);
+          }, 3000);
         }
       });
     }
@@ -1344,8 +1346,24 @@ const NominationWindow = ({
                     alignItems: "center",
                     marginBottom: 16,
                     gap: 16,
+                    position: "relative",
                   }}
                 >
+                  {speecher?.userId === player?.userId && (
+                    <View
+                      style={{
+                        borderRadius: 200,
+                        width: 60,
+                        height: 60,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        position: "absolute",
+                        zIndex: 90,
+                      }}
+                    >
+                      <VideoComponent userId={speecher?.userId} game={game} />
+                    </View>
+                  )}
                   {speecher?.userId === player?.userId && (
                     <MaterialIcons
                       style={{

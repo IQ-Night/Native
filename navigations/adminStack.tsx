@@ -18,6 +18,8 @@ import BlackList from "../admin/blackList/main";
 import Incomes from "../admin/incomes/main";
 import IncomeStats from "../admin/incomes/statistics";
 import { useNavigation } from "@react-navigation/native";
+import Messages from "../admin/messages/main";
+import Coupons from "../admin/coupons/main";
 
 const AdminStackNavigator = () => {
   /**
@@ -115,11 +117,25 @@ const AdminStackNavigator = () => {
           component={Products}
         />
         <AdminStack.Screen
+          name="Messages"
+          options={({ route }: any) => ({
+            title: activeLanguage?.notifications,
+          })}
+          component={Messages}
+        />
+        <AdminStack.Screen
           name="Reports"
           options={({ route }: any) => ({
             title: activeLanguage?.reports,
           })}
           component={Reports}
+        />
+        <AdminStack.Screen
+          name="Coupons"
+          options={({ route }: any) => ({
+            title: activeLanguage?.coupons,
+          })}
+          component={Coupons}
         />
         <AdminStack.Screen
           name="User"

@@ -26,7 +26,7 @@ const bansList = [
 ];
 
 const Ban = ({ openUser, setOpenBan, clans, setUsersClans }: any) => {
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
   const { socket, activeRoom } = useGameContext();
   const { currentUser } = useAuthContext();
 
@@ -82,15 +82,10 @@ const Ban = ({ openUser, setOpenBan, clans, setUsersClans }: any) => {
 
       if (response?.data?.status === "success") {
         closeBan();
-        const duration = convertDuration(selectedDuration);
         SendNotification({
           userId: openUser?._id,
-          type:
-            "You've got ban in clan " +
-            choisenClan?.title +
-            " by admin for " +
-            duration +
-            "",
+          type: "bannedInClan",
+          title: choisenClan?.title,
         });
         // Update the users' clans state
         setUsersClans((prev: any) => {
@@ -144,7 +139,7 @@ const Ban = ({ openUser, setOpenBan, clans, setUsersClans }: any) => {
             <View style={{ width: "100%", alignItems: "center" }}>
               <View style={styles.header}>
                 <Text style={[styles.headerText, { color: theme.text }]}>
-                  Choise Clan
+                  {activeLanguage?.choiceClan}
                 </Text>
               </View>
               <View style={{ gap: 8, width: "100%", alignItems: "center" }}>
@@ -227,7 +222,7 @@ const Ban = ({ openUser, setOpenBan, clans, setUsersClans }: any) => {
           <View style={{ width: "100%", alignItems: "center" }}>
             <View style={styles.header}>
               <Text style={[styles.headerText, { color: theme.text }]}>
-                Add Ban in this clan
+                {activeLanguage?.addBanInClan}
               </Text>
               <MaterialCommunityIcons
                 name="block-helper"
@@ -257,7 +252,7 @@ const Ban = ({ openUser, setOpenBan, clans, setUsersClans }: any) => {
           </View>
 
           <Button
-            title="Add Ban"
+            title={activeLanguage?.add_ban}
             style={{
               backgroundColor: "red",
               width: "100%",

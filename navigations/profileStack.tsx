@@ -16,7 +16,6 @@ import About from "../screens/screen-about/main";
 import Chat from "../screens/screen-chat/chat/main";
 import Chats from "../screens/screen-chat/main";
 import Coins from "../screens/screen-coins/coins";
-import Help from "../screens/screen-help/main";
 import Assets from "../screens/screen-profile/assets/main";
 import ChangePassword from "../screens/screen-profile/changePassword/main";
 import Gift from "../screens/screen-profile/gifts/main";
@@ -27,6 +26,9 @@ import MyClans from "../screens/screen-profile/myClans/main";
 import Notifications from "../screens/screen-profile/notifications/main";
 import User from "../screens/screen-user/main";
 import Vip from "../screens/screen-VIP/main";
+import Rules from "../screens/screen-rules/main";
+import Help from "../screens/screen-help/main";
+import Privacy from "../screens/screen-privacy/main";
 
 const ProfileStackNavigator = () => {
   const ProfileStack = createStackNavigator();
@@ -62,7 +64,7 @@ const ProfileStackNavigator = () => {
 
   // Effect to handle timeout for clearing invoices
   useEffect(() => {
-    let timer: NodeJS.Timeout; // Define timer variable for cleanup
+    let timer: any; // Define timer variable for cleanup
     if (isTimerActive && clearTimeoutValue > 0) {
       // Set interval to decrement the clearTimeoutValue every second
       timer = setInterval(() => {
@@ -302,6 +304,9 @@ const ProfileStackNavigator = () => {
               <Pressable
                 onPress={() => {
                   if (totalNotifications > 0) {
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
                     if (clearState === "confirm") {
                       ClearNotifications();
                       setClearTimeoutValue(0); // Reset timeout
@@ -492,6 +497,63 @@ const ProfileStackNavigator = () => {
           component={About}
         />
         <ProfileStack.Screen
+          name="Terms & Rules"
+          options={({ route, navigation }) => ({
+            headerTitle: "",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                  navigation.goBack();
+                }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <MaterialIcons name="arrow-left" size={42} color={theme.text} />
+                <Text
+                  style={{ color: theme.text, fontSize: 18, fontWeight: 600 }}
+                >
+                  {activeLanguage?.terms}
+                </Text>
+              </Pressable>
+            ),
+          })}
+          component={Rules}
+        />
+        <ProfileStack.Screen
+          name="Privacy"
+          options={({ route, navigation }) => ({
+            headerTitle: "",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                  navigation.goBack();
+                }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <MaterialIcons name="arrow-left" size={42} color={theme.text} />
+                <Text
+                  numberOfLines={1}
+                  style={{ color: theme.text, fontSize: 18, fontWeight: 600 }}
+                >
+                  {activeLanguage?.privacy}
+                </Text>
+              </Pressable>
+            ),
+          })}
+          component={Privacy}
+        />
+        <ProfileStack.Screen
           name="Help"
           options={({ route, navigation }) => ({
             headerTitle: "",
@@ -550,6 +612,9 @@ const ProfileStackNavigator = () => {
               <Pressable
                 onPress={() => {
                   if (totalInvoices > 0) {
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
                     if (clearInvoicesState === "confirm") {
                       ClearInvoices();
                       setClearTimeoutValue(0); // Reset timeout

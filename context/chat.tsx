@@ -69,7 +69,9 @@ export const ChatContextWrapper: React.FC<contextProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    GetChats();
+    if (currentUser) {
+      GetChats();
+    }
   }, [search, currentUser]);
 
   // notifications
@@ -99,11 +101,7 @@ export const ChatContextWrapper: React.FC<contextProps> = ({ children }) => {
                 return p; // Explicitly return prev if condition is not met
               });
             });
-
-            // Chat exists, handle accordingly
-            console.log("chat found with this members");
           } else {
-            console.log("no chat with this members");
             GetChats(); // Fetch chats if no matching chat is found
           }
         }
@@ -118,6 +116,7 @@ export const ChatContextWrapper: React.FC<contextProps> = ({ children }) => {
       };
     }
   }, [socket, currentUser?._id]);
+
   useEffect(() => {
     if (socket) {
       // Define the event handler

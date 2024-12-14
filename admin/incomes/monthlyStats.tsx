@@ -50,7 +50,7 @@ const MonthlyStats = ({ monthlyChartData }: any) => {
                   <Text
                     style={{ fontWeight: "500", color: "white", fontSize: 10 }}
                   >
-                    {item?.totalIncome}$
+                    {item?.totalIncome}USD
                   </Text>
                   <View
                     style={{

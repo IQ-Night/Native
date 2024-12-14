@@ -36,6 +36,7 @@ import Rating from "./rating";
 import RoleInfo from "./roleInfo";
 import Roles from "./roles";
 import SpectatorMode from "./spectatorMode";
+import Rules from "./popup-rules";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -162,14 +163,14 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
       return setAlert({
         active: true,
         type: "error",
-        text: "Add pin code for private room!",
+        text: activeLanguage?.addPinCodePrivateRoom,
       });
     }
     if (totalPrice?.all > currentUser?.coins?.total) {
       return setAlert({
         active: true,
         type: "error",
-        text: "You don't have enough coins to buy paid features!",
+        text: activeLanguage?.notEnoughCoinsBuyFeatures,
       });
     }
 
@@ -239,7 +240,7 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
    */
 
   // open state
-  const translateYState = useRef(new Animated.Value(0)).current;
+  const translateYState = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   useEffect(() => {
     if (openPopup !== "") {
@@ -271,7 +272,7 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
         <BlurView intensity={120} tint="dark" style={styles.container}>
           <BlurView intensity={120} tint="dark" style={styles.header}>
             <Text
-              style={{ color: theme.active, fontSize: 18, fontWeight: 500 }}
+              style={{ color: theme.active, fontSize: 20, fontWeight: 700 }}
             >
               {activeLanguage?.createNewRoom}
             </Text>
@@ -608,7 +609,38 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
           setNumericPopup={setNumericPopup}
         />
       )}
-      {openPopup !== "" && (
+      {openPopup === "rules" && (
+        <BlurView intensity={120} tint="dark" style={styles.blurContainer}>
+          <View style={styles.popupContainer}>
+            <Animated.View
+              style={{
+                transform: [{ translateY: translateYState }],
+                width: "100%",
+                height: "100%",
+                alignItems: "center",
+              }}
+            >
+              <Pressable
+                onPress={() => {
+                  closeState();
+                }}
+              >
+                <MaterialIcons
+                  name="arrow-drop-down"
+                  size={42}
+                  color={theme.active}
+                />
+              </Pressable>
+              <Rules
+                roomState={roomState}
+                setRoomState={setRoomState}
+                setOpenPopup={setOpenPopup}
+              />
+            </Animated.View>
+          </View>
+        </BlurView>
+      )}
+      {openPopup === "avatars" && (
         <BlurView intensity={120} tint="dark" style={styles.blurContainer}>
           <View style={styles.popupContainer}>
             <Animated.View
@@ -689,7 +721,7 @@ const createStyles = (theme: any) =>
       paddingHorizontal: 12,
       backgroundColor: "rgba(255,255,255,0.1)",
       borderRadius: 8,
-      width: 80,
+      width: 100,
       height: "100%",
       alignItems: "center",
       justifyContent: "center",

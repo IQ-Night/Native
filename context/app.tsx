@@ -31,8 +31,8 @@ export const AppContextWrapper: React.FC<contextProps> = ({ children }) => {
    * API Url
    */
   // const apiUrl = "192.168.1.137:5000";
-  const apiUrl = "http://192.168.1.6:5000";
-  // const apiUrl = "https://iq-night-acb3bc094c45.herokuapp.com";
+  // const apiUrl = "http://192.168.1.6:5000";
+  const apiUrl = "https://iq-night-acb3bc094c45.herokuapp.com";
 
   /**
    * Loading State
@@ -43,8 +43,8 @@ export const AppContextWrapper: React.FC<contextProps> = ({ children }) => {
    * app theme
    */
   const [appTheme, setAppTheme] = useState("dark");
-  const dark = { text: "#c7c7c7", active: "#FFA833" };
-  const light = { text: "black", active: "#F7A023" };
+  const dark = { text: "#c7c7c7", active: "#d0a640" };
+  const light = { text: "black", active: "#d0a640" };
   const [theme, setTheme] = useState(dark);
 
   useEffect(() => {
@@ -109,12 +109,15 @@ export const AppContextWrapper: React.FC<contextProps> = ({ children }) => {
     GetBgSound();
   }, []);
 
-  console.log(bgSound);
-
   /**
    * Alert context
    */
   const [alert, setAlert] = useState({ active: false, type: "", text: "" });
+
+  /**
+   * app state position
+   */
+  const [appStatePosition, setAppStatePosition] = useState("active");
 
   return (
     <App.Provider
@@ -134,6 +137,8 @@ export const AppContextWrapper: React.FC<contextProps> = ({ children }) => {
         setHaptics,
         bgSound,
         setBgSound,
+        appStatePosition,
+        setAppStatePosition,
       }}
     >
       {children}

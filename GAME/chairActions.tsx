@@ -111,7 +111,7 @@ const ChaitActions = ({
         width: (SCREEN_WIDTH * 0.9 - 72) / 4,
         aspectRatio: 1,
         borderRadius: 100,
-        backgroundColor: "rgba(255,255,255,0.05)",
+        // backgroundColor: "rgba(255,255,255,0.05)",
         position: "absolute",
         zIndex: 50,
       }}
@@ -461,7 +461,7 @@ const ChaitActions = ({
             intensity={40}
             style={{
               position: "absolute",
-              zIndex: 50,
+              zIndex: 90,
               width: "100%",
               height: "100%",
               alignItems: "center",
@@ -538,25 +538,6 @@ const ChaitActions = ({
             </Pressable>
           </BlurView>
         )}
-      {(activePlayerToSpeech?.userId === item?.userId &&
-        game.value === "Day") ||
-      game.value === "Common Time" ? (
-        <Animated.View
-          style={{
-            width: "100%",
-            height: "100%",
-            backgroundColor: "blue",
-            alignItems: "center",
-            justifyContent: "center",
-            position: "absolute",
-            zIndex: 60,
-            borderRadius: 50,
-            transform: [{ scale: videoScaleAnim }], // Apply scaling animation
-          }}
-        >
-          <Text style={{ color: theme.text }}>Video</Text>
-        </Animated.View>
-      ) : null}
 
       {killBySerialKiller === item?.userId &&
         currentUserRole === "serial-killer" &&
@@ -586,7 +567,6 @@ const ChaitActions = ({
           currentUserRole?.includes("mafia"))) && (
         <View
           style={{
-            backgroundColor: "black",
             width: "100%",
             height: "100%",
             alignItems: "center",

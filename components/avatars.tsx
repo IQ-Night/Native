@@ -243,13 +243,13 @@ const Avatars = ({
       )}
       {!currentUser?.editOptions?.paidForCover && type === "profile-avatar" && (
         <Text style={{ color: theme.text, fontWeight: 600, marginVertical: 6 }}>
-          First cover change 1500{" "}
+          {activeLanguage?.first_avatar_change} 1500{" "}
           <FontAwesome5 name="coins" size={14} color={theme.active} />
         </Text>
       )}
       {item?.price.cover < 1 && type === "clan-avatar" && (
         <Text style={{ color: theme.text, fontWeight: 600, marginVertical: 6 }}>
-          First cover change 2000{" "}
+          {activeLanguage?.first_avatar_change} 2000{" "}
           <FontAwesome5 name="coins" size={14} color={theme.active} />
         </Text>
       )}
@@ -372,7 +372,7 @@ const Item = ({
   setOpenBuyItem,
   onChange,
 }: any) => {
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
   /**
    * Auth context
    */
@@ -397,8 +397,8 @@ const Item = ({
           } else {
             setConfirmAction({
               active: true,
-              text: "Confirm turn on paid avatar!",
-              price: 1500,
+              text: activeLanguage?.first_avatar_change,
+              price: currentUser?.editOptions?.paidForCover ? 0 : 1500,
               Function: () => onChange(item.file),
             });
           }

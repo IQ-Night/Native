@@ -240,30 +240,22 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
             return null;
           }
         });
-      console.log(gamePlayers?.map((u: any) => "..!..." + u.userName));
-      console.log(spectators?.map((u: any) => "..!..." + u.userName));
-      console.log(newUsers?.map((u: any) => "..!..." + u.userName));
       const stream = localStream;
-      console.log("run new users...............");
       // Loop through new users and handle the offer logic
       newUsers?.length > 0 &&
         newUsers.forEach(async (user) => {
-          console.log("run this...");
           try {
             if (user?.userId !== currentUser?._id) {
               createPeerConnection(user?.userId);
-              console.log("248");
               stream.getTracks().forEach((track: any) => {
                 peerConnections.current[user?.userId]?.addTrack(track, stream);
               });
-              console.log("252");
               const offer = await peerConnections.current[
                 user?.userId
               ].createOffer();
               await peerConnections.current[user?.userId]?.setLocalDescription(
                 offer
               );
-              console.log("259");
               socket?.emit("send-offer", {
                 signal: offer,
                 creatorId: currentUser?._id,
@@ -276,7 +268,6 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
         });
     };
     if (video) {
-      console.log("name: " + currentUser?.name);
       SendOffer();
     }
   }, [gamePlayers, spectators]);
@@ -302,6 +293,40 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
     }
   }, [socket]);
 
+  /**
+   * Microphone controll
+   *   */
+
+  // disable voice & video
+  const [microphone, setMicrophone] = useState(false);
+
+  const toggleMicrophone = (stream: any, isEnabled: any) => {
+    if (stream) {
+      stream.getAudioTracks().forEach((track: any) => {
+        track.enabled = isEnabled; // true = ჩართული, false = გამორთული
+      });
+      console.log(`Microphone is now ${isEnabled ? "enabled" : "disabled"}`);
+    } else {
+      console.error("Stream not found. Unable to toggle microphone.");
+    }
+  };
+  useEffect(() => {
+    if (!video) {
+      setMicrophone(false);
+      socket.emit("enable-microphone", {
+        userId: currentUser?._id,
+        value: video && microphone ? true : false,
+      });
+    }
+    if (localStream) {
+      toggleMicrophone(localStream, microphone);
+      socket.emit("enable-microphone", {
+        userId: currentUser?._id,
+        value: video && microphone ? true : false,
+      });
+    }
+  }, [microphone, localStream, video]);
+
   return (
     <VideoConnection.Provider
       value={{
@@ -314,6 +339,9 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
         setOpenVideo,
         setLoading,
         loading,
+        microphone,
+        setMicrophone,
+        toggleMicrophone,
       }}
     >
       {children}

@@ -167,7 +167,9 @@ const Clan = ({ route, navigation }: any) => {
           if (a?.user?.id !== currentUser?._id) {
             return SendNotification({
               userId: a?.user?.id,
-              type: `User ${currentUser?.name} has joined to clan ${item?.title}`,
+              type: `userJoinedClan`,
+              name: currentUser?.name,
+              title: item?.title,
             });
           }
         });
@@ -212,7 +214,7 @@ const Clan = ({ route, navigation }: any) => {
           if (a?.user?._id !== currentUser?._id) {
             return SendNotification({
               userId: a.user.id,
-              type: "Left clan",
+              type: "leftClan",
             });
           }
         });

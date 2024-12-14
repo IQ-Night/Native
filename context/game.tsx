@@ -6,11 +6,12 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Dimensions } from "react-native";
+import { Dimensions, AppState } from "react-native";
 import { io } from "socket.io-client";
 import { useAppContext } from "./app";
 import { useAuthContext } from "./auth";
 import { mediaDevices, RTCView, RTCPeerConnection } from "react-native-webrtc";
+import axios from "axios";
 
 // Game Context
 const Game = createContext<any>(null);
@@ -24,7 +25,7 @@ interface contextProps {
 }
 
 export const GameContextWrapper: React.FC<contextProps> = ({ children }) => {
-  const { apiUrl } = useAppContext();
+  const { apiUrl, appStatePosition } = useAppContext();
   const { currentUser } = useAuthContext();
 
   const [activeRoom, setActiveRoom] = useState<any>(null);
@@ -41,8 +42,13 @@ export const GameContextWrapper: React.FC<contextProps> = ({ children }) => {
     if (currentUser && !socket.current) {
       console.log(`Attempting to connect to ${apiUrl}`);
       socket.current = io(apiUrl, {
-        transports: ["websocket"],
-        query: { userId: currentUser._id },
+        transports: ["websocket"], // Use WebSocket transport
+        query: { userId: currentUser._id }, // Attach user ID
+        reconnection: true, // Enable auto-reconnection
+        reconnectionAttempts: Infinity, // Retry indefinitely
+        reconnectionDelay: 1000, // Initial delay for reconnection attempts
+        reconnectionDelayMax: 5000, // Maximum delay for reconnection attempts
+        timeout: 60000, // 1-minute timeout for initial connection
       });
 
       socket.current.on("connect", () => {
@@ -87,6 +93,42 @@ export const GameContextWrapper: React.FC<contextProps> = ({ children }) => {
     }
   }, [currentUser?._id, apiUrl]);
 
+  useEffect(() => {
+    if (socket.current) {
+      socket.current.emit("appPosition", {
+        roomId: activeRoom?._id,
+        userId: currentUser?._id,
+        status: appStatePosition,
+      });
+    }
+  }, [appStatePosition]);
+
+  /**
+   * defines if user has radio
+   */
+  const [currentUserRadio, setCurrentUserRadio] = useState<boolean>(false);
+  const getRadio = async () => {
+    try {
+      const response = await axios.get(
+        apiUrl + "/api/v1/products/675055373c446fbb4c731e87"
+      );
+      if (response?.data?.status === "success") {
+        const userHasRadio = response?.data?.data?.product?.owners?.find(
+          (userId: any) => userId === currentUser?._id
+        );
+        setCurrentUserRadio(userHasRadio ? true : false);
+      }
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser?._id) {
+      getRadio();
+    }
+  }, [currentUser?._id]);
+
   return (
     <Game.Provider
       value={{
@@ -103,6 +145,7 @@ export const GameContextWrapper: React.FC<contextProps> = ({ children }) => {
         setLoadingSpectate: () => {},
         connectionStatus,
         reconnectAttempts,
+        currentUserRadio,
       }}
     >
       {children}

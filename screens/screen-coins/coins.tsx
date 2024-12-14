@@ -5,6 +5,11 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import Button from "../../components/button";
 import { useAppContext } from "../../context/app";
 import { useAuthContext } from "../../context/auth";
+import { useContentContext } from "../../context/content";
+import Confirm from "./confirm";
+import { identity } from "lodash";
+import Purchases from "react-native-purchases";
+import { REVENUE_CAT_API_KEY } from "@env";
 
 const Coins = () => {
   /**
@@ -14,50 +19,63 @@ const Coins = () => {
 
   // auth
   const { currentUser, setCurrentUser } = useAuthContext();
-
-  const coins = [
-    {
-      size: 100,
-      price: 5,
-    },
-    {
-      size: 200,
-      price: 8,
-    },
-    {
-      size: 500,
-      price: 12,
-    },
-    {
-      size: 1000,
-      price: 17,
-    },
-    {
-      size: 1500,
-      price: 23,
-    },
-    {
-      size: 2000,
-      price: 30,
-    },
-    {
-      size: 3500,
-      price: 45,
-    },
-  ];
+  // content
+  const { coins } = useContentContext();
 
   /**
    * Buy coins
    */
   const [loading, setLoading] = useState<any>(null);
   // confirm buying
-  const [confirm, setConfirm] = useState(null);
+  const [confirm, setConfirm] = useState<any>(null);
+
+  const purchaseCoins = async (packageIdentifier: string, data: any) => {
+    // 1. Switch to the target user
+    await Purchases.logOut(); // გადართვა ანონიმურ რეჟიმზე
+    Purchases.configure({
+      apiKey: REVENUE_CAT_API_KEY, // აქ ჩასვით თქვენი რეალური Public API Key
+      appUserID: currentUser?._id,
+    });
+    setLoading(data?.coins);
+    try {
+      const offerings = await Purchases.getOfferings();
+      const currentOffering = offerings.all["Coins"]?.availablePackages;
+
+      if (!currentOffering) {
+        throw new Error("No current offering found.");
+      }
+
+      const selectedPackage = currentOffering.find(
+        (pkg) => pkg.identifier === packageIdentifier
+      );
+
+      if (!selectedPackage) {
+        throw new Error(
+          `Package not found for identifier: ${packageIdentifier}`
+        );
+      }
+
+      const purchaseResult = await Purchases.purchasePackage(selectedPackage);
+
+      if (purchaseResult) {
+        BuyCoins({ ...data });
+        setConfirm(null);
+      }
+    } catch (error: any) {
+      if (error.userCancelled) {
+        console.log("User cancelled the purchase.");
+      } else {
+        console.error("Purchase failed:", error);
+      }
+      setLoading(false);
+    }
+  };
+
   const BuyCoins = async ({ coins, price }: any) => {
-    setLoading(coins);
     const invoice = {
       type: "Buy coins",
       coins: coins,
-      price: price,
+      price: parseFloat(price),
       createdAt: new Date(),
     };
     try {
@@ -79,7 +97,7 @@ const Coins = () => {
         setAlert({
           active: true,
           type: "success",
-          text: "Coins have bought successfully!",
+          text: activeLanguage?.coinsBought,
         });
       }
 
@@ -91,118 +109,96 @@ const Coins = () => {
     }
   };
 
-  // Clear timeout state
-  const [clearTimeoutValue, setClearTimeoutValue] = useState<number>(0);
-  const [isTimerActive, setIsTimerActive] = useState(false);
-
-  // Effect to handle timeout for clearing invoices
-  useEffect(() => {
-    let timer: NodeJS.Timeout; // Define timer variable for cleanup
-
-    if (isTimerActive && clearTimeoutValue > 0) {
-      // Set interval to decrement the clearTimeoutValue every second
-      timer = setInterval(() => {
-        setClearTimeoutValue((prev) => {
-          if (prev <= 1) {
-            setConfirm(null); // Clear invoices when timer reaches zero
-            setIsTimerActive(false); // Stop the timer
-            return 0; // Ensure it doesn't go below 0
-          }
-          return prev - 1; // Decrement the timer value
-        });
-      }, 1000); // 1 second interval
-
-      return () => clearInterval(timer); // Cleanup the interval on unmount
-    }
-
-    return () => clearTimeout(timer); // Cleanup the timer
-  }, [isTimerActive, clearTimeoutValue]);
-
-  // Function to start the timer
-  const startTimer = () => {
-    if (clearTimeoutValue === 0) {
-      setClearTimeoutValue(5); // Reset to 5 seconds
-    }
-    setIsTimerActive(true); // Start the timer
-  };
-
   return (
-    <ScrollView
-      contentContainerStyle={{
-        paddingTop: 8,
-        gap: 16,
-        paddingHorizontal: 12,
-        paddingBottom: 100,
-      }}
-    >
-      {coins?.map((c: any, x: number) => {
-        return (
-          <View
-            key={x}
-            style={{
-              width: "100%",
-              backgroundColor: "rgba(255,255,255,0.05)",
-              height: 196,
-              borderRadius: 8,
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: 16,
-              paddingVertical: 20,
-            }}
-          >
-            <MaterialCommunityIcons
-              name="hand-coin-outline"
-              size={100}
-              color={theme.text}
-              style={{ position: "absolute", opacity: 0.05, left: 0, top: 0 }}
-            />
-            <MaterialCommunityIcons
-              name="hand-coin-outline"
-              size={100}
-              color={theme.text}
-              style={{
-                position: "absolute",
-                opacity: 0.05,
-                right: 0,
-                bottom: 0,
-                transform: [{ scaleX: -1 }], // Flip horizontally
-              }}
-            />
-            <Text
-              style={{ color: theme.active, fontSize: 24, fontWeight: 700 }}
-            >
-              {c?.size}{" "}
-              <FontAwesome6 name="coins" size={24} color={theme.active} />
-            </Text>
-            <Text style={{ fontSize: 24, fontWeight: 600, color: "white" }}>
-              {c?.price}$
-            </Text>
-            <Button
-              title={
-                confirm === c?.size
-                  ? `${activeLanguage.confirm} (" + clearTimeoutValue + ")`
-                  : activeLanguage?.buy
-              }
+    <>
+      <ScrollView
+        contentContainerStyle={{
+          paddingTop: 8,
+          gap: 16,
+          paddingHorizontal: 12,
+          paddingBottom: 100,
+        }}
+      >
+        {coins?.map((pc: any, x: number) => {
+          const c = pc.product;
+          return (
+            <View
+              key={x}
               style={{
                 width: "100%",
-                backgroundColor: confirm === c?.size ? "green" : theme.active,
-                color: "white",
+                backgroundColor: "rgba(255,255,255,0.05)",
+                height: 196,
+                borderRadius: 8,
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: 16,
+                paddingVertical: 20,
               }}
-              loading={loading === c?.size}
-              onPressFunction={() => {
-                if (confirm !== c?.size) {
-                  setConfirm(c?.size);
-                  startTimer();
-                } else {
-                  BuyCoins({ coins: c?.size, price: c?.price });
-                  setClearTimeoutValue(0);
+            >
+              <MaterialCommunityIcons
+                name="hand-coin-outline"
+                size={100}
+                color={theme.text}
+                style={{ position: "absolute", opacity: 0.05, left: 0, top: 0 }}
+              />
+              <MaterialCommunityIcons
+                name="hand-coin-outline"
+                size={100}
+                color={theme.text}
+                style={{
+                  position: "absolute",
+                  opacity: 0.05,
+                  right: 0,
+                  bottom: 0,
+                  transform: [{ scaleX: -1 }], // Flip horizontally
+                }}
+              />
+              <Text
+                style={{ color: theme.active, fontSize: 24, fontWeight: 700 }}
+              >
+                {c?.identifier?.split("_")[1]}{" "}
+                <FontAwesome6 name="coins" size={24} color={theme.active} />
+              </Text>
+              <Text style={{ fontSize: 24, fontWeight: 600, color: "white" }}>
+                {parseFloat(c?.price).toFixed(2)}
+                {c?.currencyCode}
+              </Text>
+              <Button
+                title={
+                  confirm === c?.size
+                    ? `${activeLanguage.confirm} (" + clearTimeoutValue + ")`
+                    : activeLanguage?.buy
                 }
-              }}
-            />
-          </View>
-        );
-      })}
-    </ScrollView>
+                style={{
+                  width: "100%",
+                  backgroundColor: confirm === c?.size ? "green" : theme.active,
+                  color: "white",
+                }}
+                loading={loading === parseFloat(c?.identifier?.split("_")[1])}
+                onPressFunction={() =>
+                  setConfirm({
+                    active: true,
+                    data: {
+                      identity: pc?.identifier,
+                      coins: parseInt(c?.identifier?.split("_")[1]),
+                      price: parseFloat(c?.price).toFixed(2),
+                    },
+                  })
+                }
+              />
+            </View>
+          );
+        })}
+      </ScrollView>
+      {confirm && (
+        <Confirm
+          openState={confirm?.active}
+          setOpenState={setConfirm}
+          data={confirm?.data}
+          handlePurchase={purchaseCoins}
+        />
+      )}
+    </>
   );
 };
 

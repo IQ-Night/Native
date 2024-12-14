@@ -146,7 +146,7 @@ const AttentionWindow = ({ attention, data }: any) => {
               textAlign: "center",
             }}
           >
-            {activeLanguage.game_over_winners}
+            {activeLanguage.game_over_winners} {attention?.value?.split("-")[2]}
           </Text>
         </View>
       </View>
@@ -182,7 +182,7 @@ const AttentionWindow = ({ attention, data }: any) => {
             textAlign: "center",
           }}
         >
-          {activeLanguage.room_closed} by {activeLanguage?.host}!
+          {activeLanguage.room_closed_by_host}
         </Text>
       </View>
     );

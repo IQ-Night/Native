@@ -3,7 +3,7 @@
  */
 export const DefineUserLevel = ({ user }: any) => {
   let level: any;
-  if (user?.totalGames > 0 && user?.totalGames < 51) {
+  if (user?.totalGames >= 0 && user?.totalGames < 51) {
     level = {
       current: 1,
       percent: Math.min((user?.totalGames / 50) * 100, 100),

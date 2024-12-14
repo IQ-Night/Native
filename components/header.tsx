@@ -135,7 +135,7 @@ const Header = ({
                   badgeStyle={{
                     backgroundColor: theme.active,
                     position: "absolute",
-                    zIndex: 50,
+                    zIndex: 90,
                     right: -6,
                     top: -6,
                   }}
@@ -239,8 +239,10 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   titleText: {
-    fontSize: 34,
+    height: 40,
+    fontSize: 24,
     fontWeight: "bold",
+    lineHeight: 40,
   },
   icons: {
     flexDirection: "row",

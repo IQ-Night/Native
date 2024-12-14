@@ -61,8 +61,14 @@ const Profile = ({ navigation }: any) => {
   /**
    * Profile context
    */
-  const { updateState, setUpdateState, translateYState, closeState, items } =
-    useProfileContext();
+  const {
+    updateState,
+    setUpdateState,
+    translateYState,
+    closeState,
+    items,
+    UpdateUser,
+  } = useProfileContext();
 
   /**
    * Define user level
@@ -81,12 +87,12 @@ const Profile = ({ navigation }: any) => {
     ) {
       return setAlert({
         active: true,
-        text: "You don't have enough coins to change cover!",
+        text: activeLanguage?.notEnoughCoinsChangeCover,
         type: "error",
       });
     }
-    setLoading(true);
     try {
+      setLoading(true);
       const response = await axios.patch(
         apiUrl + "/api/v1/users/" + currentUser?._id + "?editType=cover",
         {
@@ -116,6 +122,12 @@ const Profile = ({ navigation }: any) => {
     }
   };
 
+  // change language
+  const ChangeLanguage = async (e: any) => {
+    UpdateUser({ language: e });
+    await AsyncStorage.setItem("IQ-Night:language", e);
+    setLanguage(e);
+  };
   return (
     <View style={{ flex: 1 }}>
       <Header tab="Profile" tabTitle={activeLanguage?.profile} />
@@ -148,7 +160,6 @@ const Profile = ({ navigation }: any) => {
             justifyContent: "center",
           }}
         >
-          {" "}
           <ActivityIndicator color="orange" size="small" />
         </BlurView>
       )}
@@ -302,9 +313,7 @@ const Profile = ({ navigation }: any) => {
                 <ChoiceLanguage
                   state={language}
                   setState={async (e: string) => {
-                    await AsyncStorage.setItem("IQ-Night:language", e);
-
-                    setLanguage(e);
+                    ChangeLanguage(e);
                   }}
                   setOpenPopup={setUpdateState}
                 />

@@ -19,6 +19,7 @@ import CreateRoom from "./create-room/main";
 import RoomReview from "./door-review";
 import Filter from "./filter";
 import List from "./list";
+import { BackDrop } from "../../components/backDropLoader";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -35,8 +36,15 @@ const Rooms = ({ navigation }: any) => {
   /**
    * Rooms state
    */
-  const { rooms, totalRooms, search, setSearch, filterStatus } =
-    useRoomsContext();
+  const {
+    rooms,
+    totalRooms,
+    search,
+    setSearch,
+    filterStatus,
+    backdropLoading,
+    setBackdropLoading,
+  } = useRoomsContext();
 
   /**
    * Pin code state
@@ -191,30 +199,6 @@ const Rooms = ({ navigation }: any) => {
           <List setDoorReview={setDoorReview} navigation={navigation} />
         </Animated.View>
       </Animated.View>
-
-      {/* {!createRoom && !doorReview && !openFilter && totalPages > 1 && (
-        <Pagination
-          totalPages={totalPages}
-          currentPage={page}
-          debouncedAdd={debouncedAddRooms}
-        />
-      )} */}
-      {/* {loadRooms && (
-        <BlurView
-          intensity={10}
-          tint="dark"
-          style={{
-            position: "absolute",
-            zIndex: 90,
-            width: "100%",
-            height: "100%",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <ActivityIndicator size={24} color={theme.active} />
-        </BlurView>
-      )} */}
 
       <View
         style={{

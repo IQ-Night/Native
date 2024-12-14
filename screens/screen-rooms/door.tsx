@@ -19,10 +19,9 @@ import { useAuthContext } from "../../context/auth";
 import { useGameContext } from "../../context/game";
 import { useRoomsContext } from "../../context/rooms";
 import { checkBanExpired } from "../../functions/checkBan";
-import { FormatDate } from "../../functions/formatDate";
+import GetTimesAgo from "../../functions/getTimesAgo";
 import { DefineUserLevel } from "../../functions/userLevelOptimizer";
 import { JoinButtonText } from "./joinButton";
-import GetTimesAgo from "../../functions/getTimesAgo";
 
 interface ConfigType {
   newbes: boolean;

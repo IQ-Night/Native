@@ -6,28 +6,35 @@
     "scheme": "iq-night",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "assetBundlePatterns": ["**/*"],
     "entryPoint": "./index.js",
     "sdkVersion": "52.0.0",
     "platforms": ["ios", "android"],
     "developmentClient": true,
+    "backgroundColor": "#000",
+    "notification": {
+      "icon": "./assets/mafia5.jpg",
+      "color": "#fff"
+    },
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/bg.jpg",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000"
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.iqnight.app",
       "newArchEnabled": false,
-      "buildNumber": "1.0.6"
+      "buildNumber": "1.0.9",
+      "usesAppleSignIn": true,
+      "keychainSharing": false
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/mafia4.jpg",
-        "backgroundColor": "#ffffff",
-        "newArchEnabled": false
+        "newArchEnabled": false,
+        "backgroundColor": "#000"
       }
     },
     "web": {

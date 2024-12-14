@@ -25,6 +25,7 @@ import { useGameContext } from "../context/game";
 import { roles } from "../context/rooms";
 import { Badge } from "react-native-elements";
 import { useVideoConnectionContext } from "../context/videoConnection";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -37,7 +38,8 @@ const Header = ({
   openChat,
   unreadMessages,
 }: any) => {
-  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage, bgSound, setBgSound } =
+    useAppContext();
   const { currentUser } = useAuthContext();
   const {
     activeRoom,
@@ -49,8 +51,10 @@ const Header = ({
     setMessage,
     setGamePlayers,
     setSpectators,
+    currentUserRadio,
   } = useGameContext();
-  const { startCall, video, setVideo } = useVideoConnectionContext();
+  const { startCall, video, setVideo, microphone, setMicrophone } =
+    useVideoConnectionContext();
 
   // Store fade animations for each item
   const [fadeAnims, setFadeAnims] = useState<Animated.Value[]>([]);
@@ -145,9 +149,6 @@ const Header = ({
     }
   }, [socket, activeRoom]);
 
-  // disable voice & video
-  const [voice, setVoice] = useState(true);
-
   // switch to spectator
   const changeToSpectator = async () => {
     socket.emit("changeType", {
@@ -202,7 +203,7 @@ const Header = ({
         style={{
           width: "100%",
           position: "absolute",
-          zIndex: 40,
+          zIndex: 70,
           top: 56,
           left: 0,
           gap: 8,
@@ -259,6 +260,7 @@ const Header = ({
             position: "absolute",
             top: 112,
             left: 16,
+            zIndex: 80,
           }}
         >
           <Pressable
@@ -280,7 +282,13 @@ const Header = ({
             <Text style={{ color: theme.text }}>{spectators?.length}</Text>
           </Pressable>
           {game?.value === "Ready to start" && (
-            <View style={{ marginTop: 12, position: "relative", right: 8 }}>
+            <View
+              style={{
+                marginTop: 12,
+                position: "relative",
+                right: 8,
+              }}
+            >
               <Switch
                 trackColor={{ false: theme.background2, true: theme.active }}
                 value={currentUserType === "player" ? true : false}
@@ -298,6 +306,27 @@ const Header = ({
               />
             </View>
           )}
+          <Pressable
+            style={{ marginTop: 12 }}
+            onPress={async () => {
+              if (haptics) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              }
+              if (bgSound) {
+                setBgSound(false);
+                await AsyncStorage.setItem("IQ-Night:bgSound", "UnActive");
+              } else {
+                setBgSound(true);
+                await AsyncStorage.setItem("IQ-Night:bgSound", "Active");
+              }
+            }}
+          >
+            {bgSound ? (
+              <MaterialIcons name="stop-circle" size={24} color={theme.text} />
+            ) : (
+              <MaterialIcons name="play-circle" size={24} color={theme.text} />
+            )}
+          </Pressable>
         </View>
       ) : (
         <View
@@ -313,7 +342,7 @@ const Header = ({
           <MaterialCommunityIcons name="eye-off" size={18} color={theme.text} />
         </View>
       )}
-      <View style={{ height: 20, position: "absolute", top: 112 }}>
+      <View style={{ height: 20, position: "absolute", top: 112, zIndex: 90 }}>
         {gamePlayers.find((player: any) => player.userId === currentUser._id)
           ?.death ? (
           <View style={{ alignItems: "center", gap: 4 }}>
@@ -423,22 +452,6 @@ const Header = ({
                 if (haptics) {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
                 }
-                setVoice((prev: any) => !prev);
-              }}
-              name={voice ? "volume-high" : "volume-off"}
-              size={26}
-              color={theme.text}
-            />
-          </Pressable>
-        )}
-
-        {currentUserType === "player" && (
-          <Pressable>
-            <MaterialCommunityIcons
-              onPress={() => {
-                if (haptics) {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                }
                 if (video) {
                   startCall(false);
                   setVideo(false);
@@ -453,7 +466,27 @@ const Header = ({
             />
           </Pressable>
         )}
-
+        {currentUserType === "player" && (
+          <Pressable style={{ opacity: video ? 1 : 0.5, alignItems: "center" }}>
+            {game?.value === "Night" && !currentUserRadio ? (
+              <View></View>
+            ) : (
+              <FontAwesome
+                onPress={() => {
+                  if (video) {
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
+                    setMicrophone((prev: any) => !prev);
+                  }
+                }}
+                name={microphone ? "microphone" : "microphone-slash"}
+                size={26}
+                color={theme.text}
+              />
+            )}
+          </Pressable>
+        )}
         <Pressable
           onPress={() => {
             if (haptics) {
@@ -535,7 +568,7 @@ const Header = ({
             height: SCREEN_HEIGHT,
             position: "absolute",
             top: 0,
-            zIndex: 70,
+            zIndex: 90,
             alignItems: "center",
             justifyContent: "center",
             gap: 16,

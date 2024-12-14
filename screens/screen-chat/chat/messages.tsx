@@ -55,7 +55,12 @@ const Messages = ({
           {
             lastMessage: {
               ...lastMessage,
-              seen: [...lastMessage?.seen, currentUser?._id],
+              seen: [
+                ...lastMessage?.seen?.filter(
+                  (id: any) => id !== currentUser?._id
+                ),
+                currentUser?._id,
+              ],
             },
           }
         );
@@ -70,6 +75,8 @@ const Messages = ({
                     seen: [...p.lastMessage?.seen, currentUser?._id],
                   },
                 };
+              } else {
+                return p;
               }
             })
           );
@@ -82,7 +89,9 @@ const Messages = ({
         console.log(error.response.data.message);
       }
     };
-    SeenMessages();
+    if (lastMessage?.sender?.userId !== currentUser?._id) {
+      SeenMessages();
+    }
   }, [messages]);
 
   return (

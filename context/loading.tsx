@@ -1,8 +1,6 @@
 import { Dimensions, StyleSheet, Text, View } from "react-native";
-import React from "react";
-import { BlurView } from "expo-blur";
 import { ActivityIndicator } from "react-native-paper";
-import { useAppContext } from "../context/app";
+import { useAppContext } from "./app";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 

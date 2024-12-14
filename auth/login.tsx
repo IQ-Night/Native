@@ -1,6 +1,10 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import React, { useRef, useState } from "react";
+import * as AppleAuthentication from "expo-apple-authentication";
+import * as Google from "expo-auth-session/providers/google";
+import * as Haptics from "expo-haptics";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Keyboard,
@@ -15,10 +19,10 @@ import {
 } from "react-native";
 import Button from "../components/button";
 import Input from "../components/input";
-import ForgotPassword from "./forgotPassword";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
-import * as Haptics from "expo-haptics";
+import ForgotPassword from "./forgotPassword";
+import { ANDROID_CLIENT_ID, IOS_CLIENT_ID, EXPO_CLIENT_ID } from "@env";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -28,12 +32,13 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
   /**
    * App context
    */
-  const { apiUrl, setAlert, theme, activeLanguage, haptics } = useAppContext();
+  const { apiUrl, setAlert, theme, activeLanguage, haptics, language } =
+    useAppContext();
 
   /**
    * Auth context
    */
-  const { setCurrentUser, setActiveRoute } = useAuthContext();
+  const { setCurrentUser, setAddationalFields } = useAuthContext();
 
   // loading state
   const [loading, setLoading] = useState(false);
@@ -80,26 +85,27 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
         .post(`${apiUrl}/api/v1/login`, {
           email: email,
           password: password,
+          language: language,
         })
         .then(async (data) => {
-          await AsyncStorage.setItem(
-            "IQ-Night:jwtToken",
-            JSON.stringify(data.data.accessToken)
-          );
-          await AsyncStorage.setItem(
-            "IQ-Night:jwtRefreshToken",
-            JSON.stringify(data.data.refreshToken)
-          );
-          setCurrentUser(data.data.user);
-          // const pushNotificationToken = await AsyncStorage.getItem(
-          //   "IQ-Night:pushNotificationsToken"
-          // );
-          // if (pushNotificationToken) {
-          //   await axios.patch(`${apiUrl}/api/v1/users/` + data.data.user._id, {
-          //     pushNotificationToken: JSON.parse(pushNotificationToken),
-          //   });
-          // }
-
+          if (data.data) {
+            await AsyncStorage.setItem(
+              "IQ-Night:jwtToken",
+              JSON.stringify(data.data.accessToken)
+            );
+            await AsyncStorage.setItem(
+              "IQ-Night:jwtRefreshToken",
+              JSON.stringify(data.data.refreshToken)
+            );
+          }
+          if (data?.data?.user?.name) {
+            setCurrentUser(data.data.user);
+          } else {
+            setLoading(false);
+            setAddationalFields({
+              user: data.data.user,
+            });
+          }
           setTimeout(() => {
             setLoading(false);
           }, 1000);
@@ -127,6 +133,114 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
    */
   const [openForgotPassword, setOpenForgotPassword] = useState(false);
 
+  /**
+   * Registration
+   */
+  const ProviderAuth = async (
+    first: string,
+    last: string,
+    email: string,
+    provider: string,
+    registerDevice: string,
+    identityToken: string
+  ) => {
+    try {
+      const response = await axios.post(
+        `${apiUrl}/api/v1/providerauth?provider=` +
+          provider +
+          "&device=" +
+          registerDevice,
+        {
+          name: first || last ? first + " " + last : "Random name",
+          email: email,
+          identityToken: identityToken,
+          language: language,
+        }
+      );
+      if (response?.data?.status === "success") {
+        if (!response?.data?.user?.name) {
+          setAddationalFields({ user: response.data.user });
+        } else {
+          await AsyncStorage.setItem(
+            "IQ-Night:jwtToken",
+            JSON.stringify(response.data.accessToken)
+          );
+          await AsyncStorage.setItem(
+            "IQ-Night:jwtRefreshToken",
+            JSON.stringify(response.data.refreshToken)
+          );
+          setCurrentUser(response.data.user);
+        }
+      }
+    } catch (err: unknown) {
+      if (typeof err === "object" && err !== null && "response" in err) {
+        const errorObj = err as { response: { data: { message: string } } };
+
+        return setAlert({
+          active: true,
+          type: "error",
+          text: errorObj.response.data.message,
+        });
+      } else {
+        // Handle other types of errors
+        console.error("An unexpected error occurred:", err);
+      }
+    }
+  };
+
+  /**
+   * Google auth
+   */
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: ANDROID_CLIENT_ID,
+    iosClientId: IOS_CLIENT_ID,
+    expoClientId: EXPO_CLIENT_ID,
+  });
+
+  const GetUserInfo = async (token: string) => {
+    if (!token) return;
+    try {
+      const response = await fetch(
+        "https://www.googleapis.com/userinfo/v2/me",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const user = await response.json();
+      ProviderAuth(
+        user?.given_name,
+        user?.family_name,
+        user?.email,
+        "google",
+        Platform.OS,
+        user?.identityToken
+      );
+    } catch (error: any) {
+      // TypeScript 4.x and later allows use of 'unknown' instead of 'any' for more strict type checking.
+
+      // Some other error happened
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    SignIn();
+  }, [response]);
+
+  const SignIn = async () => {
+    // Check both that response exists and response type is 'success'
+    if (response?.type === "success" && response.authentication) {
+      // Ensure accessToken is available before proceeding
+      if (response.authentication.accessToken) {
+        await GetUserInfo(response.authentication.accessToken);
+      } else {
+        // Handle the case where accessToken is not available
+        console.error("No access token available");
+      }
+    }
+  };
+
   return (
     <>
       {/* Forgot password */}
@@ -136,8 +250,8 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
       />
       <KeyboardAvoidingView
         style={{ flex: 1, width: "100%" }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+        behavior={Platform.OS === "ios" ? "padding" : "position"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0} // შეცვალე შესაბამისი UI მოთხოვნებიდან
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View style={styles.container}>
@@ -165,6 +279,26 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
                 ref={passwordInputRef}
                 value={password}
               />
+
+              <View style={{ marginTop: 16 }}>
+                <Button
+                  style={{
+                    width: (SCREEN_WIDTH / 100) * 95,
+                    color: "white",
+                    backgroundColor: theme.active,
+                  }}
+                  icon={
+                    <MaterialCommunityIcons
+                      name="login"
+                      size={24}
+                      color="white"
+                    />
+                  }
+                  title={activeLanguage.login}
+                  loading={loading}
+                  onPressFunction={Login}
+                />
+              </View>
               <Pressable
                 style={{}}
                 onPress={() => {
@@ -186,38 +320,121 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
                   {activeLanguage.forgotPass}?
                 </Text>
               </Pressable>
-              <View style={{ marginTop: 30 }}>
+
+              <View
+                style={{
+                  gap: 8,
+                  alignItems: "center",
+                  marginTop: 16,
+                }}
+              >
+                <Button
+                  style={{
+                    width: (SCREEN_WIDTH / 100) * 95,
+                    color: "#fff",
+                    backgroundColor: "#4285F4",
+                  }}
+                  icon={
+                    <MaterialCommunityIcons
+                      name="google"
+                      size={24}
+                      color="white"
+                    />
+                  }
+                  title={activeLanguage.signInWithGoogle}
+                  loading={false}
+                  onPressFunction={() => promptAsync()}
+                />
+
+                {Platform.OS === "ios" && (
+                  <Button
+                    style={{
+                      width: (SCREEN_WIDTH / 100) * 95,
+                      color: "#fff",
+                      backgroundColor: "#212124",
+                    }}
+                    icon={
+                      <MaterialCommunityIcons
+                        name="apple"
+                        size={24}
+                        color="white"
+                      />
+                    }
+                    title={activeLanguage.signInWithApple}
+                    loading={false}
+                    onPressFunction={async () => {
+                      try {
+                        const credential =
+                          await AppleAuthentication.signInAsync({
+                            requestedScopes: [
+                              AppleAuthentication.AppleAuthenticationScope
+                                .FULL_NAME,
+                              AppleAuthentication.AppleAuthenticationScope
+                                .EMAIL,
+                            ],
+                          });
+
+                        if (credential.user) {
+                          // Destructure the fullName object for clarity
+                          const { givenName, familyName } =
+                            credential.fullName || {};
+
+                          // Providing default values in case givenName or familyName are undefined
+                          const firstName = givenName || "";
+                          const lastName = familyName || "";
+                          const email = credential.email || "";
+
+                          const identityToken = credential.user || "";
+
+                          ProviderAuth(
+                            firstName,
+                            lastName,
+                            email,
+                            "apple",
+                            Platform.OS,
+                            identityToken
+                          );
+                        } else {
+                          return setAlert({
+                            active: true,
+                            type: "error",
+                            text: activeLanguage.somethingWentWrong,
+                          });
+                        }
+
+                        // signed in
+                      } catch (e) {
+                        if (
+                          typeof e === "object" &&
+                          e !== null &&
+                          "code" in e
+                        ) {
+                          const errorObj = e as {
+                            code: string;
+                            message: string;
+                          };
+                          if (errorObj.code === "ERR_REQUEST_CANCELED") {
+                            // handle that the user canceled the sign-in flow
+                          } else {
+                            // handle other errors
+                          }
+                        }
+                      }
+                    }}
+                  />
+                )}
+
                 <Button
                   style={{
                     width: (SCREEN_WIDTH / 100) * 95,
                     color: "white",
                     backgroundColor: theme.active,
                   }}
-                  title={activeLanguage.login}
-                  loading={loading}
-                  onPressFunction={Login}
+                  title={activeLanguage.createAccount}
+                  loading={false}
+                  onPressFunction={() => navigation.navigate("Register")}
                 />
               </View>
-            </View>
-            <View
-              style={{
-                width: "100%",
-                position: "absolute",
-                bottom: 48,
-                alignItems: "center",
-              }}
-            >
-              <Button
-                style={{
-                  width: (SCREEN_WIDTH / 100) * 95,
-                  color: "white",
-                  backgroundColor: theme.active,
-                }}
-                icon=""
-                title={activeLanguage.createAccount}
-                loading={false}
-                onPressFunction={() => navigation.navigate("Choice Auth")}
-              />
             </View>
           </View>
         </TouchableWithoutFeedback>
@@ -241,8 +458,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: (SCREEN_WIDTH / 100) * 95,
-    position: "relative",
-    bottom: 48,
   },
   inputSpacing: {
     height: 8, // Adjust the height for spacing

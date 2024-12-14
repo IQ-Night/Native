@@ -1,9 +1,19 @@
 import { BlurView } from "expo-blur";
 import { useEffect, useRef } from "react";
-import { Animated, Easing, Pressable, StyleSheet, View } from "react-native";
+import {
+  Animated,
+  Easing,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { RTCView } from "react-native-webrtc";
+import { useAppContext } from "../context/app";
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 
-const OpenVideo = ({ streamUrl, setOpenVideo }: any) => {
+const OpenVideo = ({ streamUrl, setOpenVideo, user }: any) => {
+  const { theme } = useAppContext();
   // Animation for confirmation popup
   const slideAnim = useRef(new Animated.Value(0)).current; // Start off-screen
 
@@ -41,14 +51,43 @@ const OpenVideo = ({ streamUrl, setOpenVideo }: any) => {
         <Animated.View
           style={[
             styles?.video,
-            { opacity: slideAnim, transform: [{ scale: slideAnim }] },
+            {
+              opacity: slideAnim,
+              transform: [{ scale: slideAnim }],
+              alignItems: "center",
+              gap: 24,
+              position: "relative",
+              bottom: "10%",
+            },
           ]}
         >
+          <View style={{}}>
+            {user?.playerNumber ? (
+              <Text
+                style={{ color: theme.text, fontSize: 32, fontWeight: 500 }}
+              >
+                N:{user?.playerNumber}
+              </Text>
+            ) : (
+              <Text
+                style={{ color: theme.text, fontSize: 32, fontWeight: 500 }}
+              >
+                {user?.userName}
+              </Text>
+            )}
+          </View>
           <RTCView
             key="local"
             streamURL={streamUrl}
             style={styles.video}
             objectFit="cover"
+          />
+
+          <FontAwesome
+            style={{}}
+            size={32}
+            color={theme.text}
+            name={user?.microphone ? "microphone" : "microphone-slash"}
           />
         </Animated.View>
       </Pressable>
@@ -70,8 +109,8 @@ const styles = StyleSheet.create({
   },
   video: {
     width: "100%",
-    height: "80%",
-    borderRadius: 24,
+    aspectRatio: 1,
+    borderRadius: 1000,
   },
 });
 

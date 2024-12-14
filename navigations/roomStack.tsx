@@ -104,10 +104,10 @@ const RoomssStackNavigator = () => {
               >
                 <MaterialIcons name="arrow-left" size={42} color={theme.text} />
                 <Text
+                  numberOfLines={1}
                   style={{ color: theme.text, fontSize: 18, fontWeight: 600 }}
                 >
-                  {route.params?.room?.title + " " + activeLanguage?.logs ||
-                    activeLanguage?.logs}
+                  {activeLanguage?.logs}
                 </Text>
               </Pressable>
             ),

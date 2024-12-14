@@ -16,6 +16,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -33,6 +34,8 @@ import BlackList from "./blackList";
 import RoleInfo from "./create-room/roleInfo";
 import EditRoom from "./edit-room";
 import DeleteConfirm from "../../components/deleteConfirm";
+import FlipCard from "../../context/flipCard";
+import roleImageGenerator from "../../functions/roleImageGenerator";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -41,36 +44,70 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
    * open component with anim
    */
   /**
-   * Edit room
+   * Review room
    */
 
-  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const rotate = useRef(new Animated.Value(45)).current; // Correct initial rotation angle (in degrees)
+  const opacityAnim = useRef(new Animated.Value(0)).current; // Start invisible
+  const translateXAnim = useRef(new Animated.Value(500)).current; // Start off-screen to the right
+  const translateYAnim = useRef(new Animated.Value(-750)).current; // Start off-screen to the top
 
+  // Open chat animation
   useEffect(() => {
-    if (doorReview) {
-      // Define the animation for opening and closing the room
-      Animated.timing(scaleAnim, {
-        toValue: 1, // 0 to open, SCREEN_HEIGHT to close
-        duration: 250,
-        easing: Easing.inOut(Easing.ease), // Smooth easing for in-out effect
-        useNativeDriver: true, // For smoother and better performance
-      }).start();
-    }
-  }, [doorReview]);
+    Animated.parallel([
+      Animated.timing(rotate, {
+        toValue: 0, // Rotate to 0 degrees
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1, // Fade in
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateXAnim, {
+        toValue: 0, // Move to the center
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateYAnim, {
+        toValue: 0, // Move to the center
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const closeReview = () => {
-    // Define the animation for opening and closing the room
-    Animated.timing(scaleAnim, {
-      toValue: 0, // 0 to open, SCREEN_HEIGHT to close
-      duration: 250,
-      easing: Easing.inOut(Easing.ease), // Smooth easing for in-out effect
-      useNativeDriver: true, // For smoother and better performance
-    }).start(() => setDoorReview(null));
+    Animated.parallel([
+      Animated.timing(rotate, {
+        toValue: 45, // Rotate to 0 degrees
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0, // Fade in
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateXAnim, {
+        toValue: 500, // Move to the center
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateYAnim, {
+        toValue: -750, // Move to the center
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => setDoorReview(null));
   };
+
   /**
    * App context
    */
-  const { apiUrl, theme, haptics, setAlert, activeLanguage } = useAppContext();
+  const { apiUrl, theme, haptics, setAlert, activeLanguage, language } =
+    useAppContext();
   /**
    * Auth context
    */
@@ -124,11 +161,6 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
       socket.off("updateRoomInfo", handleUpdateRoomInfo);
     };
   }, [socket, doorReview._id]);
-
-  /**
-   * Open role info
-   */
-  const [openRoleInfo, setOpenRoleInfo] = useState({ value: null });
 
   /**
    * Delete room
@@ -218,7 +250,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
       } else {
         setAlert({
           active: true,
-          text: "The room is already deleted by Admin",
+          text: activeLanguage?.roomDeletedByAdmin,
           type: "warning",
         });
         setRooms((prev: any) =>
@@ -309,6 +341,15 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
    */
   const [openBlackList, setOpenBlackList] = useState(false);
 
+  // load roles
+  const [loadingRoles, setLoaingdRoles] = useState(true);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setLoaingdRoles(true);
+    }, 5000);
+  }, []);
+
   return (
     <>
       <Animated.View
@@ -325,7 +366,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
           setDoorReview={closeReview}
         />
       </Animated.View>
-      <BlurView intensity={120} tint="dark" style={styles.container}>
+      <BlurView intensity={40} tint="dark" style={styles.container}>
         <KeyboardAvoidingView
           style={{ width: "100%", height: "100%" }}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -335,148 +376,185 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
             style={{
               height: "100%",
               width: "100%",
-              justifyContent: "space-between",
               paddingBottom: 108,
-              opacity: scaleAnim,
-              transform: [{ scale: scaleAnim }],
+              overflow: "hidden",
+              borderRadius: 10,
+              transform: [
+                {
+                  rotate: rotate.interpolate({
+                    inputRange: [0, 45],
+                    outputRange: ["0deg", "45deg"],
+                  }),
+                },
+                { translateX: translateXAnim },
+                { translateY: translateYAnim },
+              ],
+              opacity: opacityAnim,
             }}
           >
-            <View style={styles.header}>
-              <Text
-                style={{
-                  color: theme.text,
-                  fontWeight: 600,
-                  fontSize: 24,
-                }}
-              >
-                {activeLanguage?.review}
-              </Text>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 16 }}
-              >
-                <MaterialIcons
-                  onPress={() => {
-                    if (haptics) {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                    }
-                    navigation.navigate("Logs", {
-                      room: doorReview,
-                    });
+            <BlurView
+              intensity={120}
+              tint="dark"
+              style={{
+                height: "100%",
+                width: "100%",
+                justifyContent: "space-between",
+                paddingTop: 40,
+                paddingHorizontal: 8,
+                gap: 8,
+              }}
+            >
+              <View style={styles.header}>
+                <Text
+                  style={{
+                    color: theme.text,
+                    fontWeight: 600,
+                    fontSize: 24,
                   }}
-                  name="format-list-bulleted"
-                  style={{ position: "relative", top: 1 }}
-                  size={26}
-                  color={theme.text}
-                />
-                {(currentUser?._id === doorReview?.admin.founder.id ||
-                  currentUser?.admin.active) && (
+                >
+                  {activeLanguage?.review}
+                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 16,
+                  }}
+                >
                   <MaterialIcons
                     onPress={() => {
                       if (haptics) {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
                       }
-                      setOpenBlackList(true);
+                      navigation.navigate("Logs", {
+                        room: doorReview,
+                      });
                     }}
                     name="format-list-bulleted"
                     style={{ position: "relative", top: 1 }}
                     size={26}
-                    color="red"
-                  />
-                )}
-
-                {doorReview.admin.founder.id === currentUser._id && (
-                  <MaterialIcons
-                    onPress={() => {
-                      if (haptics) {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                      }
-                      setEditRoom(true);
-                    }}
-                    name="settings"
-                    style={{ position: "relative", top: 1 }}
-                    size={25}
                     color={theme.text}
                   />
-                )}
+                  {(currentUser?._id === doorReview?.admin.founder.id ||
+                    currentUser?.admin.active) && (
+                    <FontAwesome6
+                      onPress={() => {
+                        if (haptics) {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                        }
+                        setOpenBlackList(true);
+                      }}
+                      name="users-slash"
+                      style={{ position: "relative", top: 1 }}
+                      size={19}
+                      color="red"
+                    />
+                  )}
 
-                {doorReview.admin.founder.id === currentUser._id && (
-                  <MaterialCommunityIcons
+                  {doorReview.admin.founder.id === currentUser._id && (
+                    <MaterialIcons
+                      onPress={() => {
+                        if (haptics) {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                        }
+                        setEditRoom(true);
+                      }}
+                      name="settings"
+                      style={{ position: "relative", top: 1 }}
+                      size={25}
+                      color={theme.text}
+                    />
+                  )}
+
+                  {doorReview.admin.founder.id === currentUser._id && (
+                    <MaterialCommunityIcons
+                      onPress={() => {
+                        if (haptics) {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                        }
+                        openDeleteConfirm();
+                      }}
+                      name="delete"
+                      style={{ position: "relative", top: 1 }}
+                      size={26}
+                      color="red"
+                    />
+                  )}
+                  <FontAwesome
                     onPress={() => {
+                      closeReview();
                       if (haptics) {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
                       }
-                      openDeleteConfirm();
                     }}
-                    name="delete"
-                    style={{ position: "relative", top: 1 }}
-                    size={26}
-                    color="red"
+                    name="close"
+                    color={theme.active}
+                    size={32}
                   />
-                )}
-                <FontAwesome
-                  onPress={() => {
-                    closeReview();
-                    if (haptics) {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                    }
-                  }}
-                  name="close"
-                  color={theme.active}
-                  size={32}
-                />
+                </View>
               </View>
-            </View>
-            <View
-              style={{
-                flex: 1,
-                width: "100%",
-                padding: 16,
-                borderWidth: 1.5,
-                borderColor: "rgba(255,255,255,0.1)",
-                borderRadius: 12,
-                overflow: "hidden",
-              }}
-            >
-              <View
+              <ScrollView
                 style={{
-                  gap: 16,
-                  flexDirection: "row",
+                  flex: 1,
+                  width: "100%",
+                  padding: 16,
+                  borderWidth: 1.5,
+                  borderColor: "rgba(255,255,255,0.1)",
+                  borderRadius: 12,
+                  overflow: "hidden",
                 }}
               >
                 <View
                   style={{
-                    height: 80,
-                    width: 80,
-                    borderRadius: 8,
-                    overflow: "hidden",
+                    gap: 16,
+                    flexDirection: "row",
                   }}
                 >
-                  <Img uri={doorReview.cover} />
-                </View>
-                <View style={{ gap: 4 }}>
-                  <Text
+                  <View
                     style={{
-                      color: theme.active,
-                      fontWeight: 600,
-                      fontSize: 24,
+                      height: 80,
+                      width: 80,
+                      borderRadius: 8,
+                      overflow: "hidden",
                     }}
                   >
-                    {doorReview?.title}
-                  </Text>
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => {
-                      navigation.navigate("User", {
-                        item: {
-                          ...doorReview.admin.founder,
-                          _id: doorReview.admin.founder.id,
-                        },
-                      });
-                      if (haptics) {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                      }
-                    }}
-                  >
+                    <Img uri={doorReview.cover} />
+                  </View>
+                  <View style={{ gap: 4 }}>
+                    <Text
+                      style={{
+                        color: theme.active,
+                        fontWeight: 600,
+                        fontSize: 24,
+                      }}
+                    >
+                      {doorReview?.title}
+                    </Text>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        navigation.navigate("User", {
+                          item: {
+                            ...doorReview.admin.founder,
+                            _id: doorReview.admin.founder.id,
+                          },
+                        });
+                        if (haptics) {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                        }
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: theme.text,
+                          fontWeight: 500,
+                          fontSize: 14,
+                        }}
+                      >
+                        {activeLanguage?.host}: {doorReview?.admin.founder.name}
+                      </Text>
+                    </TouchableOpacity>
+
                     <Text
                       style={{
                         color: theme.text,
@@ -484,10 +562,43 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                         fontSize: 14,
                       }}
                     >
-                      {activeLanguage?.host}: {doorReview?.admin.founder.name}
+                      <MaterialCommunityIcons name="calendar" size={14} />{" "}
+                      {FormatDate(doorReview.createdAt, "whithTime")}
                     </Text>
-                  </TouchableOpacity>
-
+                  </View>
+                </View>
+                <View style={styles.details}>
+                  <View style={styles.iconTextContainer}>
+                    <FontAwesome5 size={16} color={theme.text} name="users" />
+                    <Text style={styles.playersText}>
+                      {
+                        liveUsers?.filter((u: any) => u.type === "player")
+                          ?.length
+                      }
+                      /{doorReview?.options.maxPlayers}
+                    </Text>
+                  </View>
+                </View>
+                <Text
+                  style={{
+                    color: theme.text,
+                    fontWeight: 500,
+                    fontSize: 14,
+                    marginTop: 16,
+                  }}
+                >
+                  {activeLanguage?.lvl}: {doorReview?.rating.min}
+                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                    marginTop: 8,
+                    maxWidth: "80%",
+                    flexWrap: "wrap",
+                  }}
+                >
                   <Text
                     style={{
                       color: theme.text,
@@ -495,345 +606,266 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                       fontSize: 14,
                     }}
                   >
-                    <MaterialCommunityIcons name="calendar" size={14} />{" "}
-                    {FormatDate(doorReview.createdAt, "whithTime")}
+                    {activeLanguage?.drawInReVote}:
                   </Text>
-                </View>
-              </View>
-              <View style={styles.details}>
-                <View style={styles.iconTextContainer}>
-                  <FontAwesome5 size={16} color={theme.text} name="users" />
-                  <Text style={styles.playersText}>
-                    {liveUsers?.filter((u: any) => u.type === "player")?.length}
-                    /{doorReview?.options.maxPlayers}
-                  </Text>
-                </View>
-              </View>
-              <Text
-                style={{
-                  color: theme.text,
-                  fontWeight: 500,
-                  fontSize: 14,
-                  marginTop: 16,
-                }}
-              >
-                {activeLanguage?.lvl}: {doorReview?.rating.min}
-              </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 4,
-                  marginTop: 8,
-                  maxWidth: "80%",
-                  flexWrap: "wrap",
-                }}
-              >
-                <Text
-                  style={{
-                    color: theme.text,
-                    fontWeight: 500,
-                    fontSize: 14,
-                  }}
-                >
-                  {activeLanguage?.drawInReVote}:
-                </Text>
-                <Text
-                  style={{
-                    color: theme.active,
-                    fontWeight: 500,
-                    fontSize: 14,
-                  }}
-                >
-                  {doorReview.drawInReVote === "People decide"
-                    ? activeLanguage?.peopleDecide
-                    : doorReview?.drawInReVote === "Jail all"
-                    ? activeLanguage?.jailAll
-                    : activeLanguage?.releaseAll}
-                </Text>
-              </View>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-              >
-                <Text
-                  style={{
-                    color: theme.text,
-                    fontWeight: 500,
-                    fontSize: 14,
-                    marginTop: 8,
-                  }}
-                >
-                  {activeLanguage?.spectators}:
-                </Text>
-                {doorReview.spectatorMode ? (
-                  <View
+                  <Text
                     style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 4,
+                      color: theme.active,
+                      fontWeight: 500,
+                      fontSize: 14,
+                    }}
+                  >
+                    {doorReview.drawInReVote === "People decide"
+                      ? activeLanguage?.peopleDecide
+                      : doorReview?.drawInReVote === "Jail all"
+                      ? activeLanguage?.jailAll
+                      : activeLanguage?.releaseAll}
+                  </Text>
+                </View>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                >
+                  <Text
+                    style={{
+                      color: theme.text,
+                      fontWeight: 500,
+                      fontSize: 14,
                       marginTop: 8,
                     }}
                   >
-                    <MaterialCommunityIcons
-                      name="eye"
-                      size={18}
-                      color={theme.text}
-                      style={{ marginLeft: 4 }}
-                    />
-                    <Text style={{ color: theme.text, marginLeft: 4 }}>
-                      {
-                        liveUsers?.filter((u: any) => u.type === "spectator")
-                          .length
-                      }
-                    </Text>
-                    <FontAwesome5 size={12} color={theme.text} name="users" />
-                  </View>
-                ) : (
-                  <MaterialCommunityIcons
-                    name="eye-off"
-                    size={18}
-                    color={theme.text}
-                    style={{ marginTop: 8 }}
-                  />
-                )}
-              </View>
-
-              <View
-                style={{
-                  height: 1,
-                  width: "100%",
-                  backgroundColor: "rgba(255,255,255,0.1)",
-                  marginTop: 16,
-                }}
-              />
-              <Text
-                style={{
-                  color: theme.text,
-                  fontSize: 16,
-                  fontWeight: 500,
-                  marginVertical: 12,
-                  marginLeft: 4,
-                }}
-              >
-                {activeLanguage?.roles}:
-              </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  gap: 12,
-                }}
-              >
-                {doorReview.roles.map((role: any, index: number) => {
-                  return (
+                    {activeLanguage?.spectators}:
+                  </Text>
+                  {doorReview.spectatorMode ? (
                     <View
-                      key={index}
                       style={{
-                        width: "22.2%",
-                        height: 100,
-                        backgroundColor: "#333",
-                        borderRadius: 8,
+                        flexDirection: "row",
                         alignItems: "center",
-                        justifyContent: "center",
-                        position: "relative",
-                        borderWidth: 2,
-                        borderColor: "gray",
-                        padding: 2,
+                        gap: 4,
+                        marginTop: 8,
                       }}
                     >
-                      <FontAwesome6
-                        onPress={() => setOpenRoleInfo(role)}
-                        name="circle-info"
+                      <MaterialCommunityIcons
+                        name="eye"
                         size={18}
                         color={theme.text}
-                        style={{ position: "absolute", top: 8, right: 8 }}
+                        style={{ marginLeft: 4 }}
                       />
-                      <Text style={{ fontSize: 12, color: theme.text }}>
-                        <Text>
-                          {role.value === "mafia"
-                            ? activeLanguage?.mafia
-                            : role?.value === "citizen"
-                            ? activeLanguage?.citizen
-                            : role?.value === "doctor"
-                            ? activeLanguage?.doctor
-                            : role.value === "police"
-                            ? activeLanguage?.police
-                            : role?.value === "serial-killer"
-                            ? activeLanguage?.serialKiller
-                            : activeLanguage?.mafiaDon}
-                        </Text>{" "}
-                        {role.value === "mafia"
-                          ? "(" + doorReview.options.maxMafias + ")"
-                          : role.value === "citizen"
-                          ? "(" +
-                            (doorReview.options.maxPlayers -
-                              doorReview.options.maxMafias -
-                              (doorReview.roles.length - 2)) +
-                            ")"
-                          : ""}
+                      <Text style={{ color: theme.text, marginLeft: 4 }}>
+                        {
+                          liveUsers?.filter((u: any) => u.type === "spectator")
+                            .length
+                        }
                       </Text>
+                      <FontAwesome5 size={12} color={theme.text} name="users" />
                     </View>
-                  );
-                })}
-              </View>
-            </View>
-            <View
-              style={{
-                width: "100%",
-                alignItems: "center",
-                gap: 8,
-                marginTop: 12,
-              }}
-            >
-              {doorReview.private.value &&
-                !currentUser?.admin.active &&
-                doorReview?.admin?.founder?.id !== currentUser?._id && (
-                  <View style={{ alignItems: "center", gap: 8, width: "100%" }}>
-                    <View
-                      style={{
-                        width: "100%",
-                        alignItems: "center",
-                        gap: 16,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: theme.text,
-                          fontSize: 18,
-                          fontWeight: 500,
-                        }}
-                      >
-                        {activeLanguage?.code}
-                      </Text>
-                      <View style={{ width: "100%" }}>
-                        <TextInput
-                          placeholder={activeLanguage?.code}
-                          placeholderTextColor={theme.text}
-                          maxLength={8}
-                          value={pinCodeInput}
-                          onChangeText={setDoorReviewInput}
+                  ) : (
+                    <MaterialCommunityIcons
+                      name="eye-off"
+                      size={18}
+                      color={theme.text}
+                      style={{ marginTop: 8 }}
+                    />
+                  )}
+                </View>
+
+                <View
+                  style={{
+                    height: 1,
+                    width: "100%",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    marginTop: 16,
+                  }}
+                />
+                <Text
+                  style={{
+                    color: theme.text,
+                    fontSize: 16,
+                    fontWeight: 500,
+                    marginVertical: 12,
+                    marginLeft: 4,
+                  }}
+                >
+                  {activeLanguage?.roles}:
+                </Text>
+                {loadingRoles && (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      flexWrap: "wrap",
+                      gap: 12,
+                      marginTop: 18,
+                    }}
+                  >
+                    {doorReview.roles.map((role: any, index: number) => {
+                      const roleImage: any = roleImageGenerator({
+                        role,
+                        language,
+                      });
+
+                      return (
+                        <View
+                          key={index}
                           style={{
-                            backgroundColor: "transparent",
-                            color: theme.active,
-                            borderColor: "rgba(255,255,255,0.1)",
-                            borderWidth: 1.5,
-                            height: 56,
-                            borderRadius: 12,
-                            paddingLeft: 16,
+                            width: "22.2%",
+                            height: 120,
+                            borderRadius: 8,
+                            alignItems: "center",
+                            justifyContent: "center",
+                            position: "relative",
                           }}
-                        />
-                      </View>
-                    </View>
+                        >
+                          <View
+                            style={{
+                              overflow: "hidden",
+                              width: "100%",
+                              height: 150,
+                            }}
+                          >
+                            <FlipCard
+                              img={roleImage}
+                              item={role}
+                              sizes={{ width: "100%", height: 120 }}
+                              from="door-review"
+                            />
+                          </View>
+                        </View>
+                      );
+                    })}
                   </View>
                 )}
-
-              <Button
-                title={(() => {
-                  if (currentUser?._id !== doorReview?.admin.founder.id) {
-                    if (gameLevel?.status === "In Play") {
-                      return activeLanguage?.playingNow;
-                    } else if (
-                      gameLevel?.status !== "In Play" &&
-                      liveUsers?.filter((u: any) => u.type === "player")
-                        .length === doorReview?.options.maxPlayers
-                    ) {
-                      return activeLanguage?.room_full;
-                    } else {
-                      return activeLanguage?.join_as_player;
-                    }
-                  } else {
-                    if (currentUser?.vip?.active) {
-                      return <Text>{activeLanguage?.open}</Text>;
-                    } else {
-                      return (
-                        <Text>
-                          {activeLanguage?.open} 2{" "}
-                          <FontAwesome5 name="coins" size={14} color="white" />
-                        </Text>
-                      );
-                    }
-                  }
-                })()}
+              </ScrollView>
+              <View
                 style={{
-                  backgroundColor: theme.active,
-                  color: "white",
                   width: "100%",
+                  alignItems: "center",
+                  gap: 8,
+                  marginTop: 12,
                 }}
-                disabled={
-                  gameLevel?.status === "In Play" ||
-                  liveUsers?.filter((u: any) => u.type === "player").length ===
-                    doorReview?.options.maxPlayers
-                }
-                loading={loading}
-                onPressFunction={onPressFunction}
-              />
+              >
+                {doorReview.private.value &&
+                  !currentUser?.admin.active &&
+                  doorReview?.admin?.founder?.id !== currentUser?._id && (
+                    <View
+                      style={{ alignItems: "center", gap: 8, width: "100%" }}
+                    >
+                      <View
+                        style={{
+                          width: "100%",
+                          alignItems: "center",
+                          gap: 16,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: theme.text,
+                            fontSize: 18,
+                            fontWeight: 500,
+                          }}
+                        >
+                          {activeLanguage?.code}
+                        </Text>
+                        <View style={{ width: "100%" }}>
+                          <TextInput
+                            placeholder={activeLanguage?.code}
+                            placeholderTextColor={theme.text}
+                            maxLength={8}
+                            value={pinCodeInput}
+                            onChangeText={setDoorReviewInput}
+                            style={{
+                              backgroundColor: "transparent",
+                              color: theme.active,
+                              borderColor: "rgba(255,255,255,0.1)",
+                              borderWidth: 1.5,
+                              height: 56,
+                              borderRadius: 12,
+                              paddingLeft: 16,
+                            }}
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  )}
 
-              {doorReview?.spectatorMode &&
-                doorReview?.admin.founder.id !== currentUser?._id && (
-                  <Button
-                    title={activeLanguage?.join_as_spectator}
-                    style={{
-                      backgroundColor: theme.text,
-                      color: "white",
-                      width: "100%",
-                    }}
-                    loading={loadingSpectator}
-                    onPressFunction={() => {
-                      if (
-                        doorReview?.admin?.founder?.id !== currentUser?._id &&
-                        !currentUser?.admin.active
+                <Button
+                  title={(() => {
+                    if (currentUser?._id !== doorReview?.admin.founder.id) {
+                      if (gameLevel?.status === "In Play") {
+                        return activeLanguage?.playingNow;
+                      } else if (
+                        gameLevel?.status !== "In Play" &&
+                        liveUsers?.filter((u: any) => u.type === "player")
+                          .length === doorReview?.options.maxPlayers
                       ) {
-                        if (
-                          (doorReview?.private.value &&
-                            pinCodeInput === doorReview?.private.code) ||
-                          !doorReview?.private.value
-                        ) {
-                          CheckRoom("spectator", "");
-                        } else {
-                          alert("Wrong Pin Code");
-                        }
+                        return activeLanguage?.room_full;
                       } else {
-                        CheckRoom("spectator", "");
+                        return activeLanguage?.join_as_player;
                       }
-                    }}
-                  />
-                )}
-            </View>
+                    } else {
+                      if (currentUser?.vip?.active) {
+                        return <Text>{activeLanguage?.open}</Text>;
+                      } else {
+                        return (
+                          <Text>
+                            {activeLanguage?.open} 2{" "}
+                            <FontAwesome5
+                              name="coins"
+                              size={14}
+                              color="white"
+                            />
+                          </Text>
+                        );
+                      }
+                    }
+                  })()}
+                  style={{
+                    backgroundColor: theme.active,
+                    color: "white",
+                    width: "100%",
+                  }}
+                  disabled={
+                    gameLevel?.status === "In Play" ||
+                    liveUsers?.filter((u: any) => u.type === "player")
+                      .length === doorReview?.options.maxPlayers
+                  }
+                  loading={loading}
+                  onPressFunction={onPressFunction}
+                />
+
+                {doorReview?.spectatorMode &&
+                  doorReview?.admin.founder.id !== currentUser?._id && (
+                    <Button
+                      title={activeLanguage?.join_as_spectator}
+                      style={{
+                        backgroundColor: theme.text,
+                        color: "white",
+                        width: "100%",
+                      }}
+                      loading={loadingSpectator}
+                      onPressFunction={() => {
+                        if (
+                          doorReview?.admin?.founder?.id !== currentUser?._id &&
+                          !currentUser?.admin.active
+                        ) {
+                          if (
+                            (doorReview?.private.value &&
+                              pinCodeInput === doorReview?.private.code) ||
+                            !doorReview?.private.value
+                          ) {
+                            CheckRoom("spectator", "");
+                          } else {
+                            alert("Wrong Pin Code");
+                          }
+                        } else {
+                          CheckRoom("spectator", "");
+                        }
+                      }}
+                    />
+                  )}
+              </View>
+            </BlurView>
           </Animated.View>
         </KeyboardAvoidingView>
       </BlurView>
-      {openRoleInfo.value && (
-        <BlurView
-          intensity={120}
-          tint="dark"
-          style={{
-            position: "absolute",
-            top: 0,
-            zIndex: 50,
-            height: "100%",
-            width: "100%",
-            paddingTop: 120,
-          }}
-        >
-          <FontAwesome
-            name="close"
-            size={34}
-            color={theme.active}
-            style={{ position: "absolute", top: 48, right: 16, zIndex: 60 }}
-            onPress={() => {
-              setOpenRoleInfo({ value: null });
-              if (haptics) {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-              }
-            }}
-          />
-
-          <RoleInfo
-            openRoleInfo={openRoleInfo}
-            setOpenRoleInfo={setOpenRoleInfo}
-          />
-        </BlurView>
-      )}
 
       {deleteConfirm && (
         <DeleteConfirm
@@ -865,9 +897,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     top: 0,
     zIndex: 50,
-    paddingTop: 40,
-    paddingHorizontal: 8,
-    gap: 8,
   },
   header: {
     width: "100%",

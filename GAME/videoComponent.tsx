@@ -1,26 +1,38 @@
-import { useEffect } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Pressable, StyleSheet, View, Text } from "react-native";
 import { RTCView } from "react-native-webrtc";
-import { useAppContext } from "../context/app";
-import { useAuthContext } from "../context/auth";
 import { useVideoConnectionContext } from "../context/videoConnection";
+import { useAuthContext } from "../context/auth";
+import InCallManager from "react-native-incall-manager";
+import { Audio } from "expo-av";
 
-const VideoComponent = ({ userId, setOpenVideo }: any) => {
+const VideoComponent = ({
+  userId,
+  setOpenVideo,
+  game,
+  currentUserRole,
+  user,
+}: any) => {
   const { localStream, remoteStreams, setLoading } =
     useVideoConnectionContext();
   const { currentUser } = useAuthContext();
-  const { theme } = useAppContext();
 
   const userStream = remoteStreams?.find(
     (stream: any) => stream.userId === userId
   );
 
-  console.log(userStream);
-  if (userStream) {
-    console.log("user stream..........");
-    console.log(userStream?.streams?.toURL());
-  }
-  console.log(currentUser?.name);
+  useEffect(() => {
+    if (InCallManager) {
+      // Start InCallManager and enable speaker on mount
+      InCallManager.start({ media: "video" }); // or "audio" for audio-only
+      InCallManager.setSpeakerphoneOn(true); // Enable speaker
+
+      return () => {
+        // Stop InCallManager on unmount
+        InCallManager.stop();
+      };
+    }
+  }, []);
 
   useEffect(() => {
     setTimeout(() => {
@@ -34,16 +46,25 @@ const VideoComponent = ({ userId, setOpenVideo }: any) => {
 
   return (
     <Pressable
-      style={styles.container}
+      style={[
+        styles.container,
+        {
+          display:
+            game?.value !== "Night" ||
+            (game?.value === "Night" && currentUserRole?.includes("mafia"))
+              ? "flex"
+              : "none",
+        },
+      ]}
       onPress={() => {
         if (userStream) {
-          setOpenVideo(userStream?.streams?.toURL());
+          setOpenVideo({ video: userStream.streams?.toURL(), user });
         } else {
-          setOpenVideo(localStream?.toURL());
+          setOpenVideo({ video: localStream?.toURL(), user });
         }
       }}
     >
-      {/* ლოკალური ნაკადი */}
+      {/* Local Stream */}
       {localStream && currentUser?._id === userId && (
         <RTCView
           key="local"
@@ -53,11 +74,11 @@ const VideoComponent = ({ userId, setOpenVideo }: any) => {
         />
       )}
 
-      {/* დისტანციური ნაკადი */}
+      {/* Remote Stream */}
       {userStream && (
         <RTCView
           key={`remote-${userId}`}
-          streamURL={userStream?.streams?.toURL()}
+          streamURL={userStream.streams?.toURL()}
           style={styles.video}
           objectFit="cover"
         />
@@ -80,6 +101,18 @@ const styles = StyleSheet.create({
   video: {
     width: "100%",
     height: "100%",
+  },
+  audioIndicator: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    borderRadius: 20,
+    padding: 5,
+  },
+  audioText: {
+    color: "white",
+    fontSize: 16,
   },
 });
 

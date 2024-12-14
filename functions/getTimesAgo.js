@@ -1,4 +1,7 @@
+import { useAppContext } from "../context/app";
+
 export default function GetTimesAgo(date, justNow) {
+  const { activeLanguage } = useAppContext();
   if (typeof date === "string") {
     date = new Date(date);
   }
@@ -19,21 +22,21 @@ export default function GetTimesAgo(date, justNow) {
     return "Just now";
   } else if (timeDiff < hour) {
     const minutesAgo = Math.floor(timeDiff / minute);
-    return `${minutesAgo}min.`;
+    return `${minutesAgo}${activeLanguage?.min}`;
   } else if (timeDiff < day) {
     const hoursAgo = Math.floor(timeDiff / hour);
-    return `${hoursAgo}h.`;
+    return `${hoursAgo}${activeLanguage?.h}`;
   } else if (timeDiff < week) {
     const daysAgo = Math.floor(timeDiff / day);
-    return `${daysAgo}d.`;
+    return `${daysAgo}${activeLanguage?.d}`;
   } else if (timeDiff < month) {
     const weeksAgo = Math.floor(timeDiff / week);
-    return `${weeksAgo}w.`;
+    return `${weeksAgo}${activeLanguage?.w}`;
   } else if (timeDiff < year) {
     const monthsAgo = Math.floor(timeDiff / month);
-    return `${monthsAgo}mo.`;
+    return `${monthsAgo}${activeLanguage?.m}`;
   } else {
     const yearsAgo = Math.floor(timeDiff / year);
-    return `${yearsAgo}y.`;
+    return `${yearsAgo}${activeLanguage?.y}`;
   }
 }

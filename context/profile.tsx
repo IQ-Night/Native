@@ -1,12 +1,12 @@
 import {
   Entypo,
-  FontAwesome,
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import * as Haptics from "expo-haptics";
+import * as Notifications from "expo-notifications";
 import {
   ReactNode,
   createContext,
@@ -19,6 +19,7 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Linking,
   Platform,
   Pressable,
   Switch,
@@ -31,8 +32,7 @@ import { useAppContext } from "./app";
 import { useAuthContext } from "./auth";
 import { useContentContext } from "./content";
 import { useNotificationsContext } from "./notifications";
-import { useNavigationState, useRoute } from "@react-navigation/native";
-import BgSound from "../components/backgroundMusic";
+import { useGameContext } from "./game";
 
 /**
  * Profile context state
@@ -60,6 +60,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     bgSound,
     setBgSound,
     language,
+    appStatePosition,
   } = useAppContext();
 
   /**
@@ -70,6 +71,10 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
    * Content context
    */
   const { rerenderProfile, setRerenderProfile } = useContentContext();
+  /**
+   * Game context
+   */
+  const { socket } = useGameContext();
   /**
    * Notifications context
    */
@@ -89,7 +94,15 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
         apiUrl +
           "/api/v1/users/" +
           currentUser?._id +
-          `?editType=${data?.name ? "name" : "country"}`,
+          `?editType=${
+            data?.name
+              ? "name"
+              : data?.country
+              ? "country"
+              : data?.country
+              ? "birthday"
+              : "language"
+          }`,
         data
       );
       if (response.data.status === "success") {
@@ -118,6 +131,16 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
             setCurrentUser((prev: any) => ({
               ...prev,
               country: data?.country,
+            }));
+          } else if (data?.language) {
+            setCurrentUser((prev: any) => ({
+              ...prev,
+              language: data?.language,
+            }));
+          } else if (data?.birthday) {
+            setCurrentUser((prev: any) => ({
+              ...prev,
+              birthday: data?.birthday,
             }));
           }
         }, 200);
@@ -216,9 +239,65 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
   };
 
   /**
-   * Profile items
+   * Push notifications
    */
 
+  const changeNotifValue = async (token: string, active: boolean) => {
+    try {
+      const response = await axios.patch(
+        `${apiUrl}/api/v1/users/${currentUser?._id}`,
+        {
+          pushNotificationsToken: active ? token : "",
+          pushNotifications: active,
+        }
+      );
+      if (response.data.status === "success") {
+        setCurrentUser((prev: any) => ({ ...prev, pushNotifications: active }));
+      }
+    } catch (error: any) {
+      console.log("change notif value error");
+      console.log(error.response?.data);
+    }
+  };
+
+  const navigateToSettings = async () => {
+    if (Platform.OS === "ios") {
+      // iOS-specific settings navigation
+      Linking.openURL("app-settings:");
+    } else {
+      // Android-specific settings navigation
+      Linking.openSettings();
+    }
+  };
+  const checkNotificationStatus = async () => {
+    const settings = await Notifications.getPermissionsAsync();
+    if (settings.granted) {
+      if (!currentUser?.pushNotifications) {
+        const token = (await Notifications.getExpoPushTokenAsync()).data;
+        changeNotifValue(token, true);
+      }
+    } else {
+      if (currentUser?.pushNotifications) {
+        changeNotifValue("", false);
+      }
+      console.log("Notifications are disabled or permission is not granted");
+    }
+  };
+  useEffect(() => {
+    const monitorAppState = async () => {
+      await checkNotificationStatus();
+    };
+
+    monitorAppState();
+  }, [appStatePosition]);
+
+  const handleToggleSwitch = async () => {
+    // Navigate to app settings
+    navigateToSettings();
+  };
+  /**
+   * Profile items
+   */
   const items = [
     {
       value: "Background Music",
@@ -280,6 +359,37 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
         />
       ),
       type: "screen",
+    },
+    {
+      value: "Push Notifications",
+      label: activeLanguage?.pushNotifications,
+      icon: (
+        <MaterialIcons
+          name="notifications-active"
+          size={22}
+          color={theme.text}
+          style={{ position: "relative", bottom: 1 }}
+        />
+      ),
+      type: "switch",
+      switch: (
+        <View
+          style={{
+            width: 60,
+            marginLeft: "auto",
+            alignItems: "center",
+            position: "absolute",
+            right: 0,
+          }}
+        >
+          <Switch
+            trackColor={{ false: theme.background2, true: theme.active }}
+            value={currentUser?.pushNotifications}
+            style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+            onValueChange={handleToggleSwitch} // Control state and navigate
+          />
+        </View>
+      ),
     },
     {
       value: "Assets",
@@ -411,6 +521,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
         </View>
       ),
     },
+
     {
       value: "Haptics",
       label: activeLanguage?.haptics,
@@ -462,7 +573,9 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
                 }
               }}
             >
-              <Text style={{ color: theme.active }}>Haptics</Text>
+              <Text style={{ color: theme.active }}>
+                {activeLanguage?.haptics}
+              </Text>
             </Pressable>
           )}
         </View>
@@ -475,9 +588,9 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
       icon: (
         <MaterialCommunityIcons
           name="file-document-multiple"
-          size={22}
+          size={20}
           color={theme.text}
-          style={{ position: "relative", bottom: 1 }}
+          style={{ position: "relative", bottom: 1, marginLeft: 2 }}
         />
       ),
       type: "screen",
@@ -499,9 +612,9 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
       value: "About",
       label: activeLanguage?.about,
       icon: (
-        <MaterialIcons
+        <Entypo
           name="info"
-          size={22}
+          size={20}
           color={theme.text}
           style={{ position: "relative", bottom: 1 }}
         />
@@ -521,6 +634,33 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
       ),
       type: "screen",
     },
+    {
+      value: "Terms & Rules",
+      label: activeLanguage?.terms,
+      icon: (
+        <MaterialIcons
+          name="info"
+          size={22}
+          color={theme.text}
+          style={{ position: "relative", bottom: 1 }}
+        />
+      ),
+      type: "screen",
+    },
+    {
+      value: "Privacy",
+      label: activeLanguage?.privacy,
+      icon: (
+        <MaterialIcons
+          name="privacy-tip"
+          size={22}
+          color={theme.text}
+          style={{ position: "relative", bottom: 1 }}
+        />
+      ),
+      type: "screen",
+    },
+
     // {
     //   value: "Delete Account",
     //   label: "Delete Account",
@@ -547,9 +687,23 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
       ),
       type: "",
       function: async () => {
-        await AsyncStorage.removeItem("IQ-Night:jwtToken");
-        await AsyncStorage.removeItem("IQ-Night:jwtRefreshToken");
-        setCurrentUser(null);
+        try {
+          // სოკეტიდან გათიშვა და მიზეზის გადაცემა
+          if (socket) {
+            socket.emit("client-logout", {
+              reason: "logout",
+              userId: currentUser?._id,
+            }); // Emit logout event with reason
+          }
+          // ამოშალე JWT ტოკენები
+          await AsyncStorage.removeItem("IQ-Night:jwtToken");
+          await AsyncStorage.removeItem("IQ-Night:jwtRefreshToken");
+
+          // მომხმარებლის მონაცემების განულება
+          setCurrentUser(null);
+        } catch (error) {
+          console.error("Logout failed:", error);
+        }
       },
     },
   ];

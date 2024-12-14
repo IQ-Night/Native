@@ -77,7 +77,11 @@ const ScreenManager = () => {
    * Admin context
    */
 
-  const { adminNotifications, GetAdminNotifications } = useAdminContext();
+  const { reportsNotifications, ticketsNotifications, GetAdminNotifications } =
+    useAdminContext();
+
+  const totalAdminNotifications =
+    reportsNotifications?.length + ticketsNotifications?.length;
 
   const {
     setRerenderRooms,
@@ -118,19 +122,19 @@ const ScreenManager = () => {
       if (routeName !== "Clans" && routeName !== "Clans List") {
         return;
       }
-      if (scrollYClans > 0) {
+      if (scrollYClans?.current > 0) {
         scrollToTop("Clans");
       } else {
         setRerenderClans(true);
       }
     } else if (focused && tab.includes("Store")) {
-      if (scrollYStore > 0) {
+      if (scrollYStore?.current > 0) {
         scrollToTop("Store");
       } else {
         setRerenderProducts(true);
       }
     } else if (focused && tab.includes("Liderboard")) {
-      if (scrollYLiderBoard > 0) {
+      if (scrollYLiderBoard?.current > 0) {
         scrollToTop("Liderboard");
       } else {
         setRerenderLiderBoard(true);
@@ -139,7 +143,7 @@ const ScreenManager = () => {
       if (routeName !== "Profile" && routeName !== "Profile-Stack") {
         return;
       }
-      if (scrollYProfile > 0) {
+      if (scrollYProfile?.current > 0) {
         scrollToTop("Profile");
       } else {
         GetUser();
@@ -254,9 +258,9 @@ const ScreenManager = () => {
                 case "Admin":
                   return (
                     <View>
-                      {adminNotifications?.length > 0 && (
+                      {totalAdminNotifications > 0 && (
                         <Badge
-                          value={adminNotifications?.length}
+                          value={totalAdminNotifications}
                           status="success"
                           badgeStyle={{ backgroundColor: theme.active }}
                           containerStyle={{

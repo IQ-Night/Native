@@ -175,7 +175,9 @@ const Chats = () => {
                   borderColor:
                     chat?.lastMessage?.seen?.find(
                       (s: any) => s === chat?.lastMessage?.receiver?.userId
-                    ) || chat?.lastMessage?.sender?.userId === currentUser?._id
+                    ) ||
+                    chat?.lastMessage?.sender?.userId === currentUser?._id ||
+                    !chat?.lastMessage
                       ? "rgba(255,255,255,0.05)"
                       : theme.active,
                 }}
@@ -206,7 +208,9 @@ const Chats = () => {
                         chat?.lastMessage?.seen?.find(
                           (s: any) => s === chat?.lastMessage?.receiver?.userId
                         ) ||
-                        chat?.lastMessage?.sender?.userId === currentUser?._id
+                        chat?.lastMessage?.sender?.userId ===
+                          currentUser?._id ||
+                        !chat?.lastMessage
                           ? theme.text
                           : theme?.active,
                     }}
@@ -214,12 +218,7 @@ const Chats = () => {
                     {chat?.type?.value === "user" ? (
                       user?.name
                     ) : (
-                      <Text>
-                        <Text style={{ color: theme.active }}>
-                          {activeLanguage?.clan}:
-                        </Text>{" "}
-                        {chat?.type?.clan?.title}{" "}
-                      </Text>
+                      <Text>{chat?.type?.clan?.title} </Text>
                     )}
                   </Text>
                   {chat?.type?.value === "user" && (

@@ -125,7 +125,6 @@ const Chat = ({
   useEffect(() => {
     const onKeyboardShow = (e: any) => {
       const height = e.endCoordinates?.height || 0;
-      console.log("Keyboard Height:", height); // Debug log
       setKeyboardHeight(height);
     };
 

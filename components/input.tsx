@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 3,
+    width: "100%",
   },
   input: {
     flex: 1,
@@ -100,6 +101,8 @@ const styles = StyleSheet.create({
     height: "100%",
     padding: 15,
     borderRadius: 10,
+    position: "relative",
+    bottom: 0,
   },
   icon: {
     marginLeft: 10,

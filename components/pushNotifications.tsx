@@ -1,46 +1,32 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { useEffect, useRef, useState } from "react";
 import { Platform, View } from "react-native";
-import { usePushNotifications } from "../context/pushNotifications";
-import Constants from "expo-constants";
-import axios from "axios";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
-import CryptoJS from "crypto-js";
-
-// Set notification handler
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
 
 export default function PushNotificationsActivation() {
-  const { setActive } = usePushNotifications();
   const [notification, setNotification] =
     useState<Notifications.Notification | null>(null);
-  const notificationListener = useRef<Notifications.Subscription | null>(null);
-  const responseListener = useRef<Notifications.Subscription | null>(null);
-  const { apiUrl } = useAppContext();
-  const { currentUser } = useAuthContext();
+  const notificationListener = useRef<any>(null);
+  const responseListener = useRef<any>(null);
+  const { apiUrl, appStatePosition } = useAppContext();
+  const { currentUser, setCurrentUser } = useAuthContext();
 
   // Change notification value
   const changeNotifValue = async (token: string) => {
-    // Hash the token with SHA-256
-    const hashedToken = CryptoJS.SHA256(token).toString();
     try {
       const response = await axios.patch(
         `${apiUrl}/api/v1/users/${currentUser?._id}`,
         {
-          pushNotificationsToken: hashedToken,
+          pushNotificationsToken: token,
+          pushNotifications: true,
         }
       );
       if (response.data.status === "success") {
-        console.log("push token has been set to user");
+        setCurrentUser((prev: any) => ({ ...prev, pushNotifications: true }));
       }
     } catch (error: any) {
       console.log("change notif value error");
@@ -48,22 +34,24 @@ export default function PushNotificationsActivation() {
     }
   };
 
+  // Set notification handler
+  Notifications.setNotificationHandler({
+    handleNotification: async () => {
+      return {
+        shouldShowAlert: appStatePosition === "active" ? false : true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+      };
+    },
+  });
   useEffect(() => {
-    registerForPushNotificationsAsync().then(async (token) => {
-      console.log(token);
-      if (token) {
-        await AsyncStorage.setItem("IQ-Night:pushNotifications", "true");
-        await AsyncStorage.setItem(
-          "IQ-Night:pushNotificationsToken",
-          JSON.stringify(token)
-        );
-        changeNotifValue(token);
-        setActive(true);
-      } else {
-        await AsyncStorage.setItem("IQ-Night:pushNotifications", "false");
-        setActive(false);
-      }
-    });
+    if (currentUser?._id) {
+      registerForPushNotificationsAsync().then(async (token) => {
+        if (token) {
+          changeNotifValue(token);
+        }
+      });
+    }
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener(
@@ -89,7 +77,7 @@ export default function PushNotificationsActivation() {
         Notifications.removeNotificationSubscription(responseListener.current);
       }
     };
-  }, []);
+  }, [currentUser?._id]);
 
   return <View></View>;
 }

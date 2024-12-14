@@ -23,7 +23,7 @@ import { useContentContext } from "../../context/content";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
-const SendGift = ({ openState, setOpenState, user }: any) => {
+const SendGift = ({ openState, setOpenState, user, setUser }: any) => {
   const { theme, haptics, apiUrl, setAlert, activeLanguage } = useAppContext();
   const { currentUser, setCurrentUser } = useAuthContext();
   const { setConfirmAction } = useContentContext();
@@ -76,41 +76,42 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
   useEffect(() => {
     GetAssets();
   }, []);
-
+  console.log(user?.vip);
   /**
    * Sending
    */
   const [selectGift, setSelectGift] = useState<any>(null);
 
-  const SendGift = async () => {
-    if (selectGift?.type === "money") {
+  const Send = async () => {
+    console.log(selectGift);
+    if (selectGift?.type === "vip") {
       setSelectGift(null);
-      alert("Buy Vip and send gift");
       try {
         const newGift = {
           sender: currentUser?._id,
           receiver: user?._id,
           gift: selectGift,
         };
-        const response = await axios.patch(apiUrl + "/api/v1/gifts", newGift);
+        const response = await axios.patch(
+          apiUrl + "/api/v1/sendGift",
+          newGift
+        );
         if (response.data.status === "success") {
           setAlert({
             active: true,
-            text: "Gift sent successfully!",
+            text: activeLanguage?.giftSent,
             type: "success",
           });
-          setCurrentUser((prev: any) => ({
-            ...prev,
-            coins: {
-              ...prev.coins,
-              total: prev.coins.total - response.data.data.price,
-            },
-          }));
         }
       } catch (error: any) {
+        setAlert({
+          active: true,
+          text: error.response.data.message,
+          type: "error",
+        });
         console.log(error.response.data.message);
       }
-    } else {
+    } else if (selectGift.type === "asset") {
       try {
         const newGift = {
           sender: currentUser?._id,
@@ -129,8 +130,52 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
               total: prev.coins.total - parseInt(selectGift?.price),
             },
           }));
+
+          setAlert({
+            active: true,
+            text: activeLanguage?.giftSent,
+            type: "success",
+          });
         }
       } catch (error: any) {
+        setAlert({
+          active: true,
+          text: error.response.data.message,
+          type: "error",
+        });
+        console.log(error.response.data.message);
+      }
+    } else if (selectGift.type === "coins") {
+      try {
+        const newGift = {
+          sender: currentUser?._id,
+          receiver: user?._id,
+          gift: selectGift,
+        };
+        const response = await axios.patch(
+          apiUrl + "/api/v1/sendGift",
+          newGift
+        );
+        if (response.data.status === "success") {
+          setCurrentUser((prev: any) => ({
+            ...prev,
+            coins: {
+              ...prev.coins,
+              total: prev.coins.total - parseInt(selectGift?.price),
+            },
+          }));
+          setAlert({
+            active: true,
+            text: activeLanguage?.giftSent,
+            type: "success",
+          });
+        }
+      } catch (error: any) {
+        setAlert({
+          active: true,
+          text: error.response.data.message,
+          type: "error",
+        });
         console.log(error.response.data.message);
       }
     }
@@ -213,7 +258,7 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
           contentContainerStyle={styles.gridContainer}
         >
           <View style={{ flex: 1, marginTop: 8, gap: 4 }}>
-            <Text
+            {/* <Text
               style={{
                 fontSize: 18,
                 fontWeight: 600,
@@ -257,7 +302,7 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
                   })
                 )}
               </View>
-            )}
+            )} */}
 
             <Text
               style={{
@@ -325,16 +370,21 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
                 })
               )}
             </View>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: 600,
-                color: theme.text,
-                marginVertical: 4,
-              }}
-            >
-              {activeLanguage?.explore_assets}
-            </Text>
+            {products.some(
+              (item: any) => !assets?.find((a: any) => a._id === item._id)
+            ) && (
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "600",
+                  color: theme.text,
+                  marginVertical: 4,
+                }}
+              >
+                {activeLanguage?.explore_assets}
+              </Text>
+            )}
+
             <View style={styles.gridContainer}>
               {loading ? (
                 <View style={{ width: "100%", alignItems: "center" }}>
@@ -346,12 +396,12 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
                 </View>
               ) : (
                 products.map((item: any, index: number) => {
-                  if (assets?.find((a: any) => a._id === item?._id)) {
-                    return;
+                  if (assets?.find((a: any) => a._id === item._id)) {
+                    return null; // თუ ელემენტი უკვე არსებობს assets-ში, არ დააბრუნოს არაფერი
                   }
                   return (
                     <AssetItem
-                      key={index}
+                      key={item._id || index} // უკეთესია _id გამოიყენოთ, თუ უნიკალურია
                       item={item}
                       selectGift={selectGift}
                       setSelectGift={setSelectGift}
@@ -367,11 +417,11 @@ const SendGift = ({ openState, setOpenState, user }: any) => {
           onPressFunction={() =>
             setConfirmAction({
               active: true,
-              text: "Confirm send gift!",
+              text: activeLanguage?.giftSent,
               price: selectGift?.price,
-              Function: () => SendGift(),
+              Function: () => Send(),
               money: selectGift?.moneyType,
-              successText: "Gift sent successfully!",
+              successText: activeLanguage?.giftSent,
             })
           }
           title={activeLanguage?.send}
@@ -578,106 +628,106 @@ const CoinItem = ({
   );
 };
 
-const VipItem = ({
-  item,
-  state,
-  setAvatars,
-  selectGift,
-  setSelectGift,
-}: any) => {
-  const { theme, haptics, activeLanguage } = useAppContext();
-  const navigation: any = useNavigation();
-  /**
-   * Auth context
-   */
-  const { currentUser } = useAuthContext();
+// const VipItem = ({
+//   item,
+//   state,
+//   setAvatars,
+//   selectGift,
+//   setSelectGift,
+// }: any) => {
+//   const { theme, haptics, activeLanguage } = useAppContext();
+//   const navigation: any = useNavigation();
+//   /**
+//    * Auth context
+//    */
+//   const { currentUser } = useAuthContext();
 
-  return (
-    <Pressable
-      onPress={() => {
-        if (haptics) {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-        }
-        if (item === selectGift?.item) {
-          setSelectGift(null);
-        } else {
-          setSelectGift({
-            item: item,
-            price: (item.price + (item?.price / 100) * 5).toFixed(0),
-            type: "vip",
-            moneyType: "money",
-            vip: item,
-          });
-        }
-      }}
-      style={[
-        styles.gridItem,
-        {
-          height: 100,
-          padding: 6,
-          gap: 12,
-          justifyContent: "center",
-          alignItems: "center",
-          borderWidth: 2,
-          borderColor:
-            item === selectGift?.item ? theme.active : "rgba(255,255,255,0.1)",
-        },
-      ]}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: 50,
-          padding: 2,
-          paddingHorizontal: 8,
-        }}
-      >
-        <MaterialIcons name="diamond" size={16} color={theme.active} />
-        <Text
-          style={{
-            color: "white",
-            marginLeft: 4,
-            fontWeight: "500",
-            fontSize: 16,
-          }}
-        >
-          {item?.duration?.includes("Weeks")
-            ? item.duration.split(" ")[0] + " " + activeLanguage?.weeks
-            : item?.duration?.includes("Week")
-            ? item.duration.split(" ")[0] + " " + activeLanguage?.week
-            : item?.duration?.includes("Months")
-            ? item.duration.split(" ")[0] + " " + activeLanguage?.months
-            : item?.duration?.includes("Month")
-            ? item.duration.split(" ")[0] + " " + activeLanguage?.month
-            : activeLanguage?.annually}
-        </Text>
-      </View>
+//   return (
+//     <Pressable
+//       onPress={() => {
+//         if (haptics) {
+//           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+//         }
+//         if (item === selectGift?.item) {
+//           setSelectGift(null);
+//         } else {
+//           setSelectGift({
+//             item: item,
+//             price: (item.price + (item?.price / 100) * 5).toFixed(0),
+//             type: "vip",
+//             moneyType: "money",
+//             vip: item,
+//           });
+//         }
+//       }}
+//       style={[
+//         styles.gridItem,
+//         {
+//           height: 100,
+//           padding: 6,
+//           gap: 12,
+//           justifyContent: "center",
+//           alignItems: "center",
+//           borderWidth: 2,
+//           borderColor:
+//             item === selectGift?.item ? theme.active : "rgba(255,255,255,0.1)",
+//         },
+//       ]}
+//     >
+//       <View
+//         style={{
+//           flexDirection: "row",
+//           alignItems: "center",
+//           justifyContent: "center",
+//           borderRadius: 50,
+//           padding: 2,
+//           paddingHorizontal: 8,
+//         }}
+//       >
+//         <MaterialIcons name="diamond" size={16} color={theme.active} />
+//         <Text
+//           style={{
+//             color: "white",
+//             marginLeft: 4,
+//             fontWeight: "500",
+//             fontSize: 16,
+//           }}
+//         >
+//           {item?.duration?.includes("Weeks")
+//             ? item.duration.split(" ")[0] + " " + activeLanguage?.weeks
+//             : item?.duration?.includes("Week")
+//             ? item.duration.split(" ")[0] + " " + activeLanguage?.week
+//             : item?.duration?.includes("Months")
+//             ? item.duration.split(" ")[0] + " " + activeLanguage?.months
+//             : item?.duration?.includes("Month")
+//             ? item.duration.split(" ")[0] + " " + activeLanguage?.month
+//             : activeLanguage?.annually}
+//         </Text>
+//       </View>
 
-      <Text
-        style={{
-          color: "green",
-          marginLeft: 4,
-          fontWeight: 600,
-          fontSize: 16,
-        }}
-      >
-        {(item.price + (item?.price / 100) * 5).toFixed(0)}$
-      </Text>
-      <Text
-        style={{
-          color: "white",
-          marginLeft: 4,
-          fontWeight: "500",
-          fontSize: 12,
-        }}
-      >
-        + 5% Tax
-      </Text>
-    </Pressable>
-  );
-};
+//       <Text
+//         style={{
+//           color: "green",
+//           marginLeft: 4,
+//           fontWeight: 600,
+//           fontSize: 16,
+//         }}
+//       >
+//         {(item.price + (item?.price / 100) * 5).toFixed(0)}USD
+//       </Text>
+//       <Text
+//         style={{
+//           color: "white",
+//           marginLeft: 4,
+//           fontWeight: "500",
+//           fontSize: 12,
+//         }}
+//       >
+//         + 5% Tax
+//       </Text>
+//     </Pressable>
+//   );
+// };
 
 const coins = [
   {
@@ -703,29 +753,25 @@ const coins = [
   },
 ];
 
-const vips = [
-  {
-    duration: "1 Week",
-    price: 7,
-  },
-  {
-    duration: "2 Weeks",
-    price: 12,
-  },
-  {
-    duration: "1 Month",
-    price: 20,
-  },
-  {
-    duration: "3 Months",
-    price: 50,
-  },
-  {
-    duration: "6 Months",
-    price: 80,
-  },
-  {
-    duration: "Annually",
-    price: 140,
-  },
-];
+// const vips = [
+//   {
+//     duration: "1 Week",
+//     price: 210,
+//   },
+//   {
+//     duration: "1 Month",
+//     price: 1500,
+//   },
+//   {
+//     duration: "3 Months",
+//     price: 50,
+//   },
+//   {
+//     duration: "6 Months",
+//     price: 80,
+//   },
+//   {
+//     duration: "Annually",
+//     price: 140,
+//   },
+// ];

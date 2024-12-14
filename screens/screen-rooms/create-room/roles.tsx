@@ -1,9 +1,11 @@
+import { FontAwesome5 } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
-import React from "react";
-import { roles } from "../../../context/rooms";
-import { FontAwesome5, FontAwesome6, MaterialIcons } from "@expo/vector-icons";
 import { useAppContext } from "../../../context/app";
 import { useAuthContext } from "../../../context/auth";
+import FlipCard from "../../../context/flipCard";
+import { roles } from "../../../context/rooms";
+import roleImageGenerator from "../../../functions/roleImageGenerator";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -11,7 +13,7 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo }: any) => {
   /**
    * App context
    */
-  const { theme, activeLanguage } = useAppContext();
+  const { theme, language, haptics } = useAppContext();
   /**
    * Auth context
    */
@@ -26,9 +28,16 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo }: any) => {
       }}
     >
       {roles.map((item: any, index: number) => {
+        const roleImage: any = roleImageGenerator({
+          role: item.value,
+          language,
+        });
         return (
           <Pressable
             onPress={() => {
+              if (haptics) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              }
               if (
                 roomState.roles.find((r: any) => r.value.includes(item.value))
               ) {
@@ -90,40 +99,29 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo }: any) => {
             key={index}
             style={{
               width: (SCREEN_WIDTH - 49) / 3,
-              height: 150,
-              backgroundColor: "#333",
-              borderRadius: 8,
+              height: 180,
+              borderRadius: 10,
               alignItems: "center",
               justifyContent: "center",
               position: "relative",
-              borderWidth: 2,
-              borderColor: roomState.roles.find(
-                (i: any) => i.value === item.value
-              )
-                ? theme.active
-                : "gray",
             }}
           >
-            <FontAwesome6
-              onPress={() => setOpenRoleInfo(item)}
-              name="circle-info"
-              size={18}
-              color={theme.text}
-              style={{ position: "absolute", top: 8, right: 8 }}
-            />
-            <Text>
-              {item.value === "mafia"
-                ? activeLanguage?.mafia
-                : item?.value === "citizen"
-                ? activeLanguage?.citizen
-                : item?.value === "doctor"
-                ? activeLanguage?.doctor
-                : item.value === "police"
-                ? activeLanguage?.police
-                : item?.value === "serial-killer"
-                ? activeLanguage?.serialKiller
-                : activeLanguage?.mafiaDon}
-            </Text>
+            <View
+              style={{
+                overflow: "hidden",
+                width: (SCREEN_WIDTH - 49) / 3,
+                height: 180,
+              }}
+            >
+              <FlipCard
+                img={roleImage}
+                setOpenRoleInfo={setOpenRoleInfo}
+                item={item}
+                roomState={roomState}
+                sizes={{ width: (SCREEN_WIDTH - 58) / 3, height: 180 }}
+              />
+            </View>
+
             {item.price && !currentUser?.vip?.active && (
               <View
                 style={{
@@ -140,14 +138,6 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo }: any) => {
                   {item.price}
                 </Text>
               </View>
-            )}
-            {roomState.roles.includes(item) && (
-              <MaterialIcons
-                name="done"
-                size={18}
-                color={theme.active}
-                style={{ position: "absolute", bottom: 8, right: 8 }}
-              />
             )}
           </Pressable>
         );

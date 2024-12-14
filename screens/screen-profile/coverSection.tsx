@@ -1,19 +1,10 @@
-import {
-  ImageBackground,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import React, { useEffect, useRef } from "react";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import Img from "../../components/image";
 import { useAppContext } from "../../context/app";
 import { useAuthContext } from "../../context/auth";
 import { useProfileContext } from "../../context/profile";
-import * as Haptics from "expo-haptics";
-import { BlurView } from "expo-blur";
-import axios from "axios";
-import Img from "../../components/image";
 
 const CoverSection = () => {
   /**

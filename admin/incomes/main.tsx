@@ -155,7 +155,9 @@ const Incomes = ({}: any) => {
                             marginBottom: 4,
                           }}
                         >
-                          <Text style={{ color: "green" }}>{item?.price}$</Text>
+                          <Text style={{ color: "green" }}>
+                            {item?.price}USD
+                          </Text>
                         </Text>
                         <Text
                           style={{

@@ -168,7 +168,6 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
       console.log("API delete error:", error?.response?.data?.message);
     }
   };
-
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, width: "100%" }}
@@ -182,16 +181,18 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
               activeLanguage?.edit_product}
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <Pressable
-              onPress={() => {
-                if (haptics) {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                }
-                openDeleteConfirm({ p: item });
-              }}
-            >
-              <MaterialIcons name="delete" color="red" size={24} />
-            </Pressable>
+            {item?._id !== "675055373c446fbb4c731e87" && (
+              <Pressable
+                onPress={() => {
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                  openDeleteConfirm({ p: item });
+                }}
+              >
+                <MaterialIcons name="delete" color="red" size={24} />
+              </Pressable>
+            )}
             <Ionicons
               onPress={() => {
                 if (haptics) {
@@ -210,82 +211,88 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
             style={{ paddingHorizontal: 12, paddingTop: 64 }}
             contentContainerStyle={{ gap: 16, paddingBottom: 160 }}
           >
-            <View style={{ gap: 8 }}>
-              <Text style={styles.title}>{activeLanguage?.title}*</Text>
-              <Input
-                placeholder={activeLanguage?.title}
-                value={productState?.title}
-                onChangeText={(text: string) =>
-                  setProductState((prev: any) => ({ ...prev, title: text }))
-                }
-                type="text"
-              />
-            </View>
-            <View style={{ width: "100%", flex: 1, gap: 8 }}>
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontWeight: 500,
-                  color: theme.text,
-                  marginBottom: 4,
-                }}
-              >
-                {activeLanguage?.select_type}*
-              </Text>
-
+            {item?._id !== "675055373c446fbb4c731e87" && (
               <View style={{ gap: 8 }}>
-                {types.map((item: any, index: number) => {
-                  return (
-                    <Pressable
-                      onPress={() => {
-                        if (
-                          productState?.type?.find((i: any) => i === item.value)
-                        ) {
-                          if (productState?.type?.length === 1) {
-                            return alert("Can't remove last type.");
-                          }
-                          setProductState((prev: any) => ({
-                            ...prev,
-                            type: prev.type?.filter(
-                              (i: any) => i !== item.value
-                            ),
-                          }));
-                        } else {
-                          setProductState((prev: any) => ({
-                            ...prev,
-                            type: [...prev.type, item.value],
-                          }));
-                        }
-                      }}
-                      style={styles.button}
-                      key={index}
-                    >
-                      <Text
-                        style={{
-                          color: productState?.type?.find(
-                            (i: any) => i === item.value
-                          )
-                            ? theme.active
-                            : theme.text,
-                          fontWeight: 600,
-                        }}
-                      >
-                        {item.label}
-                      </Text>
-                      {productState?.type?.find(
-                        (i: any) => i === item.value
-                      ) && (
-                        <MaterialIcons
-                          name="done"
-                          size={16}
-                          color={theme.active}
-                        />
-                      )}
-                    </Pressable>
-                  );
-                })}
+                <Text style={styles.title}>{activeLanguage?.title}*</Text>
+                <Input
+                  placeholder={activeLanguage?.title}
+                  value={productState?.title}
+                  onChangeText={(text: string) =>
+                    setProductState((prev: any) => ({ ...prev, title: text }))
+                  }
+                  type="text"
+                />
               </View>
-            </View>
+            )}
+            {item?._id !== "675055373c446fbb4c731e87" && (
+              <View style={{ width: "100%", flex: 1, gap: 8 }}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 500,
+                    color: theme.text,
+                    marginBottom: 4,
+                  }}
+                >
+                  {activeLanguage?.select_type}*
+                </Text>
+
+                <View style={{ gap: 8 }}>
+                  {types.map((item: any, index: number) => {
+                    return (
+                      <Pressable
+                        onPress={() => {
+                          if (
+                            productState?.type?.find(
+                              (i: any) => i === item.value
+                            )
+                          ) {
+                            if (productState?.type?.length === 1) {
+                              return alert("Can't remove last type.");
+                            }
+                            setProductState((prev: any) => ({
+                              ...prev,
+                              type: prev.type?.filter(
+                                (i: any) => i !== item.value
+                              ),
+                            }));
+                          } else {
+                            setProductState((prev: any) => ({
+                              ...prev,
+                              type: [...prev.type, item.value],
+                            }));
+                          }
+                        }}
+                        style={styles.button}
+                        key={index}
+                      >
+                        <Text
+                          style={{
+                            color: productState?.type?.find(
+                              (i: any) => i === item.value
+                            )
+                              ? theme.active
+                              : theme.text,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {item.label}
+                        </Text>
+                        {productState?.type?.find(
+                          (i: any) => i === item.value
+                        ) && (
+                          <MaterialIcons
+                            name="done"
+                            size={16}
+                            color={theme.active}
+                          />
+                        )}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
 
             <View style={{ gap: 8 }}>
               <Text

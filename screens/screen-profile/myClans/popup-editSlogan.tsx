@@ -62,7 +62,7 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
     if (needToPay && currentUser?.coins?.total < 700) {
       return setAlert({
         active: true,
-        text: "You don't have enough coins to set paid slogan!",
+        text: activeLanguage?.notEnoughCoinsSetPaidSlogan,
         type: "error",
       });
     }

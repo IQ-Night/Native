@@ -62,7 +62,7 @@ const EditTitle = ({ navigation, item, setItem }: any) => {
     if (needToPay && currentUser?.coins?.total < 800) {
       return setAlert({
         active: true,
-        text: "You don't have enough coins to set paid title!",
+        text: activeLanguage?.notEnoughCoinsSetPaidTitle,
         type: "error",
       });
     }
@@ -100,7 +100,7 @@ const EditTitle = ({ navigation, item, setItem }: any) => {
       ) {
         setAlert({
           active: true,
-          text: "The clan with same title already defined, please use different title!",
+          text: activeLanguage?.clanTitleExists,
           type: "error",
         });
       }

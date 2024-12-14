@@ -7,6 +7,10 @@ import {
   useState,
 } from "react";
 import { Animated } from "react-native";
+import Purchases from "react-native-purchases";
+import { REVENUE_CAT_API_KEY } from "@env";
+import { useAuthContext } from "./auth";
+import { useAppContext } from "./app";
 
 /**
  * Content context state
@@ -21,6 +25,7 @@ interface contextProps {
 }
 
 export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
+  const { setAlert, activeLanguage } = useAppContext();
   /**
    * Rerenders
    */
@@ -147,6 +152,67 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
   // confirm action
   const [confirmAction, setConfirmAction] = useState({ active: false });
 
+  const [products, setProducts] = useState<any>([]);
+  const [coins, setCoins] = useState<any>([]);
+
+  const { currentUser } = useAuthContext();
+  Purchases.configure({
+    apiKey: REVENUE_CAT_API_KEY, // აქ ჩასვით თქვენი რეალური Public API Key
+    appUserID: currentUser?._id,
+  });
+  // Fetch products from RevenueCat
+  const fetchProducts = async () => {
+    try {
+      const offerings = await Purchases.getOfferings();
+      const currentOffering = offerings.all;
+      if (currentOffering) {
+        setProducts(currentOffering["VIP Subscription"]?.availablePackages);
+        setCoins(currentOffering["Coins"]?.availablePackages);
+      } else {
+        console.log("No current offerings available.");
+      }
+    } catch (error) {
+      console.error("Error fetching products: ", error);
+      setAlert({
+        active: true,
+        type: "error",
+        text:
+          activeLanguage?.errorFetchingProducts || "Failed to fetch products",
+      });
+    }
+  };
+
+  const fetchCoinProducts = async () => {
+    try {
+      const productIdentifiers = [
+        "INCOINS_100",
+        "INCOINS_500",
+        "INCOINS_1000",
+        "INCOINS_1500",
+        "INCOINS_2000",
+        "INCOINS_3000",
+      ];
+      const products = await Purchases.getProducts(productIdentifiers);
+      setCoins(products);
+    } catch (error) {
+      console.error("Error fetching coin products:", error);
+      setAlert({
+        active: true,
+        type: "error",
+        text:
+          activeLanguage?.errorFetchingProducts || "Failed to fetch products",
+      });
+    }
+  };
+
+  // Fetch products on component mount
+  useEffect(() => {
+    if (currentUser?._id) {
+      fetchProducts();
+      fetchCoinProducts();
+    }
+  }, [currentUser?._id]);
+
   return (
     <Content.Provider
       value={{
@@ -182,6 +248,9 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
         opacityList,
         confirmAction,
         setConfirmAction,
+        products,
+        setProducts,
+        coins,
       }}
     >
       {children}

@@ -10,7 +10,6 @@ import { useAuthContext } from "../../context/auth";
 
 const BuyItem = ({ item, closeComponent, setState }: any) => {
   const { apiUrl, theme, setAlert, activeLanguage } = useAppContext();
-
   const { currentUser, setCurrentUser } = useAuthContext();
 
   const scaleAnim = useRef(new Animated.Value(0)).current;
@@ -65,7 +64,7 @@ const BuyItem = ({ item, closeComponent, setState }: any) => {
         setAlert({
           active: true,
           type: "success",
-          text: "Product has been bought successfully!",
+          text: activeLanguage?.productBought,
         });
         setLoading(false);
       }

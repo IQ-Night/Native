@@ -77,7 +77,7 @@ const Reports = () => {
   };
 
   // read report
-  const { setAdminNotifications } = useAdminContext();
+  const { setReportsNotifications } = useAdminContext();
   const [readLoading, setReadLoading] = useState(false);
   const ReadReport = async ({ reportId }: any) => {
     try {
@@ -95,7 +95,7 @@ const Reports = () => {
         );
 
         // Filter out the notification that corresponds to the updated report
-        setAdminNotifications((prev: any) =>
+        setReportsNotifications((prev: any) =>
           prev?.filter((p: any) => p._id !== reportId)
         );
 

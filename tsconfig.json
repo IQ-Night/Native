@@ -2,6 +2,7 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "jsx": "react-jsx" // Use this for React 17+ to support automatic JSX runtime
+    "jsx": "react-jsx",
+    "types": ["@types/react-native-dotenv"]
   }
 }

@@ -137,17 +137,18 @@ const User = ({ route, navigation, userItem, from }: any) => {
         socket.emit("rerenderAuthUser", { userId: user?._id });
         SendNotification({
           userId: user?._id,
-          type: `You've got a warning by admin! Reason: ${
-            warnings?.find((w: any) => w.value === warningType)?.en
-          }`,
+          type: `warningByAdmin`,
+          warnings: warnings,
+          warningType: warningType,
         });
         setTimeout(() => {
           setOpenSendWarnings(null);
           setAlert({
             active: true,
             type: "success",
-            text: "Warning sent successfully!",
+            text: activeLanguage?.warningSent,
           });
+          setWarningLoading(false);
         }, 300);
       }
     } catch (error: any) {
@@ -494,6 +495,7 @@ const User = ({ route, navigation, userItem, from }: any) => {
           openState={openGifts}
           setOpenState={setOpenGifts}
           user={user}
+          setUser={setUser}
         />
       )}
     </>

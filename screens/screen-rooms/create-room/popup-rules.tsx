@@ -16,7 +16,7 @@ import * as Haptics from "expo-haptics";
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const Rules = ({ roomState, setRoomState, setOpenPopup }: any) => {
-  const { theme, haptics } = useAppContext();
+  const { theme, haptics, activeLanguage } = useAppContext();
 
   // rules input
   const [rulesInput, setRulesInput] = useState("");
@@ -28,7 +28,9 @@ const Rules = ({ roomState, setRoomState, setOpenPopup }: any) => {
         gap: 8,
       }}
     >
-      <Text style={[styles.label, { color: theme.text }]}>Rules:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {activeLanguage?.rules}:
+      </Text>
       {roomState.rules?.length > 0 && (
         <View style={{ gap: 4, marginBottom: 16 }}>
           {roomState.rules.map((item: any, index: number) => {
@@ -82,7 +84,7 @@ const Rules = ({ roomState, setRoomState, setOpenPopup }: any) => {
         N{roomState.rules?.length + 1}
       </Text>
       <Input
-        placeholder="Enter rules here..."
+        placeholder={activeLanguage?.typeHere}
         value={rulesInput}
         onChangeText={(text: string) => setRulesInput(text)}
         // style={{ backgroundColor: theme.background, color: theme.text, width: "100%" }}
@@ -100,7 +102,7 @@ const Rules = ({ roomState, setRoomState, setOpenPopup }: any) => {
         }}
       />
       <Button
-        title="Add"
+        title={activeLanguage?.add}
         style={{
           backgroundColor: theme.active,
           color: "white",
@@ -124,6 +126,7 @@ const Rules = ({ roomState, setRoomState, setOpenPopup }: any) => {
 
 const styles = StyleSheet.create({
   container: {
+    width: "100%",
     flex: 1,
     padding: 16,
   },

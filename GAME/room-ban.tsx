@@ -73,10 +73,9 @@ const Ban = ({ openUser, setOpenBan, setOpenUser }: any) => {
         socket.emit("leaveRoom", activeRoom?._id, openUser?.userId);
         closeBan();
         setOpenUser(null);
-        const duration = convertDuration(selectedDuration);
         SendNotification({
           userId: openUser?.userId,
-          type: "You've got ban in room by admin for " + duration + "",
+          type: "bannedInRoom",
         });
       }
     } catch (error: any) {
@@ -98,7 +97,7 @@ const Ban = ({ openUser, setOpenBan, setOpenUser }: any) => {
         setThrowLoading(false);
         SendNotification({
           userId: openUser?.userId,
-          type: "You'r throwouted from room by admin",
+          type: "kickedFromRoom",
         });
       }, 300);
     } catch (error: any) {

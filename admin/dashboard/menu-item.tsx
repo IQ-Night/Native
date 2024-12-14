@@ -1,22 +1,16 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
-import { useAppContext } from "../../context/app";
-import { useAdminContext } from "../../context/admin";
 import { Badge } from "react-native-elements";
+import { useAdminContext } from "../../context/admin";
+import { useAppContext } from "../../context/app";
 
 const MenuItem = ({ item, navigation }: any) => {
   /**
    * app context
    */
   const { theme, haptics } = useAppContext();
-  const { adminNotifications } = useAdminContext();
-
-  // each notifications
-  const reportNotifications = adminNotifications?.filter(
-    (n: any) => n.reportType
-  );
+  const { ticketsNotifications, reportNotifications } = useAdminContext();
   return (
     <Pressable
       style={styles.button}
@@ -33,6 +27,13 @@ const MenuItem = ({ item, navigation }: any) => {
       {reportNotifications?.length > 0 && item?.screen === "Reports" && (
         <Badge
           value={reportNotifications?.length}
+          status="success"
+          badgeStyle={{ backgroundColor: theme.active }}
+        />
+      )}
+      {ticketsNotifications?.length > 0 && item?.screen === "Messages" && (
+        <Badge
+          value={ticketsNotifications?.length}
           status="success"
           badgeStyle={{ backgroundColor: theme.active }}
         />

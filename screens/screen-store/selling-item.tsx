@@ -224,22 +224,25 @@ const Item = ({ item, setState, setOpenBuyItem }: any) => {
                           {item?.title}
                         </Text>
                         {item?.type?.map((i: any, x: number) => {
-                          return (
-                            <Text
-                              key={x}
-                              style={{
-                                color: theme.text,
-                                fontSize: 10,
-                                fontWeight: "400",
-                                overflow: "hidden",
-                                width: "100%",
-                              }}
-                              numberOfLines={1}
-                              ellipsizeMode="tail"
-                            >
-                              - {types?.find((t: any) => t.value === i)?.label}
-                            </Text>
-                          );
+                          if (types?.find((t: any) => t.value === i)?.label) {
+                            return (
+                              <Text
+                                key={x}
+                                style={{
+                                  color: theme.text,
+                                  fontSize: 10,
+                                  fontWeight: "400",
+                                  overflow: "hidden",
+                                  width: "100%",
+                                }}
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                              >
+                                -{" "}
+                                {types?.find((t: any) => t.value === i)?.label}
+                              </Text>
+                            );
+                          }
                         })}
                       </View>
                     </View>

@@ -6,12 +6,14 @@ import { BlurView } from "expo-blur";
 import { useGameContext } from "../context/game";
 import { useAuthContext } from "../context/auth";
 import { roles } from "../context/rooms";
+import FlipCard from "../context/flipCard";
+import roleImageGenerator from "../functions/roleImageGenerator";
 
 const DealingCards = ({ timeController, loading, setLoading }: any) => {
   /**
    * App context
    */
-  const { theme, activeLanguage } = useAppContext();
+  const { theme, activeLanguage, language } = useAppContext();
 
   /**
    * Auth context
@@ -40,18 +42,11 @@ const DealingCards = ({ timeController, loading, setLoading }: any) => {
   const currentUserRole = gamePlayers.find(
     (user: any) => user.userId === currentUser._id
   )?.role;
-  const roleLabel =
-    currentUserRole?.value === "mafia"
-      ? activeLanguage?.mafia
-      : currentUserRole?.value === "citizen"
-      ? activeLanguage?.citizen
-      : currentUserRole?.value === "doctor"
-      ? activeLanguage?.doctor
-      : currentUserRole?.value === "police"
-      ? activeLanguage?.police
-      : currentUserRole?.value === "serial-killer"
-      ? activeLanguage?.serialKiller
-      : activeLanguage?.mafiaDon;
+
+  const roleImage = roleImageGenerator({
+    role: currentUserRole,
+    language: language,
+  });
 
   return (
     <BlurView
@@ -78,14 +73,18 @@ const DealingCards = ({ timeController, loading, setLoading }: any) => {
         <View
           style={{
             width: "60%",
-            aspectRatio: 0.8,
-            backgroundColor: "rgba(255,255,255,0.1)",
+            height: 380,
             borderRadius: 16,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <Text style={{ color: theme.text, fontSize: 24 }}>{roleLabel}</Text>
+          <FlipCard
+            img={roleImage}
+            item={currentUserRole}
+            sizes={{ width: "100%", height: 380 }}
+            from="door-review"
+          />
         </View>
         <View style={{ width: "90%" }}>
           <Button

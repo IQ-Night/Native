@@ -56,9 +56,7 @@ const UserRole = ({ setManageRoles, userId, manageRoles, setUsers }: any) => {
 
         SendNotification({
           userId: userId,
-          type: adminRole?.active
-            ? "Congratulation! You've become app admin!"
-            : "Admin has remove you from app admin list!",
+          type: adminRole?.active ? "becomeAdmin" : "removedFromAdminList",
         });
         setUsers((prev: any) =>
           prev.map((user: any) => {

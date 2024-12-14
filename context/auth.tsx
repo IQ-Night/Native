@@ -25,12 +25,12 @@ export const AuthContextWrapper: React.FC<contextProps> = ({ children }) => {
   /**
    * App context
    */
-  const { apiUrl, setLoading } = useAppContext();
+  const { apiUrl, setLoading, setAlert } = useAppContext();
 
   /**
    * current user state
    */
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   /**
    * Auth router
@@ -40,8 +40,54 @@ export const AuthContextWrapper: React.FC<contextProps> = ({ children }) => {
     back: "",
   });
 
+  // addational fields
+  const [addationalFields, setAddationalFields] = useState<any>(null);
+
+  useEffect(() => {
+    const CreateUnAuthUser = async () => {
+      const generateUUID = () => {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+          const r = (Math.random() * 16) | 0;
+          const v = c === "x" ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        });
+      };
+      const noAuthUserId = generateUUID();
+      const currentId = await AsyncStorage.getItem("IQ-Night:noAuthUserId");
+      if (!currentId) {
+        await AsyncStorage.setItem("IQ-Night:noAuthUserId", noAuthUserId);
+      }
+    };
+    CreateUnAuthUser();
+  }, []);
+
   // Get user
-  const GetUser = async () => {
+  const GetUser = async (val: any) => {
+    try {
+      const response = await axios.get(
+        apiUrl + "/api/v1/users/" + currentUser?._id
+      );
+      if (response.data.status === "success") {
+        if (response?.data?.data?.user?.name) {
+          setCurrentUser(response.data.data.user);
+        } else {
+          setLoading(false);
+          setAddationalFields({
+            user: response.data.data.user,
+          });
+        }
+      }
+    } catch (error: any) {
+      setLoading(false);
+      setAlert({
+        text: error.response.data.message,
+        type: "error",
+        active: true,
+      });
+    }
+  };
+  // Get user
+  const GetUserAuth = async () => {
     // get tokens
     let jwtToken = await AsyncStorage.getItem("IQ-Night:jwtToken");
     if (!jwtToken) {
@@ -72,10 +118,28 @@ export const AuthContextWrapper: React.FC<contextProps> = ({ children }) => {
           },
         });
         if (response.data.status === "success") {
-          setCurrentUser(response.data.data.user);
+          if (response?.data?.data?.user?.name) {
+            setCurrentUser(response.data.data.user);
+          } else {
+            setLoading(false);
+            setAddationalFields({
+              user: response.data.data.user,
+            });
+          }
         }
       } catch (error: any) {
-        console.log(error.response.data.message);
+        setLoading(false);
+        setAlert({
+          text: error.response.data.message,
+          type: "error",
+          active: true,
+        });
+        // ამოშალე JWT ტოკენები
+        await AsyncStorage.removeItem("IQ-Night:jwtToken");
+        await AsyncStorage.removeItem("IQ-Night:jwtRefreshToken");
+
+        // მომხმარებლის მონაცემების განულება
+        setCurrentUser(null);
       }
     }
   };
@@ -130,7 +194,7 @@ export const AuthContextWrapper: React.FC<contextProps> = ({ children }) => {
 
   useEffect(() => {
     if (!currentUser) {
-      GetUser();
+      GetUserAuth();
     }
   }, []);
 
@@ -142,6 +206,8 @@ export const AuthContextWrapper: React.FC<contextProps> = ({ children }) => {
         activeRoute,
         setActiveRoute,
         GetUser,
+        addationalFields,
+        setAddationalFields,
       }}
     >
       {children}
