@@ -19,7 +19,7 @@ async function readImageData(uri: any) {
     const base64Data = `data:image/jpeg;base64,${binaryData}`;
     return base64Data;
   } catch (err) {
-    console.error("Failed to read image data:", err);
+    console.log("Failed to read image data:", err);
     return null;
   }
 }
@@ -59,7 +59,7 @@ const InputFile = ({ file, setFile, style }: any) => {
 
       setFile({ ...cover, base64: coverImageData });
     } catch (err) {
-      console.error("Failed to resize image:", err);
+      console.log("Failed to resize image:", err);
       return uri;
     }
   };

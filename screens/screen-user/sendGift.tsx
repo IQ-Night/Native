@@ -76,14 +76,12 @@ const SendGift = ({ openState, setOpenState, user, setUser }: any) => {
   useEffect(() => {
     GetAssets();
   }, []);
-  console.log(user?.vip);
   /**
    * Sending
    */
   const [selectGift, setSelectGift] = useState<any>(null);
 
   const Send = async () => {
-    console.log(selectGift);
     if (selectGift?.type === "vip") {
       setSelectGift(null);
       try {
@@ -365,6 +363,7 @@ const SendGift = ({ openState, setOpenState, user, setUser }: any) => {
                       item={item}
                       selectGift={selectGift}
                       setSelectGift={setSelectGift}
+                      user={user}
                     />
                   );
                 })
@@ -405,6 +404,7 @@ const SendGift = ({ openState, setOpenState, user, setUser }: any) => {
                       item={item}
                       selectGift={selectGift}
                       setSelectGift={setSelectGift}
+                      user={user}
                     />
                   );
                 })
@@ -461,6 +461,7 @@ const AssetItem = ({
   setAvatars,
   selectGift,
   setSelectGift,
+  user,
 }: any) => {
   const { theme, haptics } = useAppContext();
   const navigation: any = useNavigation();
@@ -468,7 +469,6 @@ const AssetItem = ({
    * Auth context
    */
   const { currentUser } = useAuthContext();
-
   return (
     <Pressable
       onPress={() => {
@@ -481,9 +481,7 @@ const AssetItem = ({
           setSelectGift({
             item: item,
             price:
-              item?.price &&
-              item?.founder?.type !== "Admin" &&
-              item?.founder?.userId !== currentUser?._id
+              item?.price && item?.founder?.userId !== user?._id
                 ? (item.price + (item?.price / 100) * 5).toFixed(0)
                 : 5,
             type: "asset",
@@ -517,9 +515,7 @@ const AssetItem = ({
         }}
       >
         <FontAwesome5 name="coins" size={12} color="white" />
-        {item?.price &&
-        item?.founder?.type !== "Admin" &&
-        item?.founder?.userId !== currentUser?._id ? (
+        {item?.price && item?.founder?.userId !== user?._id ? (
           <Text
             style={{
               color: "white",

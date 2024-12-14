@@ -1,4 +1,6 @@
+import { FontAwesome } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import { useEffect, useRef } from "react";
 import {
   Animated,
@@ -9,11 +11,11 @@ import {
   View,
 } from "react-native";
 import { RTCView } from "react-native-webrtc";
+import Img from "../components/image";
 import { useAppContext } from "../context/app";
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 
-const OpenVideo = ({ streamUrl, setOpenVideo, user }: any) => {
-  const { theme } = useAppContext();
+const OpenVideo = ({ streamUrl, setOpenVideo, user, setOpenUser }: any) => {
+  const { theme, haptics } = useAppContext();
   // Animation for confirmation popup
   const slideAnim = useRef(new Animated.Value(0)).current; // Start off-screen
 
@@ -63,17 +65,57 @@ const OpenVideo = ({ streamUrl, setOpenVideo, user }: any) => {
         >
           <View style={{}}>
             {user?.playerNumber ? (
-              <Text
-                style={{ color: theme.text, fontSize: 32, fontWeight: 500 }}
+              <Pressable
+                onPress={() => {
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                  setOpenUser(user);
+                }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
               >
-                N:{user?.playerNumber}
-              </Text>
+                <View
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 100,
+                    overflow: "hidden",
+                  }}
+                >
+                  <Img uri={user.userCover} />
+                </View>
+                <Text
+                  style={{ color: theme.text, fontSize: 32, fontWeight: 500 }}
+                >
+                  N:{user?.playerNumber}
+                </Text>
+              </Pressable>
             ) : (
-              <Text
-                style={{ color: theme.text, fontSize: 32, fontWeight: 500 }}
+              <Pressable
+                onPress={() => {
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                  setOpenUser(user);
+                }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
               >
-                {user?.userName}
-              </Text>
+                <View
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 100,
+                    overflow: "hidden",
+                  }}
+                >
+                  <Img uri={user.userCover} />
+                </View>
+                <Text
+                  style={{ color: theme.text, fontSize: 28, fontWeight: 500 }}
+                >
+                  {user?.userName}
+                </Text>
+              </Pressable>
             )}
           </View>
           <RTCView

@@ -79,7 +79,7 @@ const Ban = ({ openUser, setOpenBan, setOpenUser }: any) => {
         });
       }
     } catch (error: any) {
-      console.error("Error:", error.response?.data?.message || error.message);
+      console.log("Error:", error.response?.data?.message || error.message);
     } finally {
       setLoading(false);
     }

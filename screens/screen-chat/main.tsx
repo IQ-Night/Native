@@ -142,7 +142,7 @@ const Chats = () => {
             }
           }}
           scrollEventThrottle={400}
-          contentContainerStyle={{ gap: 6 }}
+          contentContainerStyle={{ gap: 6, paddingTop: 8 }}
           // ref={scrollViewRefRooms}
         >
           {chats?.map((chat: any, index: number) => {

@@ -252,17 +252,20 @@ const Door: React.FC<DoorProps> = ({ item, setDoorReview, navigation }) => {
                   {activeLanguage.lvl}: {item?.rating.min}
                 </Text>
                 <View style={styles.joinButtonContainer}>
-                  <View style={{ marginTop: 0, justifyContent: "center" }}>
-                    <Text
-                      style={[
-                        styles.adminText,
-                        { fontSize: 10, color: theme.text },
-                      ]}
-                    >
-                      {activeLanguage?.lastGame}: {GetTimesAgo(item?.createdAt)}{" "}
-                      {activeLanguage?.ago}
-                    </Text>
-                  </View>
+                  {item?.lastGame && (
+                    <View style={{ marginTop: 0, justifyContent: "center" }}>
+                      <Text
+                        style={[
+                          styles.adminText,
+                          { fontSize: 10, color: theme.text },
+                        ]}
+                      >
+                        {activeLanguage?.lastGame}:{" "}
+                        {GetTimesAgo(item?.lastGame?.createdAt)}{" "}
+                        {activeLanguage?.ago}
+                      </Text>
+                    </View>
+                  )}
                   <Pressable
                     onPress={() => {
                       if (roomIsOpen?.status === "close") {

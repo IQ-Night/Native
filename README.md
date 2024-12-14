@@ -7,5 +7,5 @@ git push -u origin IQ-Night
 ## dev-clients გაშვება ფიზიკურ დევაისებზე IOS
 
 -- დევაისების რეგისტრაცია Apple კონსულში
--- იქს კოდში და eas credential -p ios -> production -> ეიფლიდან გადმოწერილი ფაილის მითითება
+-- vs კოდi > eas credentials -p ios -> production -> Manage > new certificate > ეიფლიდან გადმოწერილი ფაილის მითითება
 eas build --profile development --platform ios

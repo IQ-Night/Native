@@ -410,6 +410,19 @@ const User = ({ route, navigation, userItem, from }: any) => {
             </ScrollView>
             {activeSection === "Clans" && (
               <View style={{ gap: 12, padding: 8 }}>
+                {user?.clans?.length < 1 && (
+                  <Text
+                    style={{
+                      color: "rgba(255,255,255,0.3)",
+                      fontWeight: 500,
+                      fontSize: 16,
+                      position: "absolute",
+                      margin: 12,
+                    }}
+                  >
+                    {activeLanguage?.not_found}
+                  </Text>
+                )}
                 {user?.clans?.map((i: any, index: number) => {
                   return (
                     <Pressable

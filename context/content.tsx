@@ -172,7 +172,7 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
         console.log("No current offerings available.");
       }
     } catch (error) {
-      console.error("Error fetching products: ", error);
+      console.log("Error fetching products: ", error);
       setAlert({
         active: true,
         type: "error",
@@ -195,7 +195,7 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
       const products = await Purchases.getProducts(productIdentifiers);
       setCoins(products);
     } catch (error) {
-      console.error("Error fetching coin products:", error);
+      console.log("Error fetching coin products:", error);
       setAlert({
         active: true,
         type: "error",

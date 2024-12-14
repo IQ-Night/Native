@@ -65,7 +65,7 @@ const Coins = () => {
       if (error.userCancelled) {
         console.log("User cancelled the purchase.");
       } else {
-        console.error("Purchase failed:", error);
+        console.log("Purchase failed:", error);
       }
       setLoading(false);
     }

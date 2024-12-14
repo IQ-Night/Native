@@ -71,7 +71,7 @@ const Vip = () => {
       if (error.userCancelled) {
         console.log("User cancelled the purchase.");
       } else {
-        console.error("Purchase failed:", error);
+        console.log("Purchase failed:", error);
         setAlert({
           active: true,
           type: "error",
@@ -163,9 +163,11 @@ const Vip = () => {
         {products?.length > 0 &&
           products?.map((pc: any, x: number) => {
             const c = pc?.product;
-            const indexOfActive = products?.findIndex((p: any) =>
-              p.product?.title.includes(currentUser?.vip.duration)
-            );
+            const indexOfActive =
+              currentUser?.vip?.active &&
+              products?.findIndex((p: any) =>
+                p.product?.title.includes(currentUser?.vip?.duration)
+              );
 
             return (
               <View

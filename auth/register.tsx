@@ -178,7 +178,7 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
           });
         } else {
           // Handle other types of errors
-          console.error("An unexpected error occurred:", err);
+          console.log("An unexpected error occurred:", err);
         }
       }
     } else {

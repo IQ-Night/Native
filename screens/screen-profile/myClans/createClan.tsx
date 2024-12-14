@@ -448,7 +448,6 @@ const CreateClan = ({ setCreateClan }: any) => {
                 }}
                 onValueChange={async () => {
                   const newState = { ...clanState, chat: !clanState.chat };
-                  console.log(newState);
                   setClanState(newState);
                 }}
               />

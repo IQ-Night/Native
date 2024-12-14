@@ -358,7 +358,7 @@ const ScreenManager = () => {
             </InvoicesContextWrapper>
           )}
         </Tab.Screen>
-        {currentUser?.admin && (
+        {currentUser?.admin?.active && (
           <Tab.Screen name="Admin">
             {() => (
               <CustomComponent

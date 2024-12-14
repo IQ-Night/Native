@@ -1202,6 +1202,7 @@ const Game = () => {
   const [loadingReJoin, setLoadingReJoin] = useState(false);
   useEffect(() => {
     const GetGamePosition = async () => {
+      console.log("game position....");
       setVideo(false);
       startCall(false);
       try {
@@ -1210,9 +1211,8 @@ const Game = () => {
           apiUrl + "/api/v1/rooms/" + activeRoom?._id
         );
         if (response.data.status === "success") {
-          const lastGame = response.data.data.room.lastGame;
-          const gameLevel = response.data.data.room.lastGame.gameLevel;
-
+          const lastGame = response.data.data.room?.lastGame;
+          const gameLevel = response.data.data.room?.lastGame?.gameLevel;
           if (gameLevel?.level === "Day") {
             setGame({
               value: "Day",
@@ -1395,11 +1395,11 @@ const Game = () => {
     };
     if (socket) {
       // Attach the event listener
-      socket.on("sendMessage", handleSendMessage);
+      socket.on("sendGameChatMessage", handleSendMessage);
 
       // Clean up by removing the event listener
       return () => {
-        socket.off("sendMessage", handleSendMessage);
+        socket.off("sendGameChatMessage", handleSendMessage);
       };
     }
   }, [socket, currentUser?._id]); // Add currentUser._id as a dependency
@@ -1451,6 +1451,7 @@ const Game = () => {
             streamUrl={openVideo?.video}
             user={openVideo?.user}
             setOpenVideo={setOpenVideo}
+            setOpenUser={setOpenUser}
           />
         )}
         {game.value === "Dealing Cards" && (

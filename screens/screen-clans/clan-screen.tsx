@@ -343,7 +343,7 @@ const Clan = ({ route, navigation }: any) => {
                               style={{ color: "white" }}
                             />
                             <Text style={{ color: "white", fontWeight: 500 }}>
-                              Request to Join
+                              {activeLanguage?.request_to_join}
                             </Text>
                           </View>
                         );

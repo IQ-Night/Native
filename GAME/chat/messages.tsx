@@ -8,7 +8,6 @@ import { useAppContext } from "../../context/app";
 
 const Messages = ({ messages, AddNewMessages, setUnreadMessages }: any) => {
   const flatListRef = useRef<any>(null);
-
   const { apiUrl } = useAppContext();
   const { currentUser } = useAuthContext();
   const { activeRoom } = useGameContext();
@@ -29,7 +28,6 @@ const Messages = ({ messages, AddNewMessages, setUnreadMessages }: any) => {
     ),
     []
   );
-
   useEffect(() => {
     const SeenMessages = async () => {
       try {

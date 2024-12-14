@@ -1,9 +1,4 @@
-import {
-  Entypo,
-  FontAwesome5,
-  Ionicons,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   ReactNode,
   createContext,
@@ -12,7 +7,6 @@ import {
   useState,
 } from "react";
 import { en, ka, ru } from "../languages/languages";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 /**
  * App context state

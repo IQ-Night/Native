@@ -1,17 +1,16 @@
+import axios from "axios";
 import React, {
-  ReactNode,
   createContext,
+  ReactNode,
   useContext,
   useEffect,
   useRef,
   useState,
 } from "react";
-import { Dimensions, AppState } from "react-native";
+import { Dimensions } from "react-native";
 import { io } from "socket.io-client";
 import { useAppContext } from "./app";
 import { useAuthContext } from "./auth";
-import { mediaDevices, RTCView, RTCPeerConnection } from "react-native-webrtc";
-import axios from "axios";
 
 // Game Context
 const Game = createContext<any>(null);
@@ -58,7 +57,6 @@ export const GameContextWrapper: React.FC<contextProps> = ({ children }) => {
       });
 
       socket.current.on("connect_error", (error: any) => {
-        console.error("Connection error:", error);
         setConnectionStatus("reconnecting");
       });
 

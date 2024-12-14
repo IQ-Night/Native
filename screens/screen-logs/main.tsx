@@ -83,7 +83,7 @@ const Logs = ({ route, item }: any) => {
         setPage(newPage);
       }
     } catch (error: any) {
-      console.error(
+      console.log(
         "Error fetching logs:",
         error?.response?.data?.message || error.message
       );

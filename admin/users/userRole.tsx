@@ -70,7 +70,7 @@ const UserRole = ({ setManageRoles, userId, manageRoles, setUsers }: any) => {
         setManageRoles(null);
       }
     } catch (error: any) {
-      console.error("Error:", error.response?.data?.message || error.message);
+      console.log("Error:", error.response?.data?.message || error.message);
     } finally {
       setLoading(false);
     }

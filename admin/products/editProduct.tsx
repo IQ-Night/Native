@@ -151,7 +151,7 @@ const EditProduct = ({ closePopup, setProducts, item }: any) => {
             await deleteObject(fileRef);
             console.log("File successfully deleted from Firebase storage");
           } catch (storageError) {
-            console.error("Firebase Storage delete error:", storageError);
+            console.log("Firebase Storage delete error:", storageError);
           }
         }
         setProducts((prev: any) =>

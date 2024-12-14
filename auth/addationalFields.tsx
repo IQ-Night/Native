@@ -96,7 +96,7 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
         });
       } else {
         // Handle other types of errors
-        console.error("An unexpected error occurred:", err);
+        console.log("An unexpected error occurred:", err);
       }
     }
   };
@@ -221,7 +221,7 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
                     setCurrentUser(null);
                     setAddationalFields(null);
                   } catch (error) {
-                    console.error("Logout failed:", error);
+                    console.log("Logout failed:", error);
                   }
                 }}
               />

@@ -57,7 +57,7 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
             signal
           );
         } catch (error) {
-          console.error("Error setting remote description:", error);
+          console.log("Error setting remote description:", error);
         }
 
         const answer = await peerConnections.current[creatorId]?.createAnswer();
@@ -78,7 +78,7 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
         userId: string;
       }) => {
         if (!peerConnections.current[userId]) {
-          console.error(`PeerConnection for userId ${userId} not found.`);
+          console.log(`PeerConnection for userId ${userId} not found.`);
           return;
         }
 
@@ -94,7 +94,7 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
         try {
           await peerConnection.setRemoteDescription(signal);
         } catch (error) {
-          console.error(
+          console.log(
             `Error setting remote description for userId: ${userId}`,
             error
           );
@@ -113,7 +113,7 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
             // console.log("Adding ICE Candidate:", candidate);
             await peerConnections.current[userId].addIceCandidate(candidate);
           } catch (error) {
-            console.error("Error adding ICE candidate:", error);
+            console.log("Error adding ICE candidate:", error);
           }
         }
       };
@@ -202,7 +202,7 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
           }
         });
       } catch (error) {
-        console.error("Error starting call:", error);
+        console.log("Error starting call:", error);
       }
     } else {
       // Close all PeerConnections
@@ -263,7 +263,7 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
               });
             }
           } catch (error) {
-            console.error("Error starting call:", error);
+            console.log("Error starting call:", error);
           }
         });
     };
@@ -307,7 +307,7 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
       });
       console.log(`Microphone is now ${isEnabled ? "enabled" : "disabled"}`);
     } else {
-      console.error("Stream not found. Unable to toggle microphone.");
+      console.log("Stream not found. Unable to toggle microphone.");
     }
   };
   useEffect(() => {

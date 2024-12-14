@@ -584,8 +584,7 @@ const Chair = ({
   };
 
   return (
-    <Pressable
-      // onPress={() => setOpenUser(item)}
+    <View
       style={[
         {
           position: "relative",
@@ -802,6 +801,7 @@ const Chair = ({
                 setOpenVideo={setOpenVideo}
                 game={game}
                 currentUserRole={currentUserRole}
+                setOpenUser={setOpenUser}
               />
 
               <Img uri={item.userCover} />
@@ -884,7 +884,7 @@ const Chair = ({
           </View>
         </>
       )}
-    </Pressable>
+    </View>
   );
 };
 

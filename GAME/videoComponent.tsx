@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { Pressable, StyleSheet, View, Text } from "react-native";
-import { RTCView } from "react-native-webrtc";
-import { useVideoConnectionContext } from "../context/videoConnection";
-import { useAuthContext } from "../context/auth";
+import * as Haptics from "expo-haptics";
+import { useEffect } from "react";
+import { Pressable, StyleSheet } from "react-native";
 import InCallManager from "react-native-incall-manager";
-import { Audio } from "expo-av";
+import { RTCView } from "react-native-webrtc";
+import { useAuthContext } from "../context/auth";
+import { useVideoConnectionContext } from "../context/videoConnection";
+import { useAppContext } from "../context/app";
 
 const VideoComponent = ({
   userId,
@@ -12,10 +13,12 @@ const VideoComponent = ({
   game,
   currentUserRole,
   user,
+  setOpenUser,
 }: any) => {
   const { localStream, remoteStreams, setLoading } =
     useVideoConnectionContext();
   const { currentUser } = useAuthContext();
+  const { haptics } = useAppContext();
 
   const userStream = remoteStreams?.find(
     (stream: any) => stream.userId === userId
@@ -43,7 +46,6 @@ const VideoComponent = ({
   useEffect(() => {
     setLoading(false);
   }, [localStream]);
-
   return (
     <Pressable
       style={[
@@ -57,10 +59,15 @@ const VideoComponent = ({
         },
       ]}
       onPress={() => {
+        if (haptics) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+        }
         if (userStream) {
           setOpenVideo({ video: userStream.streams?.toURL(), user });
-        } else {
+        } else if (localStream) {
           setOpenVideo({ video: localStream?.toURL(), user });
+        } else {
+          setOpenUser(user);
         }
       }}
     >

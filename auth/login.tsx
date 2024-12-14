@@ -123,7 +123,7 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
         });
       } else {
         // Handle other types of errors
-        console.error("An unexpected error occurred:", err);
+        console.log("An unexpected error occurred:", err);
       }
     }
   };
@@ -183,7 +183,7 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
         });
       } else {
         // Handle other types of errors
-        console.error("An unexpected error occurred:", err);
+        console.log("An unexpected error occurred:", err);
       }
     }
   };
@@ -220,7 +220,7 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
       // TypeScript 4.x and later allows use of 'unknown' instead of 'any' for more strict type checking.
 
       // Some other error happened
-      console.error(error);
+      console.log(error);
     }
   };
 
@@ -236,7 +236,7 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
         await GetUserInfo(response.authentication.accessToken);
       } else {
         // Handle the case where accessToken is not available
-        console.error("No access token available");
+        console.log("No access token available");
       }
     }
   };

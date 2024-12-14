@@ -91,11 +91,14 @@ const FlipCard = ({ img, item, roomState, sizes, from }: any) => {
                 transform: [{ rotateY: frontInterpolate }],
                 width: sizes?.width,
                 height: sizes?.height,
-                borderWidth: from === "door-review" ? 0 : 2,
-                borderColor:
+                borderWidth: from === "door-review" ? 1.5 : 2,
+                opacity:
                   roomState && roomState.roles.includes(item)
-                    ? theme.active
-                    : "#111",
+                    ? 1
+                    : !roomState
+                    ? 1
+                    : 0.5,
+                borderColor: theme.active,
               },
             ]}
           >
@@ -130,11 +133,14 @@ const FlipCard = ({ img, item, roomState, sizes, from }: any) => {
                 transform: [{ rotateY: backInterpolate }],
                 width: sizes?.width,
                 height: sizes?.height,
-                borderWidth: from === "door-review" ? 0 : 2,
-                borderColor:
+                borderWidth: from === "door-review" ? 1.5 : 2,
+                opacity:
                   roomState && roomState.roles.includes(item)
-                    ? theme.active
-                    : "#111",
+                    ? 1
+                    : !roomState
+                    ? 1
+                    : 0.5,
+                borderColor: theme.active,
               },
             ]}
           >
@@ -187,12 +193,15 @@ const FlipCard = ({ img, item, roomState, sizes, from }: any) => {
                 transform: [{ rotateY: frontInterpolate }],
                 width: sizes?.width,
                 height: sizes?.height,
-                borderWidth: from === "door-review" ? 0 : 2,
-                borderColor:
+                borderWidth: from === "door-review" ? 1.5 : 2,
+                opacity:
                   roomState &&
                   roomState.roles.find((r: any) => r.value === item.value)
-                    ? theme.active
-                    : "#111",
+                    ? 1
+                    : !roomState
+                    ? 1
+                    : 0.5,
+                borderColor: theme.active,
               },
             ]}
           >
@@ -227,11 +236,13 @@ const FlipCard = ({ img, item, roomState, sizes, from }: any) => {
                 transform: [{ rotateY: backInterpolate }],
                 width: sizes?.width,
                 height: sizes?.height,
-                borderWidth: from === "door-review" ? 0 : 2,
-                borderColor:
-                  roomState && roomState.roles.includes(item)
-                    ? theme.active
-                    : "#111",
+                borderWidth: from === "door-review" ? 1.5 : 2,
+                borderColor: theme.active,
+                opacity:
+                  (roomState && roomState.roles.includes(item)) ||
+                  from === "door-review"
+                    ? 1
+                    : 0.5,
               },
             ]}
           >

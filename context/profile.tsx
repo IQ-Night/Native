@@ -702,7 +702,7 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
           // მომხმარებლის მონაცემების განულება
           setCurrentUser(null);
         } catch (error) {
-          console.error("Logout failed:", error);
+          console.log("Logout failed:", error);
         }
       },
     },

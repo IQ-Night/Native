@@ -73,11 +73,11 @@ export const RoomsContextWrapper: React.FC<contextProps> = ({ children }) => {
         setLoadRooms(false);
         setRerenderRooms(false);
       } else {
-        console.error("Failed to fetch rooms: ", response.data.message);
+        console.log("Failed to fetch rooms: ", response.data.message);
         setLoadRooms(false); // Stop loading even on failure
       }
     } catch (error: any) {
-      console.error(
+      console.log(
         "API Error: ",
         error.response?.data?.message || error.message
       );
