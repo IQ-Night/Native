@@ -26,6 +26,7 @@ export const AppContextWrapper: React.FC<contextProps> = ({ children }) => {
    */
   // const apiUrl = "192.168.1.137:5000";
   // const apiUrl = "http://192.168.1.6:5000";
+  // const apiUrl = "http://192.168.100.8:5000";
   const apiUrl = "https://iq-night-acb3bc094c45.herokuapp.com";
 
   /**

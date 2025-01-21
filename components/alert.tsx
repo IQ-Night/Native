@@ -8,6 +8,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  View,
 } from "react-native";
 import { useAppContext } from "../context/app";
 
@@ -18,9 +19,10 @@ interface PropsTypes {
   type: String;
   onClose: () => void;
   text: String;
+  button?: any;
 }
 
-const Alert: React.FC<PropsTypes> = ({ type, onClose, text }) => {
+const Alert: React.FC<PropsTypes> = ({ type, onClose, text, button }) => {
   const { theme, haptics } = useAppContext();
   // Initialize animated value
   const translateY = useRef(new Animated.Value(300)).current;
@@ -34,6 +36,7 @@ const Alert: React.FC<PropsTypes> = ({ type, onClose, text }) => {
       useNativeDriver: true,
     }).start();
   }, [close]);
+
   return (
     <LinearGradient
       colors={[
@@ -89,9 +92,29 @@ const Alert: React.FC<PropsTypes> = ({ type, onClose, text }) => {
             transform: [{ translateY }],
           }}
         >
-          <Text style={{ color: "white", maxWidth: "90%", fontWeight: 500 }}>
-            {text}
-          </Text>
+          <View style={{ gap: 4 }}>
+            <Text style={{ color: "white", maxWidth: "90%", fontWeight: 500 }}>
+              {text}
+            </Text>
+            {button && (
+              <Pressable
+                onPress={() => {
+                  button?.function();
+                  onClose();
+                }}
+              >
+                <Text
+                  style={{
+                    color: "white",
+                    fontWeight: 600,
+                    textDecorationLine: "underline",
+                  }}
+                >
+                  {button?.text}
+                </Text>
+              </Pressable>
+            )}
+          </View>
           <Ionicons
             name="close"
             size={24}

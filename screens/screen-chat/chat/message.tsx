@@ -23,12 +23,6 @@ const Message = ({ chat, message, index, members, lastMessage }: any) => {
 
   return (
     <Pressable
-      onPress={() => {
-        if (haptics) {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-        }
-        setOpenMessage((prev: boolean) => !prev);
-      }}
       style={{
         overflow: "hidden",
         borderRadius: 8,
@@ -67,10 +61,16 @@ const Message = ({ chat, message, index, members, lastMessage }: any) => {
             </Text>
           </Pressable>
         )}
-        <View
+        <Pressable
+          onPress={() => {
+            if (haptics) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+            }
+            setOpenMessage((prev: boolean) => !prev);
+          }}
           style={{
             borderRadius: 8,
-            paddingVertical: 8,
+            paddingVertical: 10,
             paddingHorizontal: 12, // Padding to give some space around the text
             backgroundColor: "rgba(255,255,255,0.05)",
           }}
@@ -83,11 +83,12 @@ const Message = ({ chat, message, index, members, lastMessage }: any) => {
                   : theme.text,
               fontWeight: "500",
               flexWrap: "wrap", // Ensures text wraps within the view
+              lineHeight: 20,
             }}
           >
             {message.text}
           </Text>
-        </View>
+        </Pressable>
 
         {index === 0 &&
           lastMessage?.seen?.find(

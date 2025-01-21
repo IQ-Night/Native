@@ -39,7 +39,9 @@ export const LiderboardContextWrapper: React.FC<contextProps> = ({
   useEffect(() => {
     const GetUsers = async () => {
       try {
-        const response = await axios.get(apiUrl + "/api/v1/users");
+        const response = await axios.get(
+          apiUrl + "/api/v1/users?leaderboard=true"
+        );
         if (response.data.status === "success") {
           setLiderboard(response.data.data.users);
           setRerenderLiderBoard(false);

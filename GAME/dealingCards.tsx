@@ -1,12 +1,10 @@
-import { StyleSheet, Text, View } from "react-native";
-import React, { useEffect, useState } from "react";
-import Button from "../components/button";
-import { useAppContext } from "../context/app";
 import { BlurView } from "expo-blur";
-import { useGameContext } from "../context/game";
+import { StyleSheet, View } from "react-native";
+import Button from "../components/button";
+import FlipCard from "../components/flipCard";
+import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
-import { roles } from "../context/rooms";
-import FlipCard from "../context/flipCard";
+import { useGameContext } from "../context/game";
 import roleImageGenerator from "../functions/roleImageGenerator";
 
 const DealingCards = ({ timeController, loading, setLoading }: any) => {
@@ -74,15 +72,15 @@ const DealingCards = ({ timeController, loading, setLoading }: any) => {
           style={{
             width: "60%",
             height: 380,
-            borderRadius: 16,
             alignItems: "center",
             justifyContent: "center",
+            overflow: "hidden",
           }}
         >
           <FlipCard
             img={roleImage}
             item={currentUserRole}
-            sizes={{ width: "100%", height: 380 }}
+            sizes={{ width: "100%", height: 380, borderRadius: 16 }}
             from="door-review"
           />
         </View>

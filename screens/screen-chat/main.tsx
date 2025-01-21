@@ -102,6 +102,7 @@ const Chats = () => {
       console.log(error?.response?.data?.message);
     }
   };
+
   return (
     <View style={{ flex: 1, height: "100%" }}>
       {loading && (
@@ -295,7 +296,11 @@ const Chats = () => {
                           color: theme.text,
                         }}
                       >
-                        {chat?.type?.clan?.members?.length}
+                        {
+                          chat?.type?.clan?.members?.filter(
+                            (m: any) => m.status === "member"
+                          )?.length
+                        }
                       </Text>
                     </View>
                   )}

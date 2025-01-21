@@ -3,12 +3,13 @@ export function findMostFrequentVictim(votes) {
     // Create a frequency map for victimId
     const frequencyMap = {};
 
-    // Count occurrences of each victimId
+    // Count occurrences of each victimId or voteFor
     votes.forEach((vote) => {
-      const { victim } = vote;
-      frequencyMap[victim] = (frequencyMap[victim] || 0) + 1;
+      const victim = vote.victim || vote.voteFor;
+      if (victim) {
+        frequencyMap[victim] = (frequencyMap[victim] || 0) + 1;
+      }
     });
-
     // Find the maximum occurrence count
     let maxCount = 0;
     let mostFrequentVictims = [];

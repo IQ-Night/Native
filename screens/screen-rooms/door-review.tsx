@@ -34,7 +34,7 @@ import BlackList from "./blackList";
 import RoleInfo from "./create-room/roleInfo";
 import EditRoom from "./edit-room";
 import DeleteConfirm from "../../components/deleteConfirm";
-import FlipCard from "../../context/flipCard";
+import FlipCard from "../../components/flipCard";
 import roleImageGenerator from "../../functions/roleImageGenerator";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -211,6 +211,23 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
   // check if room not deleted
   const [loadingSpectator, setLoadingSpectator] = useState(false);
   const CheckRoom = async (type: any, connect: any) => {
+    // define if need to pay before open room
+    let payid =
+      doorReview?.admin.founder.id === currentUser?._id &&
+      !currentUser?.vip?.active;
+
+    if (payid && currentUser?.coins?.total < 2) {
+      return setAlert({
+        active: true,
+        type: "error",
+        text: activeLanguage?.notEnoughCoins,
+        button: {
+          function: () => navigation.navigate("Coins"),
+          text: activeLanguage?.buy,
+        },
+      });
+    }
+
     if (type === "spectator") {
       setLoadingSpectator(true);
     } else {
@@ -227,10 +244,6 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
         } else {
           setActiveRoom(doorReview);
         }
-        // define if need to pay before open room
-        let payid =
-          doorReview?.admin.founder.id === currentUser?._id &&
-          !currentUser?.vip?.active;
 
         // Join the room
         socket.emit(
@@ -363,7 +376,7 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
         <EditRoom
           editRoom={doorReview}
           setEditRoom={setEditRoom}
-          setDoorReview={closeReview}
+          setDoorReview={setDoorReview}
         />
       </Animated.View>
       <BlurView intensity={40} tint="dark" style={styles.container}>
@@ -701,7 +714,6 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                         role,
                         language,
                       });
-
                       return (
                         <View
                           key={index}
@@ -724,7 +736,11 @@ const DoorReview = ({ doorReview, setDoorReview, navigation }: any) => {
                             <FlipCard
                               img={roleImage}
                               item={role}
-                              sizes={{ width: "100%", height: 120 }}
+                              sizes={{
+                                width: "100%",
+                                height: 120,
+                                borderRadius: 16,
+                              }}
                               from="door-review"
                             />
                           </View>

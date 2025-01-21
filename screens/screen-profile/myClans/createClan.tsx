@@ -33,6 +33,7 @@ import { useClansContext } from "../../../context/clans";
 import Img from "../../../components/image";
 import { useProfileContext } from "../../../context/profile";
 import { create } from "lodash";
+import { useNavigation } from "@react-navigation/native";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -108,12 +109,18 @@ const CreateClan = ({ setCreateClan }: any) => {
   const [loading, setLoading] = useState(false);
   const { setClans, GetClans } = useProfileContext();
 
+  const navigation: any = useNavigation();
+
   const HandleCreateClan = async () => {
     if (currentUser?.coins?.total < totalPrice?.all) {
       return setAlert({
         active: true,
         text: activeLanguage?.notEnoughCoinsCreateClan,
         type: "error",
+        button: {
+          function: () => navigation.navigate("Coins"),
+          text: activeLanguage?.buy,
+        },
       });
     }
 
@@ -122,7 +129,10 @@ const CreateClan = ({ setCreateClan }: any) => {
       const response = await axios.post(apiUrl + "/api/v1/clans", {
         ...clanState,
         price: totalPrice,
-        title: "Clan - " + currentUser?._id + Date.now(),
+        title:
+          clanState?.title?.length > 0
+            ? clanState?.title
+            : "Clan - " + currentUser?._id + Date.now(),
       });
       if (response.data.status === "success") {
         GetClans();

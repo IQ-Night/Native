@@ -219,7 +219,7 @@ const Confirm = ({ openState, setOpenState, data, handlePurchase }: any) => {
                         marginVertical: 6,
                       }}
                     >
-                      {activeLanguage?.buy}{" "}
+                      {activeLanguage?.buy}
                       <Text style={{ color: theme.active }}>
                         {totalPrice ? totalPrice?.toFixed(2) : data?.price}$
                       </Text>

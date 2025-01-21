@@ -15,12 +15,6 @@ const Message = ({ message, index }: any) => {
 
   return (
     <Pressable
-      onPress={() => {
-        if (haptics) {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-        }
-        setOpenMessage((prev: boolean) => !prev);
-      }}
       style={{
         overflow: "hidden",
         borderRadius: 8,
@@ -56,7 +50,13 @@ const Message = ({ message, index }: any) => {
             </Text>
           </View>
         )}
-        <View
+        <Pressable
+          onPress={() => {
+            if (haptics) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+            }
+            setOpenMessage((prev: boolean) => !prev);
+          }}
           style={{
             borderRadius: 8,
             paddingVertical: 8,
@@ -72,11 +72,12 @@ const Message = ({ message, index }: any) => {
                   : theme.text,
               fontWeight: "500",
               flexWrap: "wrap", // Ensures text wraps within the view
+              lineHeight: 20,
             }}
           >
             {message.text}
           </Text>
-        </View>
+        </Pressable>
         {openMessage && (
           <View
             style={{

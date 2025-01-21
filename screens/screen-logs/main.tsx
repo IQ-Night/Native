@@ -188,68 +188,68 @@ const Logs = ({ route, item }: any) => {
             }}
           >
             {logs?.map((item: any, index: number) => {
-              if (item?.gameLevel.status === "Finished") {
-                return (
-                  <Pressable
-                    key={index}
-                    onPress={() => {
-                      if (haptics) {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                      }
-                      activeState?.number === item?.number
-                        ? setActiveState(null)
-                        : setActiveState(item);
-                    }}
+              return (
+                <Pressable
+                  key={index}
+                  onPress={() => {
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
+                    activeState?.number === item?.number
+                      ? setActiveState(null)
+                      : setActiveState(item);
+                  }}
+                >
+                  <View
+                    style={[
+                      styles.logItem,
+                      {
+                        backgroundColor:
+                          activeState?.number === item?.number
+                            ? "rgba(255,255,255,0.05)"
+                            : "transparent",
+                      },
+                    ]}
                   >
-                    <View
-                      style={[
-                        styles.logItem,
-                        {
-                          backgroundColor:
-                            activeState?.number === item?.number
-                              ? "rgba(255,255,255,0.05)"
-                              : "transparent",
-                        },
-                      ]}
-                    >
-                      <Text style={{ color: theme.text }}>
-                        {activeLanguage?.game} N{item?.number}
-                      </Text>
-                      <Text style={{ color: theme.text }}>
-                        {item?.createdAt && FormatDate(item?.createdAt, "date")}
-                      </Text>
-                      <View>
-                        <MaterialIcons
-                          name={
-                            activeState?.number === item?.number
-                              ? "arrow-drop-down"
-                              : "arrow-drop-up"
-                          }
-                          size={24}
-                          color={theme.active}
-                        />
-                      </View>
+                    <Text style={{ color: theme.text }}>
+                      {activeLanguage?.game} N{item?.number}
+                    </Text>
+                    <Text style={{ color: theme.text }}>
+                      {item?.createdAt && FormatDate(item?.createdAt, "date")}
+                    </Text>
+                    <View>
+                      <MaterialIcons
+                        name={
+                          activeState?.number === item?.number
+                            ? "arrow-drop-down"
+                            : "arrow-drop-up"
+                        }
+                        size={24}
+                        color={theme.active}
+                      />
                     </View>
-                    {activeState?.number === item?.number && (
-                      <Animated.View
+                  </View>
+                  {activeState?.number === item?.number && (
+                    <Animated.View
+                      style={{
+                        width: "100%",
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        borderRadius: 8,
+                        gap: 12,
+                        padding: 16,
+                        marginTop: 8,
+                      }}
+                    >
+                      <Text
                         style={{
-                          width: "100%",
-                          backgroundColor: "rgba(255,255,255,0.05)",
-                          borderRadius: 8,
-                          gap: 12,
-                          padding: 16,
-                          marginTop: 8,
+                          color: theme.active,
+                          fontSize: 16,
+                          fontWeight: 500,
                         }}
                       >
-                        <Text
-                          style={{
-                            color: theme.active,
-                            fontSize: 16,
-                            fontWeight: 500,
-                          }}
-                        >
-                          {activeLanguage?.game} N{activeState?.number}
-                        </Text>
+                        {activeLanguage?.game} N{activeState?.number}
+                      </Text>
+                      {activeState?.result ? (
                         <Text
                           style={{
                             color: theme.text,
@@ -268,221 +268,225 @@ const Logs = ({ route, item }: any) => {
                               : "No winners"}
                           </Text>
                         </Text>
+                      ) : (
                         <Text
                           style={{
-                            color: theme.text,
+                            color: theme.active,
                             fontSize: 14,
                             fontWeight: 500,
                           }}
                         >
-                          {activeLanguage?.finishedAt}:{" "}
-                          {activeState?.gameLevel?.finishedAt &&
-                            FormatDate(
-                              activeState?.gameLevel?.finishedAt,
-                              "date"
-                            )}
+                          Current Game...
                         </Text>
-                        <Text
-                          style={{
-                            color: theme.text,
-                            fontSize: 14,
-                            fontWeight: 500,
-                          }}
-                        >
-                          {activeLanguage?.playersMore}:
-                        </Text>
-                        <View
-                          style={{
-                            gap: 12,
-                            padding: 12,
-                            borderRadius: 8,
-                            backgroundColor: "rgba(255,255,255,0.05)",
-                          }}
-                        >
-                          {activeState?.players?.map((p: any, x: number) => {
-                            return (
+                      )}
+                      <Text
+                        style={{
+                          color: theme.text,
+                          fontSize: 14,
+                          fontWeight: 500,
+                        }}
+                      >
+                        {activeLanguage?.finishedAt}:{" "}
+                        {activeState?.gameLevel?.finishedAt &&
+                          FormatDate(
+                            activeState?.gameLevel?.finishedAt,
+                            "date"
+                          )}
+                      </Text>
+                      <Text
+                        style={{
+                          color: theme.text,
+                          fontSize: 14,
+                          fontWeight: 500,
+                        }}
+                      >
+                        {activeLanguage?.playersMore}:
+                      </Text>
+                      <View
+                        style={{
+                          gap: 12,
+                          padding: 12,
+                          borderRadius: 8,
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                        }}
+                      >
+                        {activeState?.players?.map((p: any, x: number) => {
+                          return (
+                            <View
+                              key={x}
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 8,
+                              }}
+                            >
                               <View
-                                key={x}
                                 style={{
-                                  flexDirection: "row",
-                                  alignItems: "center",
-                                  gap: 8,
+                                  height: 24,
+                                  width: 24,
+                                  borderRadius: 50,
+                                  overflow: "hidden",
                                 }}
                               >
-                                <View
-                                  style={{
-                                    height: 24,
-                                    width: 24,
-                                    borderRadius: 50,
-                                    overflow: "hidden",
-                                  }}
-                                >
-                                  <Img uri={p.userCover} />
-                                </View>
-                                <Text
-                                  style={{ color: theme.text, fontWeight: 500 }}
-                                >
-                                  N{p?.playerNumber} {p?.userName}
-                                </Text>
-                                <Text
-                                  style={{
-                                    color: theme.active,
-                                    fontWeight: 500,
-                                  }}
-                                >
-                                  {p?.role?.value === "mafia"
-                                    ? activeLanguage?.mafia
-                                    : p?.role?.value === "citizen"
-                                    ? activeLanguage?.citizen
-                                    : p?.role?.value === "doctor"
-                                    ? activeLanguage?.doctor
-                                    : p?.role?.value === "police"
-                                    ? activeLanguage?.police
-                                    : p?.role?.value === "serial-killer"
-                                    ? activeLanguage?.serialKiller
-                                    : activeLanguage?.mafiaDon}
-                                </Text>
-                                {(p?.role?.value.includes("mafia") &&
-                                  item?.result?.winners === "Mafia") ||
-                                (p?.role?.value !== "serial-killer" &&
-                                  !p?.role?.value.includes("mafia") &&
-                                  item?.result?.winners === "Citizens") ||
-                                (p?.role?.value.includes("serial-killer") &&
-                                  item?.result?.winners === "Serial Killer") ? (
-                                  <MaterialCommunityIcons
-                                    name="medal"
-                                    size={16}
-                                    color={theme.active}
-                                  />
-                                ) : null}
-                                <View></View>
-                                <Text
-                                  style={{
-                                    fontWeight: 500,
-                                    color: theme.text,
-                                    marginLeft: "auto",
-                                  }}
-                                >
-                                  {defineUserRating(item?.rating, p?.userId) ||
-                                    0}{" "}
-                                  P.
-                                </Text>
+                                <Img uri={p.userCover} />
                               </View>
-                            );
-                          })}
-                        </View>
-                        <View
+                              <Text
+                                style={{ color: theme.text, fontWeight: 500 }}
+                              >
+                                N{p?.playerNumber} {p?.userName}
+                              </Text>
+                              <Text
+                                style={{
+                                  color: theme.active,
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {p?.role?.value === "mafia"
+                                  ? activeLanguage?.mafia
+                                  : p?.role?.value === "citizen"
+                                  ? activeLanguage?.citizen
+                                  : p?.role?.value === "doctor"
+                                  ? activeLanguage?.doctor
+                                  : p?.role?.value === "police"
+                                  ? activeLanguage?.police
+                                  : p?.role?.value === "serial-killer"
+                                  ? activeLanguage?.serialKiller
+                                  : activeLanguage?.mafiaDon}
+                              </Text>
+                              {(p?.role?.value.includes("mafia") &&
+                                item?.result?.winners === "Mafia") ||
+                              (p?.role?.value !== "serial-killer" &&
+                                !p?.role?.value.includes("mafia") &&
+                                item?.result?.winners === "Citizens") ||
+                              (p?.role?.value.includes("serial-killer") &&
+                                item?.result?.winners === "Serial Killer") ? (
+                                <MaterialCommunityIcons
+                                  name="medal"
+                                  size={16}
+                                  color={theme.active}
+                                />
+                              ) : null}
+                              <View></View>
+                              <Text
+                                style={{
+                                  fontWeight: 500,
+                                  color: theme.text,
+                                  marginLeft: "auto",
+                                }}
+                              >
+                                {defineUserRating(item?.rating, p?.userId) || 0}{" "}
+                                P.
+                              </Text>
+                            </View>
+                          );
+                        })}
+                      </View>
+                      <View
+                        style={{
+                          width: "100%",
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <Pressable
+                          onPress={
+                            selectPeriod === "Days"
+                              ? () => {
+                                  if (haptics) {
+                                    Haptics.impactAsync(
+                                      Haptics.ImpactFeedbackStyle.Soft
+                                    );
+                                  }
+                                  setSelectPeriod(null);
+                                }
+                              : () => {
+                                  if (haptics) {
+                                    Haptics.impactAsync(
+                                      Haptics.ImpactFeedbackStyle.Soft
+                                    );
+                                  }
+                                  setSelectPeriod("Days");
+                                }
+                          }
                           style={{
-                            width: "100%",
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 8,
+                            padding: 6,
+                            paddingHorizontal: 16,
+                            borderRadius: 50,
+                            backgroundColor:
+                              selectPeriod === "Days"
+                                ? theme.active
+                                : "rgba(255,255,255,0.05)",
                           }}
                         >
-                          <Pressable
-                            onPress={
-                              selectPeriod === "Days"
-                                ? () => {
-                                    if (haptics) {
-                                      Haptics.impactAsync(
-                                        Haptics.ImpactFeedbackStyle.Soft
-                                      );
-                                    }
-                                    setSelectPeriod(null);
-                                  }
-                                : () => {
-                                    if (haptics) {
-                                      Haptics.impactAsync(
-                                        Haptics.ImpactFeedbackStyle.Soft
-                                      );
-                                    }
-                                    setSelectPeriod("Days");
-                                  }
-                            }
+                          <Text
                             style={{
-                              padding: 6,
-                              paddingHorizontal: 16,
-                              borderRadius: 50,
-                              backgroundColor:
-                                selectPeriod === "Days"
-                                  ? theme.active
-                                  : "rgba(255,255,255,0.05)",
+                              color:
+                                selectPeriod === "Days" ? "white" : theme.text,
+                              fontWeight: 500,
                             }}
                           >
-                            <Text
-                              style={{
-                                color:
-                                  selectPeriod === "Days"
-                                    ? "white"
-                                    : theme.text,
-                                fontWeight: 500,
-                              }}
-                            >
-                              {activeLanguage?.days}
-                            </Text>
-                          </Pressable>
-                          <Pressable
-                            onPress={
+                            {activeLanguage?.days}
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          onPress={
+                            selectPeriod === "Nights"
+                              ? () => {
+                                  if (haptics) {
+                                    Haptics.impactAsync(
+                                      Haptics.ImpactFeedbackStyle.Soft
+                                    );
+                                  }
+                                  setSelectPeriod(null);
+                                }
+                              : () => {
+                                  if (haptics) {
+                                    Haptics.impactAsync(
+                                      Haptics.ImpactFeedbackStyle.Soft
+                                    );
+                                  }
+                                  setSelectPeriod("Nights");
+                                }
+                          }
+                          style={{
+                            padding: 6,
+                            paddingHorizontal: 16,
+                            borderRadius: 50,
+                            backgroundColor:
                               selectPeriod === "Nights"
-                                ? () => {
-                                    if (haptics) {
-                                      Haptics.impactAsync(
-                                        Haptics.ImpactFeedbackStyle.Soft
-                                      );
-                                    }
-                                    setSelectPeriod(null);
-                                  }
-                                : () => {
-                                    if (haptics) {
-                                      Haptics.impactAsync(
-                                        Haptics.ImpactFeedbackStyle.Soft
-                                      );
-                                    }
-                                    setSelectPeriod("Nights");
-                                  }
-                            }
+                                ? theme.active
+                                : "rgba(255,255,255,0.05)",
+                          }}
+                        >
+                          <Text
                             style={{
-                              padding: 6,
-                              paddingHorizontal: 16,
-                              borderRadius: 50,
-                              backgroundColor:
+                              color:
                                 selectPeriod === "Nights"
-                                  ? theme.active
-                                  : "rgba(255,255,255,0.05)",
+                                  ? "white"
+                                  : theme.text,
+                              fontWeight: 500,
                             }}
                           >
-                            <Text
-                              style={{
-                                color:
-                                  selectPeriod === "Nights"
-                                    ? "white"
-                                    : theme.text,
-                                fontWeight: 500,
-                              }}
-                            >
-                              {activeLanguage?.nights}
-                            </Text>
-                          </Pressable>
+                            {activeLanguage?.nights}
+                          </Text>
+                        </Pressable>
+                      </View>
+                      {loadingData ? (
+                        <ActivityIndicator size={16} color={theme.active} />
+                      ) : (
+                        <View>
+                          {selectPeriod === "Days" ? (
+                            <Days data={periodData} players={item.players} />
+                          ) : selectPeriod === "Nights" ? (
+                            <Nights data={periodData} players={item.players} />
+                          ) : undefined}
                         </View>
-                        {loadingData ? (
-                          <ActivityIndicator size={16} color={theme.active} />
-                        ) : (
-                          <View>
-                            {selectPeriod === "Days" ? (
-                              <Days data={periodData} players={item.players} />
-                            ) : selectPeriod === "Nights" ? (
-                              <Nights
-                                data={periodData}
-                                players={item.players}
-                              />
-                            ) : undefined}
-                          </View>
-                        )}
-                      </Animated.View>
-                    )}
-                  </Pressable>
-                );
-              }
+                      )}
+                    </Animated.View>
+                  )}
+                </Pressable>
+              );
             })}
 
             <View style={{ width: "100%" }}>

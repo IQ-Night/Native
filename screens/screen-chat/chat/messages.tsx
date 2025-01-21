@@ -23,14 +23,14 @@ const Messages = ({
   const { chatNotifications, setChatNotifications, setChats } =
     useChatContext();
 
-  const handleScroll = (event: any) => {
-    const { contentOffset } = event.nativeEvent;
-
-    // // Detect if user is close to the top
-    // if (contentOffset.y <= 50) {
-    //   AddNewMessages();
-    // }
-  };
+  // const handleScroll = (event: any) => {
+  //   const { contentOffset } = event.nativeEvent;
+  //   console.log(contentOffset);
+  //   // // Detect if user is close to the top
+  //   if (contentOffset.y <= 50) {
+  //     AddNewMessages();
+  //   }
+  // };
 
   // Memoize the render function for each message to prevent re-renders
   const renderMessage = ({ item, index }: any) => (
@@ -102,7 +102,6 @@ const Messages = ({
         renderItem={renderMessage}
         keyExtractor={(item) => item.messageId.toString()}
         inverted
-        onScroll={handleScroll}
         scrollEventThrottle={16}
         contentContainerStyle={styles.contentContainer}
         keyboardShouldPersistTaps="always"
@@ -121,6 +120,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   contentContainer: {
+    paddingBottom: 200,
     paddingHorizontal: 12,
   },
 });

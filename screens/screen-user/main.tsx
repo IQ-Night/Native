@@ -285,7 +285,7 @@ const User = ({ route, navigation, userItem, from }: any) => {
               >
                 {user?.admin?.role === "Game Admin"
                   ? activeLanguage?.game_admin
-                  : activeLanguage?.app_admin}
+                  : activeLanguage?.admin}
               </Text>
             )}
             <Text style={{ color: theme.text, fontWeight: 500, fontSize: 14 }}>

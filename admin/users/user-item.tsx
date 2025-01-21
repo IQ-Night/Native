@@ -40,7 +40,6 @@ const UserItem: React.FC<UserItemProps> = ({
   const { theme, activeLanguage } = useAppContext();
 
   const { currentUser } = useAuthContext();
-
   return (
     <View style={styles.container}>
       <Text
@@ -48,7 +47,7 @@ const UserItem: React.FC<UserItemProps> = ({
           color: item?._id === currentUser?._id ? theme.active : theme.text,
           fontSize: 18,
           fontWeight: 500,
-          width: 20,
+          width: 30,
         }}
       >
         {index + 1}.
@@ -63,6 +62,20 @@ const UserItem: React.FC<UserItemProps> = ({
           marginLeft: 8,
         }}
       >
+        {item?.status === "online" && (
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: 50,
+              borderRadius: 50,
+              width: 8,
+              height: 8,
+              backgroundColor: "green",
+            }}
+          />
+        )}
         <View
           style={{
             width: 38,
@@ -75,12 +88,17 @@ const UserItem: React.FC<UserItemProps> = ({
         </View>
         <Text
           style={{
-            color: item?._id === currentUser?._id ? theme.active : theme.text,
+            color:
+              item?._id === currentUser?._id
+                ? theme.active
+                : !item.name
+                ? "gray"
+                : theme.text,
             fontSize: 14,
             fontWeight: 500,
           }}
         >
-          {item.name}
+          {item.name || "Register not finished"}
         </Text>
         <CountryFlag
           isoCode={"GE"}

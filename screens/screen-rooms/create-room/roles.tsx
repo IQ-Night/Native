@@ -3,7 +3,7 @@ import * as Haptics from "expo-haptics";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAppContext } from "../../../context/app";
 import { useAuthContext } from "../../../context/auth";
-import FlipCard from "../../../context/flipCard";
+import FlipCard from "../../../components/flipCard";
 import { roles } from "../../../context/rooms";
 import roleImageGenerator from "../../../functions/roleImageGenerator";
 
@@ -29,7 +29,7 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo }: any) => {
     >
       {roles.map((item: any, index: number) => {
         const roleImage: any = roleImageGenerator({
-          role: item.value,
+          role: item,
           language,
         });
         return (
@@ -118,7 +118,11 @@ const Roles = ({ roomState, setRoomState, setOpenRoleInfo }: any) => {
                 setOpenRoleInfo={setOpenRoleInfo}
                 item={item}
                 roomState={roomState}
-                sizes={{ width: (SCREEN_WIDTH - 58) / 3, height: 180 }}
+                sizes={{
+                  width: (SCREEN_WIDTH - 58) / 3,
+                  height: 180,
+                  borderRadius: 16,
+                }}
               />
             </View>
 

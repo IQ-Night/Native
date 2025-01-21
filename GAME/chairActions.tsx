@@ -14,6 +14,8 @@ import { ActivityIndicator } from "react-native-paper";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
+import VideoComponent from "../components/videoComponent";
+import Img from "../components/image";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -45,6 +47,11 @@ const ChaitActions = ({
   isMafiaRevealed,
   roles,
   speechTimer,
+  textColor,
+  setOpenVideo,
+  setOpenUser,
+  appPositionStatus,
+  userStatus,
 }: any) => {
   const { haptics, theme, activeLanguage } = useAppContext();
   const { currentUser } = useAuthContext();
@@ -106,126 +113,167 @@ const ChaitActions = ({
   return (
     <Animated.View
       style={{
-        transform: [{ scale: scaleAnim }],
-        opacity: opacityAnim,
+        // transform: [{ scale: scaleAnim }],
+        // opacity: opacityAnim,
         width: (SCREEN_WIDTH * 0.9 - 72) / 4,
         aspectRatio: 1,
         borderRadius: 100,
-        // backgroundColor: "rgba(255,255,255,0.05)",
         position: "absolute",
         zIndex: 50,
       }}
     >
-      {game?.value === "Night" &&
-        currentUserRole?.includes("mafia") &&
-        !item?.role?.value.includes("mafia") && (
-          <BlurView
-            tint="dark"
-            intensity={40}
+      <View
+        style={{
+          width: (SCREEN_WIDTH * 0.9 - 72) / 4,
+          height: (SCREEN_WIDTH * 0.9 - 72) / 4,
+          borderRadius: 50,
+          overflow: "hidden",
+          borderWidth: 2,
+          borderColor:
+            activePlayerToSpeech?.userId === item?.userId
+              ? theme.active
+              : game.value === "Personal Time Of Death" &&
+                game.options[0].userId === item.userId
+              ? "red"
+              : textColor,
+        }}
+      >
+        <VideoComponent
+          userId={item?.userId}
+          user={item}
+          setOpenVideo={setOpenVideo}
+          game={game}
+          currentUserRole={currentUserRole}
+          setOpenUser={setOpenUser}
+          activePlayerToSpeech={activePlayerToSpeech}
+          display={
+            appPositionStatus === "active" && userStatus === "online"
+              ? true
+              : false
+          }
+        />
+      </View>
+      {/** Mafias action */}
+      {game?.value === "Night" && currentUserRole?.includes("mafia") && (
+        <BlurView
+          tint="dark"
+          intensity={40}
+          style={{
+            position: "absolute",
+            zIndex: 50,
+            width: "100%",
+            height: "100%",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 100,
+            overflow: "hidden",
+            gap: 4,
+          }}
+        >
+          {/** Don action, find police */}
+          {!userInPlay?.death &&
+            currentUserRole === "mafia-don" &&
+            game.value === "Night" &&
+            item.role.value !== "mafia" &&
+            currentUser?._id !== item.userId &&
+            gamePlayers?.some((user: any) => user.role.value === "police") &&
+            !sherifPlayer &&
+            findNight !== nightNumber && (
+              <Pressable
+                onPress={(e: any) => {
+                  if (!userInPlay?.death && !userSpectator) {
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
+
+                    e.stopPropagation();
+                    FindSherif();
+                  }
+                }}
+                style={{
+                  width: "70%",
+                  height: "33%",
+                  borderRadius: 100,
+                  backgroundColor: "rgba(0,0,0,0.7)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.5)",
+                  flexDirection: "row",
+                  gap: 4,
+                }}
+              >
+                <MaterialIcons
+                  name="local-police"
+                  size={16}
+                  color={theme.active}
+                />
+                {/* <Text style={{ color: theme.active }}>?</Text> */}
+              </Pressable>
+            )}
+          {/** Mafia kill */}
+          <Pressable
+            onPress={(e) => {
+              if (!userInPlay?.death && !userSpectator) {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+                e.stopPropagation();
+                KillPlayer();
+              }
+            }}
             style={{
-              position: "absolute",
-              zIndex: 50,
-              width: "100%",
-              height: "100%",
+              width: "70%",
+              height: "33%",
+              borderRadius: 100,
+              backgroundColor: "rgba(0,0,0,0.7)",
               alignItems: "center",
               justifyContent: "center",
-              borderRadius: 100,
-              overflow: "hidden",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.5)",
+              flexDirection: "row",
               gap: 4,
             }}
           >
-            {!userInPlay?.death &&
-              currentUserRole === "mafia-don" &&
-              game.value === "Night" &&
-              item.role.value !== "mafia" &&
-              currentUser?._id !== item.userId &&
-              gamePlayers?.some((user: any) => user.role.value === "police") &&
-              !sherifPlayer &&
-              findNight !== nightNumber && (
-                <Pressable
-                  onPress={(e: any) => {
-                    if (!userInPlay?.death && !userSpectator) {
-                      if (haptics) {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                      }
+            <MaterialCommunityIcons
+              name="skull"
+              color={
+                nightVotes?.find((nv: any) => nv.killer === currentUser?._id)
+                  ? "red"
+                  : "white"
+              }
+              size={16}
+            />
 
-                      e.stopPropagation();
-                      FindSherif();
-                    }
-                  }}
+            {nightVotes?.length > 0 &&
+              !gamePlayers?.find((p: any) => p.role.value === "mafia-don") &&
+              currentUserRole?.includes("mafia") &&
+              game.value === "Night" && (
+                <Pressable
                   style={{
-                    width: "70%",
-                    height: "33%",
-                    borderRadius: 100,
-                    backgroundColor: "rgba(0,0,0,0.7)",
                     alignItems: "center",
                     justifyContent: "center",
-                    borderWidth: 1,
-                    borderColor: "rgba(255,255,255,0.5)",
-                    flexDirection: "row",
-                    gap: 4,
+
+                    zIndex: 60,
                   }}
                 >
-                  <MaterialIcons
-                    name="local-police"
-                    size={16}
-                    color={theme.active}
-                  />
-                  {/* <Text style={{ color: theme.active }}>?</Text> */}
-                </Pressable>
-              )}
-            <Pressable
-              onPress={(e) => {
-                if (!userInPlay?.death && !userSpectator) {
-                  if (haptics) {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                  }
-                  e.stopPropagation();
-                  KillPlayer();
-                }
-              }}
-              style={{
-                width: "70%",
-                height: "33%",
-                borderRadius: 100,
-                backgroundColor: "rgba(0,0,0,0.7)",
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.5)",
-                flexDirection: "row",
-                gap: 4,
-              }}
-            >
-              <MaterialCommunityIcons name="skull" color="white" size={16} />
-
-              {nightVotes > 0 &&
-                currentUserRole?.includes("mafia") &&
-                game.value === "Night" && (
-                  <Pressable
+                  <Text
                     style={{
-                      alignItems: "center",
-                      justifyContent: "center",
-
-                      zIndex: 60,
+                      color: "red",
+                      fontWeight: 600,
+                      fontSize: 14,
+                      position: "relative",
+                      bottom: 0.5,
                     }}
                   >
-                    <Text
-                      style={{
-                        color: "red",
-                        fontWeight: 600,
-                        fontSize: 14,
-                        position: "relative",
-                        bottom: 0.5,
-                      }}
-                    >
-                      {nightVotes}
-                    </Text>
-                  </Pressable>
-                )}
-            </Pressable>
-          </BlurView>
-        )}
+                    {nightVotes?.length}
+                  </Text>
+                </Pressable>
+              )}
+          </Pressable>
+        </BlurView>
+      )}
+      {/** Doctor action, safe player */}
       {game?.value === "Night" &&
         currentUserRole === "doctor" &&
         !alreadySafedOnce?.find(
@@ -290,6 +338,7 @@ const ChaitActions = ({
             </Pressable>
           </BlurView>
         )}
+      {/** Police action, find mafia */}
       {!userInPlay?.death &&
         currentUserRole === "police" &&
         game.value === "Night" &&
@@ -369,6 +418,7 @@ const ChaitActions = ({
             </Pressable>
           </BlurView>
         )}
+      {/** Serial killer action, kill player */}
       {game?.value === "Night" &&
         nightNumber > 1 &&
         currentUserRole?.includes("serial") &&
@@ -423,34 +473,10 @@ const ChaitActions = ({
               >
                 Kill
               </Text>
-              {nightVotes > 0 &&
-                currentUserRole?.includes("mafia") &&
-                game.value === "Night" && (
-                  <View
-                    style={{
-                      alignItems: "center",
-                      justifyContent: "center",
-
-                      zIndex: 60,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "red",
-                        fontWeight: 600,
-                        fontSize: 14,
-                        position: "relative",
-                        bottom: 0.5,
-                      }}
-                    >
-                      {nightVotes}
-                    </Text>
-                  </View>
-                )}
             </Pressable>
           </BlurView>
         )}
-
+      {/** Day nomination action */}
       {game?.value === "Day" &&
         dayNumber > 1 &&
         activePlayerToSpeech?.userId !== item?.userId &&
@@ -538,11 +564,21 @@ const ChaitActions = ({
             </Pressable>
           </BlurView>
         )}
-
+      {/** Serial killer killed player */}
       {killBySerialKiller === item?.userId &&
         currentUserRole === "serial-killer" &&
         game.value === "Night" && (
-          <View
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              if (!userInPlay?.death && !userSpectator) {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+
+                KillPlayerBySerialKiller();
+              }
+            }}
             style={{
               width: "100%",
               height: "100%",
@@ -558,10 +594,10 @@ const ChaitActions = ({
             <Text style={{ color: "red", fontSize: 40, fontWeight: 700 }}>
               X
             </Text>
-          </View>
+          </Pressable>
         )}
 
-      {((isMafiaRevealed && item?.role?.value?.includes("mafia")) ||
+      {/* {((isMafiaRevealed && item?.role?.value?.includes("mafia")) ||
         (game.value === "Night" &&
           item?.role?.value?.includes("mafia") &&
           currentUserRole?.includes("mafia"))) && (
@@ -601,7 +637,7 @@ const ChaitActions = ({
               : activeLanguage?.mafiaDon}
           </Text>
         </View>
-      )}
+      )} */}
     </Animated.View>
   );
 };

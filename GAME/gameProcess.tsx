@@ -12,7 +12,6 @@ import Button from "../components/button";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
-import { useVideoConnectionContext } from "../context/videoConnection";
 
 const GameProcess = ({
   game,
@@ -25,6 +24,11 @@ const GameProcess = ({
   speechTimer,
   SkipSpeech,
   changeSpeakerLoading,
+  skipLoading,
+  SkipNight,
+  nightSkips,
+  commonTimeSkips,
+  CommonTimeSkip,
   setOpenConfirmRoles,
   StartPlay,
 }: any) => {
@@ -43,10 +47,6 @@ const GameProcess = ({
    */
   const { spectators, gamePlayers, socket, activeRoom, loadingSpectate } =
     useGameContext();
-  /**
-   * Video connection context
-   */
-  const { startCall } = useVideoConnectionContext();
 
   /** Mark the player as ready to start */
   const ReadyToStart = async () => {
@@ -106,6 +106,19 @@ const GameProcess = ({
     }).start();
   }, [speechTimer]);
 
+  /**
+   * current user role
+   */
+  const currentUserRole = gamePlayers?.find(
+    (player: any) => player?.userId === currentUser?._id
+  )?.role?.value;
+  /**
+   * current user status
+   */
+  const currentUserDeath = gamePlayers?.find(
+    (player: any) => player?.userId === currentUser?._id
+  )?.death;
+
   return (
     <View
       style={{
@@ -154,7 +167,10 @@ const GameProcess = ({
           ) : (
             <Text
               style={{
-                color: theme.active,
+                color:
+                  game.value === "Users are confirming own roles.."
+                    ? theme.text
+                    : theme.active,
                 fontSize: 20,
                 textAlign: "center",
                 fontWeight: "600",
@@ -170,7 +186,9 @@ const GameProcess = ({
                 ? activeLanguage?.night
                 : game.value === "Common Time"
                 ? activeLanguage?.common_time
-                : ""}{" "}
+                : game.value === "Personal Time Of Death"
+                ? activeLanguage?.last_speech
+                : " "}
               {game.value === "Day"
                 ? `${dayNumber}`
                 : game.value === "Night"
@@ -277,11 +295,16 @@ const GameProcess = ({
               <MaterialCommunityIcons
                 name="timer"
                 size={16}
-                color={theme.active}
+                color={
+                  game.value === "Personal Time Of Death" ? "red" : theme.active
+                }
               />
               <Text
                 style={{
-                  color: theme.text,
+                  color:
+                    game.value === "Personal Time Of Death"
+                      ? "red"
+                      : theme.text,
                   fontWeight: "600",
                   fontSize: 14,
                 }}
@@ -322,6 +345,103 @@ const GameProcess = ({
             </TouchableOpacity>
           </View>
         )}
+      {game.value === "Night" &&
+        !currentUserDeath &&
+        (currentUserRole?.includes("mafia") ||
+          currentUserRole === "doctor" ||
+          currentUserRole === "police" ||
+          currentUserRole === "serial-killer") && (
+          <View style={{ alignItems: "center", marginTop: 16 }}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={SkipNight}
+              style={{
+                width: 160,
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 6,
+                borderRadius: 50,
+                backgroundColor: "#181818",
+                borderWidth: 1,
+                borderColor: nightSkips?.find(
+                  (skip: any) => skip === currentUser?._id
+                )
+                  ? theme.text
+                  : theme.active,
+                height: 34,
+                position: "relative",
+                bottom: 8,
+              }}
+            >
+              <Text
+                style={{
+                  color: nightSkips?.find(
+                    (skip: any) => skip === currentUser?._id
+                  )
+                    ? theme.text
+                    : theme.active,
+                  fontWeight: 600,
+                }}
+              >
+                {skipLoading ? (
+                  <ActivityIndicator size={16} color={theme.active} />
+                ) : nightSkips?.find(
+                    (skip: any) => skip === currentUser?._id
+                  ) ? (
+                  activeLanguage?.cancel
+                ) : (
+                  activeLanguage?.skip
+                )}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      {game.value === "Common Time" && !currentUserDeath && (
+        <View style={{ alignItems: "center", marginTop: 16 }}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={CommonTimeSkip}
+            style={{
+              width: 160,
+              alignItems: "center",
+              justifyContent: "center",
+              paddingVertical: 6,
+              borderRadius: 50,
+              backgroundColor: "#181818",
+              borderWidth: 1,
+              borderColor: commonTimeSkips?.find(
+                (skip: any) => skip === currentUser?._id
+              )
+                ? theme.text
+                : theme.active,
+              height: 34,
+              position: "relative",
+              bottom: 8,
+            }}
+          >
+            <Text
+              style={{
+                color: commonTimeSkips?.find(
+                  (skip: any) => skip === currentUser?._id
+                )
+                  ? theme.text
+                  : theme.active,
+                fontWeight: 600,
+              }}
+            >
+              {skipLoading ? (
+                <ActivityIndicator size={16} color={theme.active} />
+              ) : commonTimeSkips?.find(
+                  (skip: any) => skip === currentUser?._id
+                ) ? (
+                activeLanguage?.cancel
+              ) : (
+                activeLanguage?.skip
+              )}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

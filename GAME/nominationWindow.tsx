@@ -20,7 +20,7 @@ import VotingTimer2 from "./timers/votingTimer2";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { ActivityIndicator } from "react-native-paper";
 import * as Haptics from "expo-haptics";
-import VideoComponent from "./videoComponent";
+import VideoComponent from "../components/videoComponent";
 
 const NominationWindow = ({
   data,
@@ -32,6 +32,8 @@ const NominationWindow = ({
   setAttention,
   SaveAfterLeaveDataInDB,
   game,
+  setOpenUser,
+  setOpenVideo,
 }: any) => {
   /**
    * App context
@@ -498,6 +500,31 @@ const NominationWindow = ({
     }
   };
 
+  // if 2nd nomination and only 2 nominates are, the nominantes cannot vote
+  // save first nomination votes
+  const [firstNominationVotes, setFirstNominationVotes] = useState([]);
+
+  // 1. დათვალე ნომინანტების ხმები
+  const nominantesCount = firstNominationVotes?.reduce(
+    (acc: any, vote: any) => {
+      acc[vote.voteFor] = (acc[vote.voteFor] || 0) + 1; // თითოეულ ნომინანტს დაუმატოს ხმა
+      return acc;
+    },
+    {}
+  );
+
+  // 2. გადაამოწმე ნომინანტების რაოდენობა
+  const uniqueNominantes = Object.keys(nominantesCount); // უნიკალური ნომინანტები
+  let currentUserCanVote = true; // ხმის მიცემის ნებართვის საწყისი მნიშვნელობა
+
+  // 3. თუ ნომინანტების რაოდენობა არის 2 და ხმის მიცემა მეორე რაუნდშია
+  if (uniqueNominantes.length === 2 && voting === 2) {
+    // 4. შეამოწმე, არის თუ არა მომხმარებელი ნომინანტებში
+    if (uniqueNominantes.includes(currentUser?._id)) {
+      currentUserCanVote = false; // ნომინირებულს არ შეუძლია ხმის მიცემა
+    }
+  }
+
   const GiveVote2 = async ({ playerId }: any) => {
     if (haptics) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
@@ -925,6 +952,7 @@ const NominationWindow = ({
             });
             setVoting(2);
             setSpeecher(null);
+            setFirstNominationVotes(votes);
             setVotes([]);
             if (host?.userId === currentUser?._id) {
               socket.emit("VotingTimer2Start", {
@@ -1168,6 +1196,61 @@ const NominationWindow = ({
     }
   };
 
+  /**
+   * Skip voting stage
+   */
+  const [skipLoading, setSkipLoading] = useState(false);
+  const [skips, setSkips] = useState([]);
+
+  const SkipVoting = () => {
+    setSkipLoading(true);
+    const mapedList = data?.reJoin
+      ? data?.nominantes
+      : data?.nominantes.map((nom: any, index: number) => {
+          let user = data?.players.find(
+            (user: any) => user.userId === nom.victim
+          );
+          return { ...user, count: nom.count };
+        });
+    // Sort users by playerNumber
+    const sortedUsers = mapedList.sort(
+      (a: any, b: any) => a.playerNumber - b.playerNumber
+    );
+    // Players who can vote
+    const skipPlayers = gamePlayers?.filter((p: any) => {
+      return !mapedList?.some((m: any) => m.userId === p.userId);
+    });
+
+    socket.emit("skipVoting", {
+      roomId: activeRoom?._id,
+      userId: currentUser?._id,
+      unskip: skips?.find((skip: any) =>
+        skip === currentUser?._id ? true : false
+      ),
+      votingStage: voting,
+    });
+  };
+
+  useEffect(() => {
+    if (socket) {
+      const updateVotingSkips = (data: any) => {
+        setSkips(data?.skips);
+        setSkipLoading(false);
+      };
+      socket.on("votingSkipsUpdated", updateVotingSkips);
+      return () => {
+        socket.off("votingSkipsUpdated", updateVotingSkips);
+      };
+    }
+  }, [socket]);
+
+  // clean skips when start second time voting
+  useEffect(() => {
+    if (voting === 2) {
+      setSkips([]);
+    }
+  }, [voting]);
+
   return (
     <BlurView
       intensity={100}
@@ -1177,7 +1260,7 @@ const NominationWindow = ({
         height: "100%",
         position: "absolute",
         top: 0,
-        zIndex: 90,
+        zIndex: 80,
         alignItems: "center",
         justifyContent: "center",
         paddingTop: "30%",
@@ -1334,12 +1417,13 @@ const NominationWindow = ({
               // flexWrap: "wrap", // Allow wrapping to create columns
               alignItems: "center",
               // justifyContent: "center",
-              gap: 2,
+              gap: 4,
             }}
           >
             {sortedNominantes?.map((player: any, index: number) => {
               return (
-                <View
+                <Pressable
+                  onPress={() => setOpenUser(player)}
                   key={index}
                   style={{
                     flexDirection: "row",
@@ -1347,55 +1431,48 @@ const NominationWindow = ({
                     marginBottom: 16,
                     gap: 16,
                     position: "relative",
+                    transform: [
+                      {
+                        scale: player?.userId === speecher?.userId ? 1.1 : 1,
+                      },
+                    ],
                   }}
                 >
                   {speecher?.userId === player?.userId && (
                     <View
                       style={{
                         borderRadius: 200,
-                        width: 60,
-                        height: 60,
+                        width: 55,
+                        height: 55,
                         alignItems: "center",
                         justifyContent: "center",
                         position: "absolute",
                         zIndex: 90,
                       }}
                     >
-                      <VideoComponent userId={speecher?.userId} game={game} />
+                      <VideoComponent
+                        userId={speecher?.userId}
+                        game={game}
+                        user={speecher}
+                        setOpenUser={setOpenUser}
+                        setOpenVideo={setOpenVideo}
+                        nominations={data}
+                        voting={voting}
+                      />
                     </View>
                   )}
-                  {speecher?.userId === player?.userId && (
-                    <MaterialIcons
-                      style={{
-                        position: "absolute",
-                        zIndex: 50,
-                        left: -32,
-                      }}
-                      size={24}
-                      color={theme.active}
-                      name="keyboard-voice"
-                    />
-                  )}
+
                   <View
                     style={{
-                      width: 60,
-                      height: 60,
+                      width: 55,
+                      height: 55,
                       borderRadius: 50,
                       overflow: "hidden",
-                      borderWidth:
-                        voting &&
-                        votes?.find(
-                          (v: any) =>
-                            v.votedBy === currentUser?._id &&
-                            v.voteFor === player?.userId
-                        )
-                          ? 2
-                          : 0,
+
                       borderColor: "green",
                       transform: [
                         {
-                          scale:
-                            player?.userId === speecher?.userId ? 1.1 : 0.9,
+                          scale: player?.userId === speecher?.userId ? 1.1 : 1,
                         },
                       ],
                     }}
@@ -1408,7 +1485,8 @@ const NominationWindow = ({
                   {((voting === 1 && votingTimer > 1) ||
                     (voting === 2 && votingTimer2 > 1)) &&
                     currentPlayerInRoom?.type === "player" &&
-                    !currentPlayerInRoom?.death && (
+                    !currentPlayerInRoom?.death &&
+                    currentUserCanVote && (
                       <Pressable
                         onPress={
                           voting === 1 && !currentPlayerInRoom?.death
@@ -1460,7 +1538,7 @@ const NominationWindow = ({
                         )}
                       </Pressable>
                     )}
-                </View>
+                </Pressable>
               );
             })}
             {voting === 1 && votingTimer > 0 && (
@@ -1627,6 +1705,48 @@ const NominationWindow = ({
               </Text>
             </TouchableOpacity>
           )}
+        {voting && currentUserCanVote && (
+          <View style={{ alignItems: "center", marginTop: 16 }}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={SkipVoting}
+              style={{
+                width: 160,
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 6,
+                borderRadius: 50,
+                backgroundColor: "#181818",
+                borderWidth: 1,
+                borderColor: skips?.find(
+                  (skip: any) => skip === currentUser?._id
+                )
+                  ? theme.text
+                  : theme.active,
+                height: 34,
+                position: "relative",
+                bottom: 8,
+              }}
+            >
+              <Text
+                style={{
+                  color: skips?.find((skip: any) => skip === currentUser?._id)
+                    ? theme.text
+                    : theme.active,
+                  fontWeight: 600,
+                }}
+              >
+                {skipLoading ? (
+                  <ActivityIndicator size={16} color={theme.active} />
+                ) : skips?.find((skip: any) => skip === currentUser?._id) ? (
+                  activeLanguage?.cancel
+                ) : (
+                  activeLanguage?.skip
+                )}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </BlurView>
   );

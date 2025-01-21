@@ -125,12 +125,12 @@ const OpenVideo = ({ streamUrl, setOpenVideo, user, setOpenUser }: any) => {
             objectFit="cover"
           />
 
-          <FontAwesome
+          {/* <FontAwesome
             style={{}}
             size={32}
             color={theme.text}
-            name={user?.microphone ? "microphone" : "microphone-slash"}
-          />
+            name={user?.audio === "active" ? "microphone" : "microphone-slash"}
+          /> */}
         </Animated.View>
       </Pressable>
     </BlurView>

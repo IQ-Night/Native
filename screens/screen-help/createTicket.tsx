@@ -90,7 +90,6 @@ const CreateTicket = ({ openState, setOpenState, setTickets }: any) => {
   const [loading, setLoading] = useState(false);
   const SendTicket = async () => {
     const noAuthUserId = await AsyncStorage.getItem("IQ-Night:noAuthUserId");
-    console.log(noAuthUserId);
     const newTicket = {
       issue: issue,
       messages: [

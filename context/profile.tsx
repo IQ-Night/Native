@@ -209,6 +209,8 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
     if (!loading) {
       if (rerenderProfile || clans?.length < 1) {
         GetClans();
+      } else if (clansNotifications?.length > 0) {
+        GetClans();
       }
     }
   }, [rerenderProfile, clansNotifications, loading]);

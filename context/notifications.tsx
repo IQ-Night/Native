@@ -133,7 +133,7 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
    get total of requests
    *  */
   let clansRequestsNotifications = clansNotifications.filter((clan: any) =>
-    clan.admin?.some((a: any) => a.user === currentUser._id)
+    clan.admin?.some((a: any) => a.user.id === currentUser._id)
   );
 
   // Initialize total requests
@@ -203,22 +203,24 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
     warningType,
   }: any) => {
     try {
-      const response = await axios.post(
-        apiUrl + "/api/v1/users/" + userId + "/notifications",
-        {
-          sender: currentUser._id,
-          receiver: userId,
-          type: type,
-          status: "unread",
-          title,
-          name,
-          newRole,
-          warnings,
-          warningType,
+      if (userId) {
+        const response = await axios.post(
+          apiUrl + "/api/v1/users/" + userId + "/notifications",
+          {
+            sender: currentUser._id,
+            receiver: userId,
+            type: type,
+            status: "unread",
+            title,
+            name,
+            newRole,
+            warnings,
+            warningType,
+          }
+        );
+        if (response.data.status === "success") {
+          socket.emit("notifications", { userId: userId });
         }
-      );
-      if (response.data.status === "success") {
-        socket.emit("notifications", { userId: userId });
       }
     } catch (error: any) {
       console.log(error.response.data.message);

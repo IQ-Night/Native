@@ -113,9 +113,27 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
     } catch (err: unknown) {
       console.log(err);
       setLoading(false);
+
       // Check if 'err' is an object and has 'response' property
       if (typeof err === "object" && err !== null && "response" in err) {
         const errorObj = err as { response: { data: { message: string } } };
+
+        if (
+          errorObj?.response?.data?.message.includes(
+            "The account already signed in from another device!"
+          )
+        ) {
+          const userId = errorObj?.response?.data?.message?.split("*")[1];
+          return setAlert({
+            active: true,
+            type: "error",
+            text: activeLanguage?.already_signed,
+            button: {
+              function: () => logoutAll({ userId }),
+              text: activeLanguage?.logout_all_offer,
+            },
+          });
+        }
         setAlert({
           active: true,
           type: "error",
@@ -136,6 +154,7 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
   /**
    * Registration
    */
+  const [openCheckEmail, setOpenCheckEmail] = useState(false);
   const ProviderAuth = async (
     first: string,
     last: string,
@@ -176,10 +195,38 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
       if (typeof err === "object" && err !== null && "response" in err) {
         const errorObj = err as { response: { data: { message: string } } };
 
+        if (errorObj?.response?.data?.message === "Please provide your email") {
+          return setAlert({
+            active: true,
+            type: "error",
+            text: activeLanguage?.user_identificator_error,
+            button: {
+              function: () => navigation.navigate("Help"),
+              text: activeLanguage?.help,
+            },
+          });
+        }
+        if (
+          errorObj?.response?.data?.message.includes(
+            "The account already signed in from another device!"
+          )
+        ) {
+          const userId = errorObj?.response?.data?.message?.split("*")[1];
+          return setAlert({
+            active: true,
+            type: "error",
+            text: activeLanguage?.already_signed,
+            button: {
+              function: () => logoutAll({ userId }),
+              text: activeLanguage?.logout_all_offer,
+            },
+          });
+        }
+        console.log(errorObj.response.data.message);
         return setAlert({
           active: true,
           type: "error",
-          text: errorObj.response.data.message,
+          text: errorObj.response.data.message || activeLanguage?.went_wrong,
         });
       } else {
         // Handle other types of errors
@@ -238,6 +285,24 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
         // Handle the case where accessToken is not available
         console.log("No access token available");
       }
+    }
+  };
+
+  // logout all users if mulitple are the same time in online
+  const logoutAll = async ({ userId }: any) => {
+    try {
+      const response = await axios.patch(apiUrl + "/api/v1/logoutAll", {
+        userId,
+      });
+      if (response?.data?.status === "success") {
+        return setAlert({
+          active: true,
+          type: "success",
+          text: activeLanguage?.all_logout,
+        });
+      }
+    } catch (error: any) {
+      console.log(error?.response?.data?.message);
     }
   };
 

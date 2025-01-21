@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
@@ -7,6 +7,8 @@ import Button from "../components/button";
 import { useAppContext } from "../context/app";
 import { useGameContext } from "../context/game";
 import NumberPicker from "../screens/screen-rooms/numberPicker";
+import FlipCard from "../components/flipCard";
+import roleImageGenerator from "../functions/roleImageGenerator";
 
 const ConfirmRoles = ({
   setOpenConfirmRoles,
@@ -16,7 +18,7 @@ const ConfirmRoles = ({
   StartPlay,
   loadingStarting,
 }: any) => {
-  const { theme, haptics, activeLanguage } = useAppContext();
+  const { theme, haptics, activeLanguage, language } = useAppContext();
   const { activeRoom, gamePlayers } = useGameContext();
 
   const totalPlayersForStart = gamePlayers?.length;
@@ -54,11 +56,14 @@ const ConfirmRoles = ({
         totalMafias = 6;
       }
 
+      if (mafiaDon && totalMafias > 0) {
+        totalMafias = totalMafias - 1; // Set totalMafias to 1 when maxPlayers is 4 or 5
+      }
+
       setMaxMafias(totalMafias);
       setSelectedMaxMafias(1);
     }
-  }, [gamePlayers, mafias]);
-
+  }, [gamePlayers, mafias, mafiaDon]);
   // confirmed roles
 
   const DefineConfirmedRoles = () => {
@@ -75,13 +80,10 @@ const ConfirmRoles = ({
         value: "mafia",
       }));
 
-      // If mafiaDon is selected, replace one "mafia" with "mafia-don"
-      if (mafiaDon && mafiaRoles.length > 0) {
-        mafiaRoles[0] = { value: "mafia-don" };
-      }
-
       rolesArr = [...rolesArr, ...mafiaRoles];
-    } else if (mafiaDon) {
+    }
+
+    if (mafiaDon) {
       rolesArr.push({ value: "mafia-don" });
     }
 
@@ -109,6 +111,165 @@ const ConfirmRoles = ({
     police,
     selectedMaxMafias,
   ]);
+
+  /**
+   * Confirmation
+   */
+  const ConfirmRole = async (r: any) => {
+    if (r.value === "mafia") {
+      if (haptics) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+      }
+      const isDon = confirmedRoles?.find((cr: any) => cr.value === "mafia-don");
+      const isMafia = confirmedRoles?.filter((cr: any) => cr.value === "mafia");
+      if (isMafia.length === 0 && isDon && !mafias) {
+        setMafiaDon(false);
+      }
+      setMafias((prev: boolean) => !prev);
+
+      if (
+        confirmedRoles?.length === totalPlayersForStart &&
+        !mafias &&
+        !isDon
+      ) {
+        if (confirmedRoles?.find((cr: any) => cr.value === "citizen")) {
+          // Find the index of the first "citizen" role
+          const citizenIndex = confirmedRoles.findIndex(
+            (cr: any) => cr.value === "citizen"
+          );
+
+          if (citizenIndex !== -1) {
+            // Create a new array where the first "citizen" is replaced by "police"
+            setConfirmedRoles((prev: any) => [
+              ...prev.slice(0, citizenIndex), // Keep all items before the first "citizen"
+              { value: "mafia" }, // Replace with "police"
+              ...prev.slice(citizenIndex + 1), // Keep all items after the first "citizen"
+            ]);
+            if (
+              confirmedRoles?.filter((cr: any) => cr.value === "citizen")
+                .length === 1
+            ) {
+              setCitizens(false);
+            }
+          }
+        } else {
+          return; // Exit if no "citizen" role is found
+        }
+      }
+    } else if (r.value === "citizen") {
+      if (confirmedRoles?.length === totalPlayersForStart && !citizens) {
+        return;
+      }
+      if (haptics) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+      }
+      setCitizens((prev: boolean) => !prev);
+    } else if (r.value === "doctor") {
+      if (haptics) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+      }
+      if (confirmedRoles?.length === totalPlayersForStart && !doctor) {
+        if (confirmedRoles?.find((cr: any) => cr.value === "citizen")) {
+          // Find the index of the first "citizen" role
+          const citizenIndex = confirmedRoles.findIndex(
+            (cr: any) => cr.value === "citizen"
+          );
+
+          if (citizenIndex !== -1) {
+            // Create a new array where the first "citizen" is replaced by "police"
+            setConfirmedRoles((prev: any) => [
+              ...prev.slice(0, citizenIndex), // Keep all items before the first "citizen"
+              { value: "doctor" }, // Replace with "police"
+              ...prev.slice(citizenIndex + 1), // Keep all items after the first "citizen"
+            ]);
+            if (
+              confirmedRoles?.filter((cr: any) => cr.value === "citizen")
+                .length === 1
+            ) {
+              setCitizens(false);
+            }
+          }
+        } else {
+          return; // Exit if no "citizen" role is found
+        }
+      }
+      setDoctor((prev: boolean) => !prev);
+    } else if (r.value === "police") {
+      if (haptics) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+      }
+      if (confirmedRoles?.length === totalPlayersForStart && !police) {
+        if (confirmedRoles?.find((cr: any) => cr.value === "citizen")) {
+          // Find the index of the first "citizen" role
+          const citizenIndex = confirmedRoles.findIndex(
+            (cr: any) => cr.value === "citizen"
+          );
+
+          if (citizenIndex !== -1) {
+            // Create a new array where the first "citizen" is replaced by "police"
+            setConfirmedRoles((prev: any) => [
+              ...prev.slice(0, citizenIndex), // Keep all items before the first "citizen"
+              { value: "police" }, // Replace with "police"
+              ...prev.slice(citizenIndex + 1), // Keep all items after the first "citizen"
+            ]);
+            if (
+              confirmedRoles?.filter((cr: any) => cr.value === "citizen")
+                .length === 1
+            ) {
+              setCitizens(false);
+            }
+          }
+        } else {
+          return; // Exit if no "citizen" role is found
+        }
+      }
+      setPolice((prev: boolean) => !prev);
+    } else if (r.value === "serial-killer") {
+      if (haptics) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+      }
+      if (confirmedRoles?.length === totalPlayersForStart && !serialKiller) {
+        if (confirmedRoles?.find((cr: any) => cr.value === "citizen")) {
+          // Find the index of the first "citizen" role
+          const citizenIndex = confirmedRoles.findIndex(
+            (cr: any) => cr.value === "citizen"
+          );
+
+          if (citizenIndex !== -1) {
+            // Create a new array where the first "citizen" is replaced by "police"
+            setConfirmedRoles((prev: any) => [
+              ...prev.slice(0, citizenIndex), // Keep all items before the first "citizen"
+              { value: "serial-killer" }, // Replace with "police"
+              ...prev.slice(citizenIndex + 1), // Keep all items after the first "citizen"
+            ]);
+            if (
+              confirmedRoles?.filter((cr: any) => cr.value === "citizen")
+                .length === 1
+            ) {
+              setCitizens(false);
+            }
+          }
+        } else {
+          return; // Exit if no "citizen" role is found
+        }
+      }
+      setSerialKiller((prev: boolean) => !prev);
+    } else if (r.value === "mafia-don") {
+      if (haptics) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+      }
+      setMafiaDon((prev: boolean) => !prev);
+
+      if (
+        confirmedRoles?.filter((cr: any) => cr.value === "mafia").length ===
+          1 &&
+        confirmedRoles?.filter((cr: any) => cr.value !== "mafia-don") &&
+        !mafiaDon
+      ) {
+        setMafias(false);
+      }
+    }
+  };
 
   return (
     <BlurView
@@ -156,19 +317,6 @@ const ConfirmRoles = ({
         }}
       >
         {activeRoom?.roles?.map((r: any, x: number) => {
-          let label =
-            r.value === "mafia"
-              ? activeLanguage?.mafia
-              : r?.value === "citizen"
-              ? activeLanguage?.citizen
-              : r?.value === "doctor"
-              ? activeLanguage?.doctor
-              : r.value === "police"
-              ? activeLanguage?.police
-              : r?.value === "serial-killer"
-              ? activeLanguage?.serialKiller
-              : activeLanguage?.mafiaDon;
-
           let disabled;
           if (r.value === "mafia" && !mafias) {
             disabled = true;
@@ -184,218 +332,91 @@ const ConfirmRoles = ({
             disabled = true;
           }
 
+          const roleImage: any = roleImageGenerator({
+            role: r,
+            language,
+          });
+
           return (
             <Pressable
-              onPress={() => {
-                if (r.value === "mafia") {
-                  if (
-                    confirmedRoles?.length === totalPlayersForStart &&
-                    !mafias &&
-                    !confirmedRoles?.find((cr: any) => cr.value === "mafia-don")
-                  ) {
-                    if (
-                      confirmedRoles?.find((cr: any) => cr.value === "citizen")
-                    ) {
-                      // Find the index of the first "citizen" role
-                      const citizenIndex = confirmedRoles.findIndex(
-                        (cr: any) => cr.value === "citizen"
-                      );
-
-                      if (citizenIndex !== -1) {
-                        // Create a new array where the first "citizen" is replaced by "police"
-                        setConfirmedRoles((prev: any) => [
-                          ...prev.slice(0, citizenIndex), // Keep all items before the first "citizen"
-                          { value: "mafia" }, // Replace with "police"
-                          ...prev.slice(citizenIndex + 1), // Keep all items after the first "citizen"
-                        ]);
-                        if (
-                          confirmedRoles?.filter(
-                            (cr: any) => cr.value === "citizen"
-                          ).length === 1
-                        ) {
-                          setCitizens(false);
-                        }
-                      }
-                    } else {
-                      return; // Exit if no "citizen" role is found
-                    }
-                  }
-                  if (
-                    confirmedRoles?.filter((cr: any) => cr.value === "mafia")
-                      .length === 0 &&
-                    confirmedRoles?.find(
-                      (cr: any) => cr.value === "mafia-don"
-                    ) &&
-                    !mafias
-                  ) {
-                    setMafiaDon(false);
-                  }
-                  setMafias((prev: boolean) => !prev);
-                } else if (r.value === "citizen") {
-                  if (
-                    confirmedRoles?.length === totalPlayersForStart &&
-                    !citizens
-                  ) {
-                    return;
-                  }
-                  setCitizens((prev: boolean) => !prev);
-                } else if (r.value === "doctor") {
-                  if (
-                    confirmedRoles?.length === totalPlayersForStart &&
-                    !doctor
-                  ) {
-                    if (
-                      confirmedRoles?.find((cr: any) => cr.value === "citizen")
-                    ) {
-                      // Find the index of the first "citizen" role
-                      const citizenIndex = confirmedRoles.findIndex(
-                        (cr: any) => cr.value === "citizen"
-                      );
-
-                      if (citizenIndex !== -1) {
-                        // Create a new array where the first "citizen" is replaced by "police"
-                        setConfirmedRoles((prev: any) => [
-                          ...prev.slice(0, citizenIndex), // Keep all items before the first "citizen"
-                          { value: "doctor" }, // Replace with "police"
-                          ...prev.slice(citizenIndex + 1), // Keep all items after the first "citizen"
-                        ]);
-                        if (
-                          confirmedRoles?.filter(
-                            (cr: any) => cr.value === "citizen"
-                          ).length === 1
-                        ) {
-                          setCitizens(false);
-                        }
-                      }
-                    } else {
-                      return; // Exit if no "citizen" role is found
-                    }
-                  }
-                  setDoctor((prev: boolean) => !prev);
-                } else if (r.value === "police") {
-                  if (
-                    confirmedRoles?.length === totalPlayersForStart &&
-                    !police
-                  ) {
-                    if (
-                      confirmedRoles?.find((cr: any) => cr.value === "citizen")
-                    ) {
-                      // Find the index of the first "citizen" role
-                      const citizenIndex = confirmedRoles.findIndex(
-                        (cr: any) => cr.value === "citizen"
-                      );
-
-                      if (citizenIndex !== -1) {
-                        // Create a new array where the first "citizen" is replaced by "police"
-                        setConfirmedRoles((prev: any) => [
-                          ...prev.slice(0, citizenIndex), // Keep all items before the first "citizen"
-                          { value: "police" }, // Replace with "police"
-                          ...prev.slice(citizenIndex + 1), // Keep all items after the first "citizen"
-                        ]);
-                        if (
-                          confirmedRoles?.filter(
-                            (cr: any) => cr.value === "citizen"
-                          ).length === 1
-                        ) {
-                          setCitizens(false);
-                        }
-                      }
-                    } else {
-                      return; // Exit if no "citizen" role is found
-                    }
-                  }
-                  setPolice((prev: boolean) => !prev);
-                } else if (r.value === "serial-killer") {
-                  if (
-                    confirmedRoles?.length === totalPlayersForStart &&
-                    !serialKiller
-                  ) {
-                    if (
-                      confirmedRoles?.find((cr: any) => cr.value === "citizen")
-                    ) {
-                      // Find the index of the first "citizen" role
-                      const citizenIndex = confirmedRoles.findIndex(
-                        (cr: any) => cr.value === "citizen"
-                      );
-
-                      if (citizenIndex !== -1) {
-                        // Create a new array where the first "citizen" is replaced by "police"
-                        setConfirmedRoles((prev: any) => [
-                          ...prev.slice(0, citizenIndex), // Keep all items before the first "citizen"
-                          { value: "serial-killer" }, // Replace with "police"
-                          ...prev.slice(citizenIndex + 1), // Keep all items after the first "citizen"
-                        ]);
-                        if (
-                          confirmedRoles?.filter(
-                            (cr: any) => cr.value === "citizen"
-                          ).length === 1
-                        ) {
-                          setCitizens(false);
-                        }
-                      }
-                    } else {
-                      return; // Exit if no "citizen" role is found
-                    }
-                  }
-                  setSerialKiller((prev: boolean) => !prev);
-                } else if (r.value === "mafia-don") {
-                  if (
-                    confirmedRoles?.filter((cr: any) => cr.value === "mafia")
-                      .length === 1 &&
-                    confirmedRoles?.filter(
-                      (cr: any) => cr.value !== "mafia-don"
-                    ) &&
-                    !mafiaDon
-                  ) {
-                    setMafias(false);
-                  }
-                  setMafiaDon((prev: boolean) => !prev);
-                }
-              }}
+              onPress={() => ConfirmRole(r)}
               key={x}
               style={{
                 width: "44%",
-                height: 100,
+                height: 160,
                 backgroundColor: "rgba(255,255,255,0.05)",
-                borderRadius: 8,
+                borderRadius: 16,
                 flexDirection: "row",
                 alignItems: "center",
-                justifyContent: "center",
+                justifyContent: "space-between",
                 gap: 8,
                 borderWidth: 1.5,
                 borderColor: !disabled ? theme.active : "#333",
+                overflow: "hidden",
               }}
             >
-              <Text
+              <View
                 style={{
-                  color: disabled ? "#888" : theme.text,
-                  fontWeight: 600,
-                  fontSize: 14,
+                  width: "60%",
+                  height: 160,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
                 }}
               >
-                {label}
-              </Text>
-              {mafias && r.value === "mafia" && maxMafias > 1 && (
+                <FlipCard
+                  img={roleImage}
+                  item={r}
+                  sizes={{ width: "100%", height: 160, borderRadius: 16 }}
+                  from="door-review"
+                />
+              </View>
+              <View
+                style={{
+                  marginRight: "10%",
+                  gap: 12,
+                }}
+              >
+                {mafias && r.value === "mafia" && maxMafias > 1 && (
+                  <Pressable
+                    style={{
+                      padding: 8,
+                      borderRadius: 8,
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                      alignItems: "center",
+                    }}
+                    onPress={() => {
+                      if (haptics) {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                      }
+                      setOpenOptions({ active: true });
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: theme.active,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {selectedMaxMafias}{" "}
+                    </Text>
+                  </Pressable>
+                )}
                 <Pressable
+                  onPress={() => ConfirmRole(r)}
                   style={{
-                    padding: 8,
-                    borderRadius: 8,
                     backgroundColor: "rgba(255,255,255,0.1)",
+                    padding: 6,
+                    borderRadius: 50,
                   }}
-                  onPress={() => setOpenOptions({ active: true })}
                 >
-                  <Text style={{ color: theme.active, fontWeight: 600 }}>
-                    {selectedMaxMafias}{" "}
-                    {confirmedRoles?.find(
-                      (cr: any) => cr.value === "mafia-don"
-                    ) && (
-                      <Text style={{ fontSize: 12 }}>
-                        ({activeLanguage?.include_don})
-                      </Text>
-                    )}
-                  </Text>
+                  {!disabled ? (
+                    <MaterialIcons name="done" size={24} color={theme.active} />
+                  ) : (
+                    <MaterialIcons name="done" size={24} color={theme.text} />
+                  )}
                 </Pressable>
-              )}
+              </View>
             </Pressable>
           );
         })}

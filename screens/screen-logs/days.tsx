@@ -60,8 +60,16 @@ const Days = ({ data, players }: any) => {
                 </Text>
                 {(() => {
                   // Determine the most frequent victim
-                  let result = findMostFrequentVictim(day.votes || []);
+                  let result =
+                    day?.lastVotes2?.length > 1
+                      ? findMostFrequentVictim(day.lastVotes2)
+                      : day?.lastVotes?.length > 1
+                      ? findMostFrequentVictim(day.lastVotes)
+                      : findMostFrequentVictim(day.votes || []);
                   const mostFrequentVictimId = result.mostFrequentVictims;
+
+                  // console.log(result);
+                  // console.log(mostFrequentVictimId);
 
                   result = {
                     ...result,
@@ -111,7 +119,6 @@ const Days = ({ data, players }: any) => {
                   if (deaths?.length > 1) {
                     deaths = deaths.sort(() => Math.random() - 0.5);
                   }
-
                   // Check if any player was saved by the doctor
 
                   let playerSaved: any;
@@ -521,7 +528,12 @@ const Days = ({ data, players }: any) => {
                   <View>
                     {(() => {
                       // Determine the most frequent victim
-                      let result = findMostFrequentVictim(day.votes || []);
+                      let result =
+                        day?.lastVotes2?.length > 1
+                          ? findMostFrequentVictim(day.lastVotes2)
+                          : day?.lastVotes?.length > 1
+                          ? findMostFrequentVictim(day.lastVotes)
+                          : findMostFrequentVictim(day.votes || []);
                       const mostFrequentVictimId = result.mostFrequentVictims;
 
                       result = {

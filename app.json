@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "iq-night",
+    "name": "IQ Night",
     "slug": "iq-night",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "scheme": "iq-night",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/iqnight-icon.png",
     "userInterfaceStyle": "automatic",
     "assetBundlePatterns": ["**/*"],
     "entryPoint": "./index.js",
@@ -23,10 +23,10 @@
       "backgroundColor": "#000"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.iqnight.app",
       "newArchEnabled": false,
-      "buildNumber": "1.0.10",
+      "buildNumber": "1.0.18",
       "usesAppleSignIn": true,
       "keychainSharing": false
     },

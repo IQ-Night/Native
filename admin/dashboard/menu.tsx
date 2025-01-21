@@ -33,10 +33,10 @@ const Menu = ({ navigation }: any) => {
       screen: "Messages",
       label: activeLanguage?.notifications,
     },
-    {
-      screen: "Coupons",
-      label: activeLanguage?.coupons,
-    },
+    // {
+    //   screen: "Coupons",
+    //   label: activeLanguage?.coupons,
+    // },
     {
       screen: "Reports",
       label: activeLanguage?.reports,

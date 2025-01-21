@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "iqnight.app"
-               BlueprintName = "iqnight"
-               ReferencedContainer = "container:iqnight.xcodeproj">
+               BuildableName = "IQNight.app"
+               BlueprintName = "IQNight"
+               ReferencedContainer = "container:IQNight.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "iqnightTests.xctest"
-               BlueprintName = "iqnightTests"
-               ReferencedContainer = "container:iqnight.xcodeproj">
+               BuildableName = "IQNightTests.xctest"
+               BlueprintName = "IQNightTests"
+               ReferencedContainer = "container:IQNight.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "iqnight.app"
-            BlueprintName = "iqnight"
-            ReferencedContainer = "container:iqnight.xcodeproj">
+            BuildableName = "IQNight.app"
+            BlueprintName = "IQNight"
+            ReferencedContainer = "container:IQNight.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "iqnight.app"
-            BlueprintName = "iqnight"
-            ReferencedContainer = "container:iqnight.xcodeproj">
+            BuildableName = "IQNight.app"
+            BlueprintName = "IQNight"
+            ReferencedContainer = "container:IQNight.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

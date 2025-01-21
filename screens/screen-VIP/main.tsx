@@ -252,22 +252,22 @@ const Vip = () => {
                   }
                   loading={c?.title?.includes(loading)}
                   onPressFunction={() => {
-                    setConfirm({
-                      active: true,
-                      data: {
-                        identity: pc?.identifier,
-                        data: {
-                          Vip: c?.title,
-                          price: parseFloat(c?.price).toFixed(2),
-                        },
-                      },
-                    });
-
-                    // handlePurchase(c?.identity, {
-                    //   Vip: c?.duration,
-                    //   price: c?.price,
-                    //   duration: c?.duration,
+                    // setConfirm({
+                    //   active: true,
+                    //   data: {
+                    //     identity: pc?.identifier,
+                    //     data: {
+                    //       Vip: c?.title,
+                    //       price: parseFloat(c?.price).toFixed(2),
+                    //     },
+                    //   },
                     // });
+
+                    handlePurchase(pc?.identifier, {
+                      Vip: c?.title,
+                      price: parseFloat(c?.price).toFixed(2),
+                      // duration: c?.duration,
+                    });
                   }}
                 />
               </View>

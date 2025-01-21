@@ -18,6 +18,7 @@ import { useAuthContext } from "./context/auth";
 import PushNotificationsActivation from "./components/pushNotifications";
 import ConfirmAction from "./components/confirmAction";
 import AddationalFields from "./auth/addationalFields";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -30,11 +31,15 @@ const Content = () => {
   /**
    * Auth context
    */
-  const { currentUser, addationalFields } = useAuthContext();
+  const { currentUser, addationalFields, setCurrentUser } = useAuthContext();
   /**
    * Content context
    */
   const { confirmAction, setConfirmAction } = useContentContext();
+  /**
+   * Game context
+   */
+  const { socket } = useGameContext();
 
   /**
    * app position controller
@@ -67,6 +72,29 @@ const Content = () => {
       subscription.remove();
     };
   }, []);
+
+  // mannually logout when needed
+  useEffect(() => {
+    const logout = async () => {
+      try {
+        // ამოშალე JWT ტოკენები
+        await AsyncStorage.removeItem("IQ-Night:jwtToken");
+        await AsyncStorage.removeItem("IQ-Night:jwtRefreshToken");
+
+        // მომხმარებლის მონაცემების განულება
+        setCurrentUser(null);
+      } catch (error) {
+        console.log("Logout failed:", error);
+      }
+    };
+    if (socket) {
+      socket.on("logout-user", logout);
+      return () => {
+        socket.off("logout-user", logout);
+      };
+    }
+  }, [socket]);
+
   return (
     <View style={styles.background}>
       <BgSound />
@@ -95,6 +123,7 @@ const Content = () => {
           text={alert.text}
           type={alert.type}
           onClose={() => setAlert({ active: false, text: "", type: "" })}
+          button={alert?.button}
         />
       )}
     </View>

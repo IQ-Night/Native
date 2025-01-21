@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, {
   createContext,
   ReactNode,
@@ -7,7 +8,11 @@ import React, {
   useState,
 } from "react";
 import { Dimensions } from "react-native";
-import { mediaDevices, RTCPeerConnection } from "react-native-webrtc";
+import { mediaDevices } from "react-native-webrtc";
+import { handleReceiveAnswer } from "../functions/videoConnections/handleReceiveAnswer";
+import { handleReceiveCandidate } from "../functions/videoConnections/handleReceiverCandidates";
+import { handleReceiveOffer } from "../functions/videoConnections/handleRecieveOffer";
+import { StartConnection } from "../functions/videoConnections/startConnections";
 import { useAppContext } from "./app";
 import { useAuthContext } from "./auth";
 import { useGameContext } from "./game";
@@ -25,307 +30,190 @@ interface contextProps {
 export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
   children,
 }) => {
+  /**
+   * აპი კონტექსტი
+   */
   const { apiUrl } = useAppContext();
+  /**
+   * ავტორიზირებული იუზერი
+   */
   const { currentUser } = useAuthContext();
-  const { socket, activeRoom, gamePlayers, spectators } = useGameContext();
+
+  /**
+   * თამაშის და სოქეთ სერვერის კონტექსტი
+   */
+  const { socket, activeRoom, gamePlayers, spectators, allUsers } =
+    useGameContext();
+
+  /**
+   * ვიდეოს ჩატვირთვის ინდიკატორი
+   */
   const [loading, setLoading] = useState<any>(false);
 
+  /**
+   * ლოკალური სთრიმის საცავი
+   */
   const [localStream, setLocalStream] = useState<any>(null);
+
+  /**
+   * შემოსული სთრიმის ნაკადი
+   */
   const [remoteStreams, setRemoteStreams] = useState<any>([]);
 
+  /**
+   * დამყარებული კავშირები, სადაც მოთავსებულია სხვა და სხვა იუზერებთან დამყარებული კავშირები
+   * რომლებიც განსაზღვრულია იუზერის აიდის მიხედვით ობიექტში.
+   */
   const peerConnections = useRef<{ [userId: string]: any }>({});
 
-  // turn video
-  const [video, setVideo] = useState(false);
-
+  /**
+   * სოქეთიდან მიღებული სიგნალების მიღება და გაშვება
+   */
   useEffect(() => {
-    if (socket) {
-      const handleReceiveOffer = async ({
-        signal,
-        creatorId,
-      }: {
-        signal: RTCSessionDescriptionInit;
-        callerId: string;
-        creatorId: string;
-      }) => {
-        if (!peerConnections.current[creatorId])
-          createPeerConnection(creatorId);
-        setLoading(creatorId);
-        try {
-          // console.log("Setting remote description for offer:", signal);
-          await peerConnections.current[creatorId]?.setRemoteDescription(
-            signal
-          );
-        } catch (error) {
-          console.log("Error setting remote description:", error);
+    if (socket && peerConnections?.current) {
+      // მიღებები
+      socket?.on("receive-offer", (data: any) => {
+        if (localStream) {
+          handleReceiveOffer({
+            ...data,
+            peerConnections,
+            socket,
+            setLoading,
+            setRemoteStreams,
+            currentUser,
+            localStream,
+          });
         }
-
-        const answer = await peerConnections.current[creatorId]?.createAnswer();
-        await peerConnections.current[creatorId]?.setLocalDescription(answer);
-
-        socket.emit("send-answer", {
-          signal: answer,
-          creatorId: creatorId,
+      });
+      socket?.on("receive-answer", (data: any) => {
+        handleReceiveAnswer({
+          ...data,
+          peerConnections,
+          setLoading,
+          setRemoteStreams,
         });
-      };
-
-      const handleReceiveAnswer = async ({
-        signal,
-        userId,
-      }: {
-        signal: RTCSessionDescriptionInit;
-        creatorId: string;
-        userId: string;
-      }) => {
-        if (!peerConnections.current[userId]) {
-          console.log(`PeerConnection for userId ${userId} not found.`);
-          return;
-        }
-
-        const peerConnection = peerConnections.current[userId];
-        // Signaling state must be "have-local-offer" to set an answer
-        if (peerConnection.signalingState !== "have-local-offer") {
-          console.log(
-            `Cannot set remote description. Current signaling state: ${peerConnection.signalingState}`
-          );
-          return;
-        }
-
-        try {
-          await peerConnection.setRemoteDescription(signal);
-        } catch (error) {
-          console.log(
-            `Error setting remote description for userId: ${userId}`,
-            error
-          );
-        }
-      };
-
-      const handleReceiveCandidate = async ({
-        candidate,
-        userId,
-      }: {
-        candidate: RTCIceCandidateInit;
-        userId: string;
-      }) => {
-        if (peerConnections.current[userId]) {
-          try {
-            // console.log("Adding ICE Candidate:", candidate);
-            await peerConnections.current[userId].addIceCandidate(candidate);
-          } catch (error) {
-            console.log("Error adding ICE candidate:", error);
-          }
-        }
-      };
-
-      socket?.on("receive-offer", handleReceiveOffer);
-      socket?.on("receive-answer", handleReceiveAnswer);
-      socket?.on("receive-candidate", handleReceiveCandidate);
+      });
+      socket?.on("receive-candidate", (data: any) => {
+        handleReceiveCandidate({
+          ...data,
+          peerConnections,
+        });
+      });
 
       return () => {
-        socket.off("receive-offer", handleReceiveOffer);
-        socket.off("receive-answer", handleReceiveAnswer);
-        socket.off("receive-candidate", handleReceiveCandidate);
+        socket?.off("receive-offer", (data: any) => {
+          if (localStream) {
+            handleReceiveOffer({
+              ...data,
+              peerConnections,
+              socket,
+              setLoading,
+              setRemoteStreams,
+              currentUser,
+              localStream,
+            });
+          }
+        });
+        socket?.off("receive-answer", (data: any) => {
+          handleReceiveAnswer({
+            ...data,
+            peerConnections,
+            setLoading,
+            setRemoteStreams,
+          });
+        });
+        socket?.off("receive-candidate", (data: any) => {
+          handleReceiveCandidate({
+            ...data,
+            peerConnections,
+          });
+        });
 
         Object.values(peerConnections.current).forEach((connection) => {
           connection.close();
         });
       };
     }
-  }, [socket, currentUser?._id]);
-
-  const createPeerConnection = (userId: string) => {
-    if (peerConnections.current[userId]) {
-      console.warn(`PeerConnection already exists for userId: ${userId}`);
-      return;
-    }
-
-    peerConnections.current[userId] = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-    });
-
-    peerConnections.current[userId].onicecandidate = (
-      event: RTCPeerConnectionIceEvent
-    ) => {
-      if (event.candidate) {
-        socket?.emit("send-candidate", {
-          candidate: event.candidate,
-          userId: userId,
-        });
-      }
-    };
-
-    peerConnections.current[userId].ontrack = (event: RTCTrackEvent) => {
-      // console.log("Received remote track:", event.streams[0]?.toURL());
-
-      if (event.streams && event.streams[0]) {
-        setRemoteStreams((prev: any) => [
-          ...prev?.filter((p: any) => p?.userId !== userId),
-          { streams: event?.streams[0], userId: userId },
-        ]);
-      }
-    };
-  };
-
-  const startCall = async (val: boolean) => {
-    if (val) {
-      setLoading(currentUser?._id);
-      try {
-        const stream = await mediaDevices.getUserMedia({
-          audio: true,
-          video: true,
-        });
-        setLocalStream(stream);
-
-        const allUsers = gamePlayers.concat(spectators);
-
-        allUsers?.map(async (user: any) => {
-          if (user?.userId !== currentUser?._id) {
-            createPeerConnection(user?.userId);
-
-            stream.getTracks().forEach((track) => {
-              peerConnections.current[user?.userId]?.addTrack(track, stream);
-            });
-
-            const offer = await peerConnections.current[
-              user?.userId
-            ].createOffer();
-            await peerConnections.current[user?.userId]?.setLocalDescription(
-              offer
-            );
-
-            socket?.emit("send-offer", {
-              signal: offer,
-              creatorId: currentUser?._id,
-              receiverSocket: user?.socketId,
-            });
-          }
-        });
-      } catch (error) {
-        console.log("Error starting call:", error);
-      }
-    } else {
-      // Close all PeerConnections
-      Object.keys(peerConnections.current).forEach((userId) => {
-        peerConnections.current[userId]?.close();
-        delete peerConnections.current[userId];
-      });
-
-      // Stop local media tracks
-      if (localStream) {
-        localStream.getTracks().forEach((track: any) => track.stop());
-        setLocalStream(null);
-      }
-
-      // Emit to notify the server
-      socket.emit("off-video", {
-        roomId: activeRoom?._id,
-        userId: currentUser?._id,
-      });
-    }
-  };
-
-  useEffect(() => {
-    const SendOffer = async () => {
-      // Combine gamePlayers and spectators to get all potential user IDs
-      const allUsers = [...gamePlayers, ...spectators];
-
-      // Filter out the users who are not in peerConnections
-      const newUsers = allUsers
-        .filter((u: any) => u.userId !== currentUser?._id)
-        .filter((usr) => {
-          if (!peerConnections.current[usr?.userId]) {
-            return usr;
-          } else {
-            return null;
-          }
-        });
-      const stream = localStream;
-      // Loop through new users and handle the offer logic
-      newUsers?.length > 0 &&
-        newUsers.forEach(async (user) => {
-          try {
-            if (user?.userId !== currentUser?._id) {
-              createPeerConnection(user?.userId);
-              stream.getTracks().forEach((track: any) => {
-                peerConnections.current[user?.userId]?.addTrack(track, stream);
-              });
-              const offer = await peerConnections.current[
-                user?.userId
-              ].createOffer();
-              await peerConnections.current[user?.userId]?.setLocalDescription(
-                offer
-              );
-              socket?.emit("send-offer", {
-                signal: offer,
-                creatorId: currentUser?._id,
-                receiverSocket: user?.socketId,
-              });
-            }
-          } catch (error) {
-            console.log("Error starting call:", error);
-          }
-        });
-    };
-    if (video) {
-      SendOffer();
-    }
-  }, [gamePlayers, spectators]);
-
-  /** open video */
-  const [openVideo, setOpenVideo] = useState<any>(false);
-  // control connection with socket update
-  useEffect(() => {
-    if (socket) {
-      const removeUserFromStream = ({ userId }: any) => {
-        setRemoteStreams((prev: any) =>
-          prev?.filter((p: any) => p?.userId !== userId)
-        );
-        if (peerConnections.current[userId]) {
-          peerConnections.current[userId].close();
-          delete peerConnections.current[userId];
-        }
-      };
-      socket.on("video-off", removeUserFromStream);
-      return () => {
-        socket.off("video-off", removeUserFromStream);
-      };
-    }
-  }, [socket]);
+  }, [socket, currentUser?._id, localStream]);
 
   /**
-   * Microphone controll
-   *   */
+   * კავშირის სტატუსო
+   */
+  const [connectionStatus, setConnectionStatus] = useState<any>("inactive");
 
-  // disable voice & video
-  const [microphone, setMicrophone] = useState(false);
+  /**
+   * ვიდეოს აქტივაცია
+   */
+  const [video, setVideo] = useState<any>("inactive");
 
-  const toggleMicrophone = (stream: any, isEnabled: any) => {
-    if (stream) {
-      stream.getAudioTracks().forEach((track: any) => {
-        track.enabled = isEnabled; // true = ჩართული, false = გამორთული
-      });
-      console.log(`Microphone is now ${isEnabled ? "enabled" : "disabled"}`);
-    } else {
-      console.log("Stream not found. Unable to toggle microphone.");
-    }
-  };
+  /**
+   * მიკროფონის კონტროლი
+   */
+  const [microphone, setMicrophone] = useState<any>("inactive");
+
+  // ვიდეო და აუდიო სტატუსის ცვლილებები უნდა აისახოს სოქეთის გავლით სხვა იუზერებთან
   useEffect(() => {
-    if (!video) {
-      setMicrophone(false);
-      socket.emit("enable-microphone", {
-        userId: currentUser?._id,
-        value: video && microphone ? true : false,
-      });
-    }
+    socket.emit("userMediaStatusUpdate", {
+      video,
+      audio: microphone,
+      userId: currentUser?._id,
+      roomId: activeRoom?._id,
+    });
+  }, [video, microphone, activeRoom?._id]);
+
+  /**
+   * ლოკალური კავშირის შექმნა
+   */
+  useEffect(() => {
+    const initLocalStream = async () => {
+      try {
+        if (!localStream) {
+          const stream = await mediaDevices.getUserMedia({
+            audio: true,
+            video: true,
+          });
+          setLocalStream(stream); // ლოკალური სტრიმის შენახვა
+        }
+      } catch (error) {
+        console.log("Error initializing local stream:", error);
+      }
+    };
+    initLocalStream();
+  }, []);
+
+  /**
+   * სთრიმის გაგზავნა იუზერებთან
+   */
+  useEffect(() => {
+    // მივიღოთ ოთახში დაკავშირებული იუზერების სია სერვერიდან რათა მათ გაეგზავნოთ სთრიმები ახლად შემოსული იუზერისგან
+    const sendStream = async () => {
+      try {
+        const response = await axios.get(
+          apiUrl + "/api/v1/users/connected?roomId=" + activeRoom?._id
+        );
+        const allUsers = response.data.data.users.filter(
+          (u: any) => u.userId !== currentUser?._id
+        );
+        if (allUsers.length > 0) {
+          StartConnection(
+            localStream,
+            currentUser,
+            peerConnections,
+            socket,
+            setRemoteStreams,
+            allUsers
+          );
+        }
+      } catch (error: any) {
+        console.log(error.response.data.message);
+      }
+    };
     if (localStream) {
-      toggleMicrophone(localStream, microphone);
-      socket.emit("enable-microphone", {
-        userId: currentUser?._id,
-        value: video && microphone ? true : false,
-      });
+      sendStream();
     }
-  }, [microphone, localStream, video]);
+  }, [localStream]);
+  /** ვიდეოს გახსნა დახურვა */
+  const [openVideo, setOpenVideo] = useState<any>(false);
 
   return (
     <VideoConnection.Provider
@@ -333,15 +221,15 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
         video,
         setVideo,
         localStream,
+        setLocalStream,
         remoteStreams,
-        startCall,
+        StartConnection,
         openVideo,
         setOpenVideo,
         setLoading,
         loading,
         microphone,
         setMicrophone,
-        toggleMicrophone,
       }}
     >
       {children}

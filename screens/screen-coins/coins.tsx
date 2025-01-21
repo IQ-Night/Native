@@ -175,29 +175,34 @@ const Coins = () => {
                   color: "white",
                 }}
                 loading={loading === parseFloat(c?.identifier?.split("_")[1])}
-                onPressFunction={() =>
-                  setConfirm({
-                    active: true,
-                    data: {
-                      identity: pc?.identifier,
+                onPressFunction={
+                  () =>
+                    purchaseCoins(pc?.identifier, {
                       coins: parseInt(c?.identifier?.split("_")[1]),
                       price: parseFloat(c?.price).toFixed(2),
-                    },
-                  })
+                    })
+                  // setConfirm({
+                  //   active: true,
+                  //   data: {
+                  //     identity: pc?.identifier,
+                  //     coins: parseInt(c?.identifier?.split("_")[1]),
+                  //     price: parseFloat(c?.price).toFixed(2),
+                  //   },
+                  // })
                 }
               />
             </View>
           );
         })}
       </ScrollView>
-      {confirm && (
+      {/* {confirm && (
         <Confirm
           openState={confirm?.active}
           setOpenState={setConfirm}
           data={confirm?.data}
           handlePurchase={purchaseCoins}
         />
-      )}
+      )} */}
     </>
   );
 };

@@ -61,6 +61,8 @@ export const AuthContextWrapper: React.FC<contextProps> = ({ children }) => {
     CreateUnAuthUser();
   }, []);
 
+  const { activeLanguage } = useAppContext();
+
   // Get user
   const GetUser = async (val: any) => {
     try {
@@ -86,6 +88,25 @@ export const AuthContextWrapper: React.FC<contextProps> = ({ children }) => {
       });
     }
   };
+
+  // logout all users if mulitple are the same time in online
+  const logoutAll = async ({ userId }: any) => {
+    try {
+      const response = await axios.patch(apiUrl + "/api/v1/logoutAll", {
+        userId,
+      });
+      if (response?.data?.status === "success") {
+        return setAlert({
+          active: true,
+          type: "success",
+          text: activeLanguage?.all_logout,
+        });
+      }
+    } catch (error: any) {
+      console.log(error?.response?.data?.message);
+    }
+  };
+
   // Get user
   const GetUserAuth = async () => {
     // get tokens
@@ -129,6 +150,22 @@ export const AuthContextWrapper: React.FC<contextProps> = ({ children }) => {
         }
       } catch (error: any) {
         setLoading(false);
+        if (
+          error?.response?.data?.message.includes(
+            "The account already signed in from another device!"
+          )
+        ) {
+          const userId = error?.response?.data?.message?.split("*")[1];
+          return setAlert({
+            active: true,
+            type: "error",
+            text: activeLanguage?.already_signed,
+            button: {
+              function: () => logoutAll({ userId }),
+              text: activeLanguage?.logout_all_offer,
+            },
+          });
+        }
         setAlert({
           text: error.response.data.message,
           type: "error",

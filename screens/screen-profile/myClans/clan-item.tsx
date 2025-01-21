@@ -53,7 +53,7 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
   const managers = item?.admin?.filter((a: any) => a.role === "manager")?.user;
   const wisers = item?.admin?.filter((a: any) => a.role === "wiser")?.user;
   const currentUserRole = item?.admin?.find(
-    (a: any) => a.user._id === currentUser?._id
+    (a: any) => a.user.id === currentUser?._id
   );
 
   // defines current user status is pending
@@ -82,11 +82,16 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
         setClans((prev: any) =>
           prev.filter((clan: any) => clan.title !== item.title)
         );
+        setClansNotifications((prev: any) =>
+          prev.filter((clan: any) => clan._id !== item._id)
+        );
         item?.admin.map((a: any) => {
-          return SendNotification({
-            userId: a?.user?._id,
-            type: "joinRequestDenied",
-          });
+          if (a?.user?.id !== currentUser?._id) {
+            return SendNotification({
+              userId: a?.user?.id,
+              type: "joinRequestDenied",
+            });
+          }
         });
       }
     } catch (error: any) {
@@ -131,10 +136,13 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
         );
         setLoading(null);
         item?.admin?.map((a: any) => {
-          return SendNotification({
-            userId: a?.user?._id,
-            type: "joinedClan",
-          });
+          if (a?.user?.id !== currentUser?._id) {
+            return SendNotification({
+              userId: a?.user?.id,
+              type: "userJoinedClan",
+              title: item?.title,
+            });
+          }
         });
       }
     } catch (error: any) {
@@ -186,7 +194,6 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
           style={{
             overflow: "hidden",
             flex: 1,
-            width: "100%",
             height: "100%",
           }}
         >
@@ -209,6 +216,7 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                   alignItems: "center",
                   gap: 8,
                   flexDirection: "row",
+                  justifyContent: "flex-end",
                   width: "100%",
                 }}
               >
@@ -223,7 +231,7 @@ const ClanItem = ({ item, setUserScreen, navigation }: any) => {
                 </View>
                 <Text
                   style={{
-                    width: "60%",
+                    width: "50%",
                     color: theme.text,
                     fontSize: 16,
                     fontWeight: "500",

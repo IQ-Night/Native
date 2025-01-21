@@ -281,10 +281,13 @@ const Clan = ({ route, navigation }: any) => {
         );
         navigation.navigate("My Clans");
         item?.admin?.map((a: any) => {
-          return SendNotification({
-            userId: a?.user?.id,
-            type: "leftClan",
-          });
+          if (a?.user?.id !== currentUser?._id) {
+            return SendNotification({
+              userId: a?.user?.id,
+              type: "leftClan",
+              title: item?.title,
+            });
+          }
         });
       }
     } catch (error: any) {
@@ -327,6 +330,7 @@ const Clan = ({ route, navigation }: any) => {
         SendNotification({
           userId: deleteConfirm,
           type: "removedFromClan",
+          title: item?.title,
         });
       }
     } catch (error: any) {
@@ -546,7 +550,6 @@ const Clan = ({ route, navigation }: any) => {
             justifyContent: "center",
           }}
         >
-          {" "}
           <ActivityIndicator color="orange" size="small" />
         </BlurView>
       )}
@@ -1336,6 +1339,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexWrap: "wrap",
     paddingTop: 10,
+    paddingBottom: 32,
     gap: 6,
     minHeight: SCREEN_HEIGHT * 0.3,
   },

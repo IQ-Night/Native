@@ -52,7 +52,7 @@ const Item = ({ item, setState, setOpenBuyItem }: any) => {
       label: activeLanguage?.clanAvatar,
     },
   ];
-
+  console.log(item.file);
   return (
     <View
       style={{
@@ -147,27 +147,29 @@ const Item = ({ item, setState, setOpenBuyItem }: any) => {
                           height: 24,
                         }}
                       >
-                        <Pressable
-                          onPress={() => {
-                            if (haptics) {
-                              Haptics.impactAsync(
-                                Haptics.ImpactFeedbackStyle.Soft
-                              );
-                            }
-                            const founder = item?.founder;
-                            navigation.navigate("User", {
-                              item: { ...founder, _id: founder?.userId },
-                            });
-                          }}
-                          style={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: 100,
-                            overflow: "hidden",
-                          }}
-                        >
-                          <Img uri={item.founder.cover} />
-                        </Pressable>
+                        {item?._id !== "675055373c446fbb4c731e87" && (
+                          <Pressable
+                            onPress={() => {
+                              if (haptics) {
+                                Haptics.impactAsync(
+                                  Haptics.ImpactFeedbackStyle.Soft
+                                );
+                              }
+                              const founder = item?.founder;
+                              navigation.navigate("User", {
+                                item: { ...founder, _id: founder?.userId },
+                              });
+                            }}
+                            style={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: 100,
+                              overflow: "hidden",
+                            }}
+                          >
+                            <Img uri={item.founder.cover} />
+                          </Pressable>
+                        )}
                       </View>
                     )}
                     <View style={{ justifyContent: "center", gap: 4 }}>

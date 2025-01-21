@@ -207,11 +207,11 @@ export const ContentContextWrapper: React.FC<contextProps> = ({ children }) => {
 
   // Fetch products on component mount
   useEffect(() => {
-    if (currentUser?._id) {
+    if (currentUser) {
       fetchProducts();
       fetchCoinProducts();
     }
-  }, [currentUser?._id]);
+  }, [currentUser]);
 
   return (
     <Content.Provider

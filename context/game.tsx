@@ -27,6 +27,7 @@ export const GameContextWrapper: React.FC<contextProps> = ({ children }) => {
   const { apiUrl, appStatePosition } = useAppContext();
   const { currentUser } = useAuthContext();
 
+  const [allUsers, setAllUsers] = useState<any>([]);
   const [activeRoom, setActiveRoom] = useState<any>(null);
   const [spectators, setSpectators] = useState<any[]>([]);
   const [gamePlayers, setGamePlayers] = useState<any[]>([]);
@@ -92,14 +93,14 @@ export const GameContextWrapper: React.FC<contextProps> = ({ children }) => {
   }, [currentUser?._id, apiUrl]);
 
   useEffect(() => {
-    if (socket.current) {
+    if (socket.current && activeRoom?._id && currentUser?._id) {
       socket.current.emit("appPosition", {
         roomId: activeRoom?._id,
         userId: currentUser?._id,
         status: appStatePosition,
       });
     }
-  }, [appStatePosition]);
+  }, [appStatePosition, socket.current, activeRoom?._id, currentUser?._id]);
 
   /**
    * defines if user has radio
@@ -144,6 +145,8 @@ export const GameContextWrapper: React.FC<contextProps> = ({ children }) => {
         connectionStatus,
         reconnectAttempts,
         currentUserRadio,
+        allUsers,
+        setAllUsers,
       }}
     >
       {children}

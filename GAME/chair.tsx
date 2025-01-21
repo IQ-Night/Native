@@ -9,8 +9,8 @@ import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
 import { roles } from "../context/rooms";
-import ChaitActions from "./chairActions";
-import VideoComponent from "./videoComponent";
+import ChairActions from "./chairActions";
+import VideoComponent from "../components/videoComponent";
 import { useVideoConnectionContext } from "../context/videoConnection";
 import { ActivityIndicator } from "react-native-paper";
 
@@ -129,7 +129,7 @@ const Chair = ({
   /**
    * Night votes for player by mafias
    */
-  const [nightVotes, setNightVotes] = useState(0);
+  const [nightVotes, setNightVotes] = useState([]);
 
   useEffect(() => {
     const night = nights?.find((night: any) => night.number === nightNumber);
@@ -138,11 +138,11 @@ const Chair = ({
       const votesForPlayer =
         night?.votes
           ?.filter((vote: any) => vote.killer)
-          .filter((vote: any) => vote.victim === item?.userId).length || 0;
+          .filter((vote: any) => vote.victim === item?.userId) || [];
 
       setNightVotes(votesForPlayer);
     } else {
-      setNightVotes(0); // If the night is not found, set votes to 0
+      setNightVotes([]); // If the night is not found, set votes to 0
     }
   }, [nights, nightNumber, item?.userId]);
 
@@ -159,47 +159,6 @@ const Chair = ({
     }
 
     if (socket) {
-      // // ბოლო ღამის ხმების სია
-      // const votes = nights[nights?.length - 1]?.votes || [];
-
-      // // შემოწმება, უკვე არსებობს თუ არა ხმა
-      // const alreadyVoted = votes.find(
-      //   (vote: any) =>
-      //     vote.victimId === item?.userId && vote.killerId === currentUser?._id
-      // );
-
-      // let updatedVotes;
-      // if (alreadyVoted) {
-      //   // წაშლა, თუ უკვე არსებობს
-      //   updatedVotes = votes.filter(
-      //     (vote: any) => vote.killerId !== currentUser?._id
-      //   );
-      // } else {
-      //   // წაშლა არსებული ხმების და დამატება ახალი
-      //   updatedVotes = votes.filter(
-      //     (vote: any) => vote.killerId !== currentUser?._id
-      //   );
-      //   updatedVotes.push({
-      //     victimId: item?.userId,
-      //     killerId: currentUser._id,
-      //   });
-      // }
-
-      // // განახლებული ღამეები
-      // const updatedNights = nights?.map((n: any, x: number) => {
-      //   if (x === nights?.length - 1) {
-      //     return { ...n, votes: updatedVotes };
-      //   }
-      //   return n;
-      // });
-
-      // // ოთახის განახლება
-      // setActiveRoom((prev: any) => ({
-      //   ...prev,
-      //   lastGame: { ...prev?.lastGame, nights: updatedNights },
-      // }));
-      // setNights(updatedNights);
-
       // სერვერზე ცვლილებების გაგზავნა
       socket.emit("voiceToKill", {
         roomId: activeRoom._id,
@@ -413,7 +372,7 @@ const Chair = ({
     const response = await axios.patch(
       apiUrl + "/api/v1/rooms/" + activeRoom._id + "/doctorAction",
       {
-        safePlayer: safePlayer ? false : true,
+        safePlayer: safePlayer === userId ? false : true,
         playerId: userId,
       }
     );
@@ -437,7 +396,7 @@ const Chair = ({
     if (game.value === "Ready to start") {
       setSafePlayer(false);
       setDailyVotes(0);
-      setNightVotes(0);
+      setNightVotes([]);
       setKillBySerialKiller(null);
       setFindNight(null);
       setSafePlayer(null);
@@ -594,42 +553,43 @@ const Chair = ({
           // overflow: "hidden",
           gap: 6,
           opacity:
-            isMafiaRevealed && !item?.role.value.includes("mafia") ? 0.5 : 1,
+            isMafiaRevealed && !item?.role.value.includes("mafia") ? 0.2 : 1,
         },
       ]}
     >
-      {item?.userId === currentUser._id && !currentUser?.admin.active && (
-        <View
-          style={{
-            borderRadius: 50,
-            overflow: "hidden",
-            position: "absolute",
-            top: 4,
-            right: -10,
-            zIndex: 50,
-          }}
-        >
-          <BlurView
-            intensity={80}
-            tint="dark"
+      {item?.userId === currentUser._id &&
+        activeRoom?.admin.founder.id !== currentUser?._id && (
+          <View
             style={{
-              padding: 3,
-              paddingHorizontal: 8,
+              borderRadius: 50,
+              overflow: "hidden",
+              position: "absolute",
+              top: 4,
+              right: -10,
+              zIndex: 50,
             }}
           >
-            <Text
+            <BlurView
+              intensity={80}
+              tint="dark"
               style={{
-                color: theme.text,
-                fontWeight: "600",
-                fontSize: 10,
-                textAlign: "center",
+                padding: 3,
+                paddingHorizontal: 8,
               }}
             >
-              {activeLanguage?.you}
-            </Text>
-          </BlurView>
-        </View>
-      )}
+              <Text
+                style={{
+                  color: theme.text,
+                  fontWeight: "600",
+                  fontSize: 10,
+                  textAlign: "center",
+                }}
+              >
+                {activeLanguage?.you}
+              </Text>
+            </BlurView>
+          </View>
+        )}
 
       {item && item?.userId === activeRoom?.admin?.founder?.id && (
         <View
@@ -667,26 +627,6 @@ const Chair = ({
         </View>
       )}
 
-      {item?.microphone && (
-        <MaterialIcons
-          style={{
-            position: "absolute",
-            zIndex: 50,
-            bottom: 20,
-            left: 0,
-          }}
-          size={24}
-          color={
-            (activePlayerToSpeech?.userId === item?.userId &&
-              game.value === "Day") ||
-            game.value === "Common Time"
-              ? theme.active
-              : theme.text
-          }
-          name="keyboard-voice"
-        />
-      )}
-
       {item ? (
         <>
           <View
@@ -697,7 +637,6 @@ const Chair = ({
               position: "relative",
               alignItems: "center",
               justifyContent: "center",
-              opacity: loading === item?.userId ? 0.7 : 1,
             }}
           >
             <View
@@ -723,7 +662,7 @@ const Chair = ({
                 borderColor: "#111",
               }}
             />
-            <ChaitActions
+            <ChairActions
               game={game}
               currentUserRole={currentUserRole}
               timeController={timeController}
@@ -752,39 +691,11 @@ const Chair = ({
               roles={roles}
               speechTimer={speechTimer}
               textColor={textColor}
+              setOpenVideo={setOpenVideo}
+              setOpenUser={setOpenUser}
+              appPositionStatus={appPositionStatus}
+              userStatus={userStatus}
             />
-            {loading === item?.userId && (
-              <View
-                style={{
-                  width: (SCREEN_WIDTH * 0.9 - 72) / 4,
-                  height: (SCREEN_WIDTH * 0.9 - 72) / 4,
-                  overflow: "hidden",
-                  borderRadius: 100,
-                  position: "absolute",
-                  zIndex: 20,
-                  borderWidth: 2,
-                  borderColor:
-                    (activePlayerToSpeech?.userId === item?.userId &&
-                      game.value === "Day") ||
-                    game.value === "Common Time"
-                      ? theme.active
-                      : textColor,
-                }}
-              >
-                <BlurView
-                  intensity={5}
-                  tint="dark"
-                  style={{
-                    width: (SCREEN_WIDTH * 0.9 - 72) / 4,
-                    height: (SCREEN_WIDTH * 0.9 - 72) / 4,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <ActivityIndicator size={20} color={theme.active} />
-                </BlurView>
-              </View>
-            )}
             <View
               style={{
                 width: (SCREEN_WIDTH * 0.9 - 72) / 4,
@@ -792,18 +703,12 @@ const Chair = ({
                 borderRadius: 50,
                 overflow: "hidden",
                 borderWidth: 2,
-                borderColor: textColor,
+                borderColor:
+                  activePlayerToSpeech?.userId === item?.userId
+                    ? theme.active
+                    : textColor,
               }}
             >
-              <VideoComponent
-                userId={item?.userId}
-                user={item}
-                setOpenVideo={setOpenVideo}
-                game={game}
-                currentUserRole={currentUserRole}
-                setOpenUser={setOpenUser}
-              />
-
               <Img uri={item.userCover} />
             </View>
           </View>
@@ -821,8 +726,13 @@ const Chair = ({
                     (isMafiaRevealed && item?.role?.value?.includes("mafia")) ||
                     (game.value === "Night" &&
                       item?.role?.value?.includes("mafia") &&
-                      currentUserRole?.includes("mafia"))
+                      currentUserRole?.includes("mafia")) ||
+                    (game?.value === "Day" &&
+                      activePlayerToSpeech?.userId === item?.userId)
                       ? theme.active
+                      : game.value === "Personal Time Of Death" &&
+                        game.options[0].userId === item.userId
+                      ? "red"
                       : theme.text,
                   fontWeight: 600,
                   fontSize: 14,
@@ -833,7 +743,7 @@ const Chair = ({
               >
                 N{item?.playerNumber}
               </Text>
-              {sherifPlayer &&
+              {/* {sherifPlayer &&
                 currentUserRole === "mafia-don" &&
                 item?.role?.value === sherifPlayer?.role?.value && (
                   <MaterialIcons
@@ -841,8 +751,8 @@ const Chair = ({
                     size={14}
                     color={theme.active}
                   />
-                )}
-              {alreadySafedOnce?.find(
+                )} */}
+              {/* {alreadySafedOnce?.find(
                 (sf: any) => sf.safePlayer?.playerId === item?.userId
               ) &&
                 currentUserRole === "doctor" && (
@@ -851,15 +761,15 @@ const Chair = ({
                     size={14}
                     color="red"
                   />
-                )}
-              {currentUserRole === "police" &&
+                )} */}
+              {/* {currentUserRole === "police" &&
                 foundedMafias?.find((m: any) => m === item?.userId) && (
                   <MaterialCommunityIcons
                     name="redhat"
                     size={16}
                     color={theme.active}
                   />
-                )}
+                )} */}
             </View>
           )}
         </>

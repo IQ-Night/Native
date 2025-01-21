@@ -6,6 +6,7 @@ import { useAppContext } from "../../context/app";
 import { useAuthContext } from "../../context/auth";
 import { useGameContext } from "../../context/game";
 import axios from "axios";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const Input = ({ setMessages, inputRef, keyboardHeight }: any) => {
   const { theme, apiUrl, haptics, activeLanguage } = useAppContext();
@@ -68,11 +69,17 @@ const Input = ({ setMessages, inputRef, keyboardHeight }: any) => {
         placeholderTextColor={"#888"}
         value={input}
         onChangeText={setInput}
-        onSubmitEditing={SendMessage}
         style={[styles.textInput, { color: theme.text }]}
         ref={inputRef}
-        returnKeyType="send"
+        // returnKeyType="send"
         blurOnSubmit={false}
+        multiline
+      />
+      <MaterialCommunityIcons
+        onPress={SendMessage}
+        name="send"
+        size={32}
+        color="orange"
       />
     </BlurView>
   );
@@ -82,7 +89,8 @@ const styles = StyleSheet.create({
   blurView: {
     width: "100%",
     zIndex: 110,
-    height: 80,
+    minHeight: 70,
+    maxHeight: 280,
     shadowColor: "#fff",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -92,13 +100,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 12,
+    paddingVertical: 12,
+    paddingBottom: 16,
   },
   textInput: {
-    width: "100%",
+    width: "88%",
     height: "100%",
     paddingHorizontal: 16,
-    paddingVertical: 10,
     borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    textAlignVertical: "center",
+    minHeight: 50,
+    overflow: "scroll",
+    paddingVertical: 12,
   },
   sendButton: {
     height: "100%",

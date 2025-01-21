@@ -1,5 +1,6 @@
 import { FontAwesome6 } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRef, useState } from "react";
 import {
   Animated,
@@ -9,17 +10,8 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { useAppContext } from "./app";
-import { ActivityIndicator } from "react-native-paper";
 import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
-import { LinearGradient } from "expo-linear-gradient";
-
-const mafiaCard = require("../assets/mafia.webp");
-const citizenCard = require("../assets/citizen.webp");
-const doctorCard = require("../assets/doctor.webp");
-const sherifCard = require("../assets/sherif.webp");
-const killerCard = require("../assets/killer.webp");
-const donCard = require("../assets/don.webp");
+import { useAppContext } from "../context/app";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -67,6 +59,7 @@ const FlipCard = ({ img, item, roomState, sizes, from }: any) => {
             {
               width: sizes?.width,
               height: sizes?.height,
+              borderRadius: sizes?.borderRadius,
             },
           ]}
         >
@@ -91,7 +84,7 @@ const FlipCard = ({ img, item, roomState, sizes, from }: any) => {
                 transform: [{ rotateY: frontInterpolate }],
                 width: sizes?.width,
                 height: sizes?.height,
-                borderWidth: from === "door-review" ? 1.5 : 2,
+                borderWidth: from === "door-review" ? 0 : 2,
                 opacity:
                   roomState && roomState.roles.includes(item)
                     ? 1
@@ -99,23 +92,12 @@ const FlipCard = ({ img, item, roomState, sizes, from }: any) => {
                     ? 1
                     : 0.5,
                 borderColor: theme.active,
+                borderRadius: sizes?.borderRadius,
               },
             ]}
           >
             <Image
-              source={
-                item?.value === "mafia"
-                  ? mafiaCard
-                  : item?.value === "citizen"
-                  ? citizenCard
-                  : item.value === "doctor"
-                  ? doctorCard
-                  : item.value === "police"
-                  ? sherifCard
-                  : item.value === "serial-killer"
-                  ? killerCard
-                  : donCard
-              }
+              source={img?.front}
               onLoad={() => setLoadImg(false)}
               style={[
                 styles.image,
@@ -133,7 +115,7 @@ const FlipCard = ({ img, item, roomState, sizes, from }: any) => {
                 transform: [{ rotateY: backInterpolate }],
                 width: sizes?.width,
                 height: sizes?.height,
-                borderWidth: from === "door-review" ? 1.5 : 2,
+                borderWidth: from === "door-review" ? 0 : 2,
                 opacity:
                   roomState && roomState.roles.includes(item)
                     ? 1
@@ -141,11 +123,12 @@ const FlipCard = ({ img, item, roomState, sizes, from }: any) => {
                     ? 1
                     : 0.5,
                 borderColor: theme.active,
+                borderRadius: sizes?.borderRadius,
               },
             ]}
           >
             <Image
-              source={img}
+              source={img?.back}
               onLoad={() => setLoadImg(false)}
               style={[
                 styles.image,
@@ -193,7 +176,7 @@ const FlipCard = ({ img, item, roomState, sizes, from }: any) => {
                 transform: [{ rotateY: frontInterpolate }],
                 width: sizes?.width,
                 height: sizes?.height,
-                borderWidth: from === "door-review" ? 1.5 : 2,
+                borderWidth: from === "door-review" ? 0 : 2,
                 opacity:
                   roomState &&
                   roomState.roles.find((r: any) => r.value === item.value)
@@ -206,19 +189,7 @@ const FlipCard = ({ img, item, roomState, sizes, from }: any) => {
             ]}
           >
             <Image
-              source={
-                item?.value === "mafia"
-                  ? mafiaCard
-                  : item?.value === "citizen"
-                  ? citizenCard
-                  : item.value === "doctor"
-                  ? doctorCard
-                  : item.value === "police"
-                  ? sherifCard
-                  : item.value === "serial-killer"
-                  ? killerCard
-                  : donCard
-              }
+              source={img?.front}
               onLoad={() => setLoadImg(false)}
               style={[
                 styles.image,
@@ -236,18 +207,21 @@ const FlipCard = ({ img, item, roomState, sizes, from }: any) => {
                 transform: [{ rotateY: backInterpolate }],
                 width: sizes?.width,
                 height: sizes?.height,
-                borderWidth: from === "door-review" ? 1.5 : 2,
+                borderWidth: from === "door-review" ? 0 : 2,
                 borderColor: theme.active,
                 opacity:
-                  (roomState && roomState.roles.includes(item)) ||
+                  (roomState &&
+                    roomState.roles.find((r: any) => r.value === item.value)) ||
                   from === "door-review"
+                    ? 1
+                    : !roomState
                     ? 1
                     : 0.5,
               },
             ]}
           >
             <Image
-              source={img}
+              source={img?.back}
               onLoad={() => setLoadImg(false)}
               style={[
                 styles.image,
@@ -268,7 +242,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 10,
+    // borderRadius: 10,
     overflow: "hidden",
   },
   card: {
@@ -276,11 +250,11 @@ const styles = StyleSheet.create({
     backfaceVisibility: "hidden", // Hides the backface when flipped
   },
   frontCard: {
-    borderRadius: 10,
+    // borderRadius: 10,
     overflow: "hidden",
   },
   backCard: {
-    borderRadius: 10,
+    // borderRadius: 10,
     overflow: "hidden",
   },
   image: {},

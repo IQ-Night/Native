@@ -64,8 +64,13 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
         active: true,
         text: activeLanguage?.notEnoughCoinsSetPaidSlogan,
         type: "error",
+        button: {
+          function: () => navigation.navigate("Coins"),
+          text: activeLanguage?.buy,
+        },
       });
     }
+
     try {
       // Dismiss keyboard to disable focus
       Keyboard.dismiss();

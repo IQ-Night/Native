@@ -11,20 +11,82 @@ import { StyleSheet, Text, View } from "react-native";
 import Img from "../components/image";
 import { useAppContext } from "../context/app";
 import { useGameContext } from "../context/game";
+import { useEffect, useState } from "react";
 
 const AttentionWindow = ({ attention, data }: any) => {
   const { theme, activeLanguage } = useAppContext();
   const { gamePlayers } = useGameContext();
 
+  const [timer, setTimer] = useState(5); // საწყისი დრო წამებში
+
+  useEffect(() => {
+    if (attention?.timer) {
+      const interval = setInterval(() => {
+        setTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval); // გაჩერება
+            return 0;
+          }
+          return prev - 1; // ყოველ წამს შემცირება
+        });
+      }, 1000);
+
+      return () => clearInterval(interval); // გაწმენდა კომპონენტის დახურვისას
+    }
+  }, []);
+
   // Define the attention context
   let content;
   if (attention?.value?.includes("day")) {
     content = (
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-        <Fontisto name="day-sunny" size={24} color={theme.active} />
-        <Text style={{ color: theme.text, fontSize: 24, fontWeight: 500 }}>
-          {activeLanguage.start_of_the_day}
-        </Text>
+      <View style={{ alignItems: "center", gap: 24 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <Fontisto name="day-sunny" size={24} color={theme.active} />
+          <Text style={{ color: theme.text, fontSize: 24, fontWeight: 500 }}>
+            {activeLanguage.start_of_the_day}
+          </Text>
+        </View>
+        {attention?.timer && (
+          <View
+            style={{
+              minWidth: 64,
+              height: 24,
+              alignItems: "center",
+              backgroundColor: "rgba(255,255,255,0.05)",
+              borderRadius: 50,
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.1)",
+              justifyContent: "center",
+            }}
+          >
+            <View
+              style={{
+                minWidth: 64,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+
+                paddingHorizontal: 10,
+                gap: 3,
+              }}
+            >
+              <MaterialCommunityIcons
+                name="timer"
+                size={16}
+                color={theme.active}
+              />
+              <Text
+                style={{
+                  color: theme.text,
+                  fontWeight: "600",
+                  fontSize: 14,
+                }}
+              >
+                {timer + activeLanguage?.sec}
+              </Text>
+            </View>
+          </View>
+        )}
       </View>
     );
   } else if (attention?.value?.includes("night")) {
@@ -36,7 +98,10 @@ const AttentionWindow = ({ attention, data }: any) => {
         </Text>
       </View>
     );
-  } else if (attention?.value?.includes("common")) {
+  } else if (
+    attention?.value?.includes("common") &&
+    attention?.value !== "No player left the game - common timer start"
+  ) {
     content = (
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
         <MaterialCommunityIcons
@@ -170,6 +235,22 @@ const AttentionWindow = ({ attention, data }: any) => {
         </Text>
       </View>
     );
+  } else if (attention?.value?.includes("current game finished by admin")) {
+    content = (
+      <View style={{ alignItems: "center", justifyContent: "center", gap: 20 }}>
+        <MaterialIcons name="close" color="red" size={40} />
+        <Text
+          style={{
+            color: theme.text,
+            fontSize: 18,
+            fontWeight: 600,
+            textAlign: "center",
+          }}
+        >
+          {activeLanguage.current_game_finished_by_admin}
+        </Text>
+      </View>
+    );
   } else if (attention?.value?.includes("Room closed")) {
     content = (
       <View style={{ alignItems: "center", justifyContent: "center", gap: 18 }}>
@@ -182,7 +263,61 @@ const AttentionWindow = ({ attention, data }: any) => {
             textAlign: "center",
           }}
         >
-          {activeLanguage.room_closed_by_host}
+          {attention?.value?.includes("host")
+            ? activeLanguage.room_closed_by_host
+            : activeLanguage.room_closed_by_admin}
+        </Text>
+      </View>
+    );
+  } else if (attention?.value?.includes("player saved")) {
+    content = (
+      <View style={{ alignItems: "center", justifyContent: "center", gap: 12 }}>
+        <Text
+          style={{
+            color: theme.text,
+            fontSize: 18,
+            fontWeight: 600,
+            textAlign: "center",
+          }}
+        >
+          {activeLanguage?.player_saved}
+        </Text>
+        <Text
+          style={{
+            color: theme.text,
+            fontSize: 18,
+            fontWeight: 600,
+            textAlign: "center",
+          }}
+        >
+          {activeLanguage?.common_time}
+        </Text>
+      </View>
+    );
+  } else if (
+    attention?.value === "No player left the game - common timer start"
+  ) {
+    content = (
+      <View style={{ alignItems: "center", justifyContent: "center", gap: 12 }}>
+        <Text
+          style={{
+            color: theme.text,
+            fontSize: 18,
+            fontWeight: 600,
+            textAlign: "center",
+          }}
+        >
+          {activeLanguage?.no_players_left_game}
+        </Text>
+        <Text
+          style={{
+            color: theme.text,
+            fontSize: 18,
+            fontWeight: 600,
+            textAlign: "center",
+          }}
+        >
+          {activeLanguage?.common_time}
         </Text>
       </View>
     );

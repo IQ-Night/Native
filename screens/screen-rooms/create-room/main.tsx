@@ -37,6 +37,7 @@ import RoleInfo from "./roleInfo";
 import Roles from "./roles";
 import SpectatorMode from "./spectatorMode";
 import Rules from "./popup-rules";
+import { useNavigation } from "@react-navigation/native";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -48,6 +49,9 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
       scrollRef.current.scrollTo();
     }
   }, [createRoom]);
+
+  const navigation: any = useNavigation();
+
   /**
    * App context
    */
@@ -124,7 +128,13 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
       rolesPrice = 0;
     }
     const titlePrice = roomState?.title?.length > 0 ? 500 : 0;
-    const coverPrice = roomState?.cover !== defaultCover ? 800 : 0;
+    let coverPrice;
+    if (roomState?.cover !== defaultCover) {
+      coverPrice = 800;
+    } else {
+      coverPrice = 0;
+    }
+
     const privatePrice =
       roomState?.private?.value && !currentUser?.vip?.active ? 4 : 0;
     const total = rolesPrice + titlePrice + coverPrice + privatePrice;
@@ -171,6 +181,10 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
         active: true,
         type: "error",
         text: activeLanguage?.notEnoughCoinsBuyFeatures,
+        button: {
+          function: () => navigation.navigate("Coins"),
+          text: activeLanguage?.buy,
+        },
       });
     }
 
@@ -341,7 +355,7 @@ const CreateRoom = ({ createRoom, setCreateRoom, setDoorReview }: any) => {
                           name="coins"
                           size={14}
                           color={theme.active}
-                        />{" "}
+                        />
                         <Text style={{ fontWeight: 500, color: theme.text }}>
                           800
                         </Text>

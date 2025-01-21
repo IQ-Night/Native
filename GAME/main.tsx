@@ -2,7 +2,7 @@ import axios from "axios";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { useEffect, useRef, useState } from "react";
-import { Animated, Dimensions, StyleSheet, View } from "react-native";
+import { Animated, Dimensions, Easing, StyleSheet, View } from "react-native";
 import Block from "../admin/users/block-user";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
@@ -28,9 +28,12 @@ import LastWordTimer from "./timers/lastWordTimer";
 import NightTimer from "./timers/nightTimer";
 import SpeechTimer from "./timers/speechTimer";
 import UserPopup from "./userPopup";
-import VideoComponent from "./videoComponent";
+import VideoComponent from "../components/videoComponent";
 import OpenVideo from "./openedVideo";
 import { useVideoConnectionContext } from "../context/videoConnection";
+import BlackList from "../screens/screen-rooms/blackList";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import EditRoom from "../screens/screen-rooms/edit-room";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -38,7 +41,8 @@ const Game = () => {
   /**
    * App context
    */
-  const { theme, haptics, apiUrl } = useAppContext();
+  const { activeLanguage, theme, haptics, apiUrl, setBgSound, bgSound } =
+    useAppContext();
 
   /**
    * Game context
@@ -49,21 +53,36 @@ const Game = () => {
     socket,
     setSpectators,
     gamePlayers,
+    setAllUsers,
     setGamePlayers,
     message,
     setMessage,
     setLoadingSpectate,
+    loadingSpectate,
     currentUserRadio,
   } = useGameContext();
   /**
    * Video context
    */
-  const { setVideo, startCall, setMicrophone } = useVideoConnectionContext();
+  const { setMicrophone } = useVideoConnectionContext();
 
   /**
    * Auth context
    */
   const { currentUser } = useAuthContext();
+
+  /**
+   * Bg music off when room is open
+   */
+  useEffect(() => {
+    if (bgSound) {
+      const DisableBgMusic = async () => {
+        setBgSound(false);
+        await AsyncStorage.setItem("IQ-Night:bgSound", "UnActive");
+      };
+      DisableBgMusic();
+    }
+  }, []);
 
   /**
    *
@@ -91,6 +110,10 @@ const Game = () => {
           setGamePlayers(
             data?.usersInRoom?.filter((u: any) => u.type === "player")
           );
+          setAllUsers([
+            ...data?.usersInRoom?.filter((u: any) => u.type === "spectator"),
+            ...data?.usersInRoom?.filter((u: any) => u.type === "player"),
+          ]);
           if (data?.message) {
             setMessage({
               type: data.message.type,
@@ -257,9 +280,22 @@ const Game = () => {
         setGame({ value: "Getting to know mafias", options: [] });
         // Initiate the mafia introduction timer if the current user is the host
         if (currentUser?._id === host?.userId) {
-          socket?.emit("GettingKnowMafiasTimerStart", {
-            roomId: host?.roomId,
-          });
+          if (
+            data?.players?.find((p: any) => p.role.value === "mafia-don") &&
+            data?.players?.filter((p: any) => p.value?.includes("mafia"))
+              ?.length > 1
+          ) {
+            socket?.emit("GettingKnowMafiasTimerStart", {
+              roomId: host?.roomId,
+            });
+          } else {
+            setGame({
+              value: "Day",
+              options: ["No Vote"],
+              players: data?.players,
+            });
+            setLoadingConfirm(false);
+          }
         }
       };
 
@@ -282,12 +318,25 @@ const Game = () => {
         )[0];
         // Start the mafia introduction phase
         if (data.value === "Getting to know mafias") {
-          setGame(data);
+          if (
+            data?.players?.find((p: any) => p.role.value === "mafia-don") &&
+            data?.players?.filter((p: any) => p.value?.includes("mafia"))
+              ?.length > 1
+          ) {
+            setGame(data);
 
-          if (currentUser?._id === host?.userId) {
-            socket?.emit("GettingKnowMafiasTimerStart", {
-              roomId: host?.roomId,
+            if (currentUser?._id === host?.userId) {
+              socket?.emit("GettingKnowMafiasTimerStart", {
+                roomId: host?.roomId,
+              });
+            }
+          } else {
+            setGame({
+              value: "Day",
+              options: ["No Vote"],
+              players: data?.players,
             });
+            setLoadingConfirm(false);
           }
         } else {
           setGame(data);
@@ -307,7 +356,7 @@ const Game = () => {
   /**
    * Attention
    */
-  const [attention, setAttention] = useState({ active: false, value: "" });
+  const [attention, setAttention] = useState<any>({ active: false, value: "" });
 
   // End of mafia introduction
   useEffect(() => {
@@ -356,10 +405,27 @@ const Game = () => {
       setLoadingSpectate(false);
       // Determine virtual host for the single request
       if (!game?.reJoin) {
-        setAttention({ active: true, value: "Start of the day" });
-
-        // List of active alive players
-
+        const timerTotal =
+          game?.options?.includes("No Vote") &&
+          game?.players?.find((p: any) => p.role.value === "mafia-don") &&
+          game?.players?.filter((p: any) => p.value?.includes("mafia"))
+            ?.length > 1
+            ? 5000
+            : 2500;
+        if (
+          game?.options?.includes("No Vote") &&
+          game?.players?.find((p: any) => p.role.value === "mafia-don") &&
+          game?.players?.filter((p: any) => p.value?.includes("mafia"))
+            ?.length > 1
+        ) {
+          setAttention({
+            active: true,
+            value: "Start of the day",
+            timer: true,
+          });
+        } else {
+          setAttention({ active: true, value: "Start of the day" });
+        }
         setTimeout(() => {
           setAttention({ active: false, value: "" });
 
@@ -386,7 +452,7 @@ const Game = () => {
 
           // Initiating first player selection
           handleFirstPlayerToSpeech();
-        }, 2500);
+        }, timerTotal);
       }
     }
   }, [game, socket]);
@@ -661,6 +727,67 @@ const Game = () => {
     }
   }, [game, socket, activeRoom?._id]);
 
+  // skip loading
+  const [skipLoading, setSkipLoading] = useState(false);
+
+  /**
+   * Night Skips
+   */
+  const [nightSkips, setNightSkips] = useState([]);
+
+  const SkipNight = () => {
+    setSkipLoading(true);
+    socket.emit("skipNight", {
+      roomId: activeRoom?._id,
+      userId: currentUser?._id,
+      unskip: nightSkips?.find((skip: any) =>
+        skip === currentUser?._id ? true : false
+      ),
+    });
+  };
+
+  useEffect(() => {
+    if (socket) {
+      const updateNightSkips = (data: any) => {
+        setNightSkips(data?.skips);
+        setSkipLoading(false);
+      };
+      socket.on("skipsUpdated", updateNightSkips);
+      return () => {
+        socket.off("skipsUpdated", updateNightSkips);
+      };
+    }
+  }, [socket]);
+
+  /**
+   * Common time skips
+   */
+  const [commonTimeSkips, setCommonTimeSkips] = useState([]);
+
+  const CommonTimeSkip = () => {
+    setSkipLoading(true);
+    socket.emit("skipCommonTime", {
+      roomId: activeRoom?._id,
+      userId: currentUser?._id,
+      unskip: commonTimeSkips?.find((skip: any) =>
+        skip === currentUser?._id ? true : false
+      ),
+    });
+  };
+
+  useEffect(() => {
+    if (socket) {
+      const updateNightSkips = (data: any) => {
+        setCommonTimeSkips(data?.skips);
+        setSkipLoading(false);
+      };
+      socket.on("commonTimeSkipsUpdated", updateNightSkips);
+      return () => {
+        socket.off("commonTimeSkipsUpdated", updateNightSkips);
+      };
+    }
+  }, [socket]);
+
   // End of the night
   useEffect(() => {
     if (socket) {
@@ -670,13 +797,11 @@ const Game = () => {
         const totalAlivePlayers = data.players.filter(
           (player: any) => !player.death
         );
-
         setActiveRoom((prev: any) => ({
           ...prev,
           lastGame: data?.room?.lastGame,
           reJoin: false,
         }));
-
         // Determine the most frequent victim
         let result = findMostFrequentVictim(data.votes || []);
         const mostFrequentVictimId = result.mostFrequentVictims;
@@ -689,7 +814,46 @@ const Game = () => {
               ) || null
             : null,
         };
-
+        // check if don is in the game
+        const don = data?.players?.find(
+          (p: any) => p.role.value === "mafia-don"
+        );
+        const victimIds = data?.votes?.map((vote: any) => vote.victim);
+        // if don is in the game and there are different victims, so kill doesn't count
+        if (!don) {
+          /**
+           * If don is not in the game
+           */
+          if (victimIds.length > 1) {
+            result = { mostFrequentVictims: null, allEqual: true };
+          }
+        } else {
+          /**
+           * If don in the game
+           */
+          // get alive mafias
+          const aliveMafias = data?.players?.filter(
+            (player: any) =>
+              player.role.value?.includes("mafia") && !player.death
+          );
+          // get killers ids
+          const killersIds = data?.votes?.map((vote: any) => vote.killer);
+          // check if there is a player killed by don
+          const donKill = killersIds.includes(don?.userId);
+          // if any player kills player which doesnt killed by don, so kill doesn't count
+          if (donKill) {
+            // also if all mafia doesn't kill, so kill doesn't count
+            if (
+              victimIds.length > 1 ||
+              aliveMafias.length !== killersIds?.length
+            ) {
+              result = { mostFrequentVictims: null, allEqual: true };
+            }
+            if (aliveMafias.length !== killersIds?.length) {
+              result = { mostFrequentVictims: null, allEqual: true };
+            }
+          }
+        }
         // Get the current game and night
         const currentGame = data.room?.lastGame;
         const currentNightBase =
@@ -700,7 +864,6 @@ const Game = () => {
           (user: any) =>
             user.userId === currentNightBase?.killedBySerialKiller?.playerId
         );
-
         // Define the list of deaths
         let deaths: any;
 
@@ -738,7 +901,6 @@ const Game = () => {
               death?.userId === currentNightBase?.safePlayer?.playerId
           );
         }
-
         // if player saved by doctor add rating to doctor
         if (playerSaved) {
           deaths = deaths.filter(
@@ -779,7 +941,6 @@ const Game = () => {
             }
           }
         }
-
         // if player killed by mafia add rating to mafias
         if (deaths) {
           let victim = deaths?.find(
@@ -862,7 +1023,6 @@ const Game = () => {
             }
           }
         }
-
         if (deaths?.length > 0) {
           if (currentUser._id === host?.userId) {
             socket.emit("exitPlayer", {
@@ -873,18 +1033,37 @@ const Game = () => {
             });
           }
         } else {
-          if (currentUser._id === host?.userId) {
-            socket.emit("CommonTimerStart", {
-              roomId: data.players[0]?.roomId,
+          setSkipLoading(false);
+          if (playerSaved) {
+            setAttention({
+              active: true,
+              value: "player saved",
+            });
+          } else {
+            setAttention({
+              active: true,
+              value: "No player left the game - common timer start",
             });
           }
-          setGame({
-            value: "Common Time",
-            options: [],
-            players: data.players,
-          });
-          setLoadingSpectate(false);
-          setNightNumber(data?.nextNightNumber);
+          setTimeout(() => {
+            setNightSkips([]);
+            setAttention({
+              active: false,
+              value: "",
+            });
+            if (currentUser._id === host?.userId) {
+              socket.emit("CommonTimerStart", {
+                roomId: data.players[0]?.roomId,
+              });
+            }
+            setGame({
+              value: "Common Time",
+              options: [],
+              players: data.players,
+            });
+            setLoadingSpectate(false);
+            setNightNumber(data?.nextNightNumber);
+          }, 2000);
         }
       };
 
@@ -915,7 +1094,6 @@ const Game = () => {
   useEffect(() => {
     if (socket) {
       const handleUpdateRoom = (data: any) => {
-        console.log("update");
         setActiveRoom(data?.room);
         setDays(data?.room?.lastGame?.days || []);
         setNights(data?.room?.lastGame?.nights || []);
@@ -942,6 +1120,8 @@ const Game = () => {
           options: [],
           players: data?.players,
         });
+        setCommonTimeSkips([]);
+        setSkipLoading(false);
       };
 
       // Attach the event listener
@@ -957,8 +1137,6 @@ const Game = () => {
   useEffect(() => {
     if (socket) {
       const handleExitPlayers = (exitData: any) => {
-        setGamePlayers(exitData?.players);
-
         const host = exitData?.players.filter(
           (u: any) => u.status !== "offline"
         )[0];
@@ -966,6 +1144,8 @@ const Game = () => {
         setOpenNominationsWindow(null);
 
         if (exitData?.gameOver) {
+          setGamePlayers(exitData?.players);
+
           setAttention({
             active: true,
             value: "Game over - Winners -" + `${exitData.gameOver.winners}`,
@@ -986,6 +1166,8 @@ const Game = () => {
             setGame({ value: "Ready to start", options: [] });
             setDayNumber(1);
             setNightNumber(1);
+            setNightSkips([]);
+            setSkipLoading(false);
             setAttention({ active: false, value: "" });
           }, 7000);
         } else {
@@ -1020,6 +1202,7 @@ const Game = () => {
               options: exitData?.nextDayNumber
                 ? [exitData?.exitPlayers[0], "After Day"]
                 : [exitData?.exitPlayers[0], "After Night"], // Target the player
+              players: exitData?.players,
             });
 
             setLastWordData({
@@ -1078,6 +1261,7 @@ const Game = () => {
 
   const handleLastWordTimerEnd = (data: any) => {
     if (!data?.nextDeath) {
+      setGamePlayers(data?.players);
       if (data?.gameStage?.options[1] === "After Night") {
         setGame({
           value: "Night",
@@ -1202,9 +1386,6 @@ const Game = () => {
   const [loadingReJoin, setLoadingReJoin] = useState(false);
   useEffect(() => {
     const GetGamePosition = async () => {
-      console.log("game position....");
-      setVideo(false);
-      startCall(false);
       try {
         setLoadingReJoin(true);
         const response = await axios.get(
@@ -1312,6 +1493,8 @@ const Game = () => {
           setGame({ value: "Ready to start", options: [] });
           setDayNumber(1);
           setNightNumber(1);
+          setNightSkips([]);
+          setSkipLoading(false);
           setAttention({ active: false, value: "" });
         }, 7000);
       });
@@ -1325,6 +1508,10 @@ const Game = () => {
    * Logs
    */
   const [openLogs, setOpenLogs] = useState(false);
+  /**
+   * black list
+   */
+  const [openBlackList, setOpenBlackList] = useState(false);
   /**
    * User
    */
@@ -1408,6 +1595,23 @@ const Game = () => {
    * open video to big screen
    */
   const { openVideo, setOpenVideo } = useVideoConnectionContext();
+
+  /**
+   * Edit room
+   */
+  const [editRoom, setEditRoom] = useState(false);
+  const translateYEditRoom = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  useEffect(() => {
+    // Define the animation for opening and closing the room
+    Animated.timing(translateYEditRoom, {
+      toValue: editRoom ? 0 : SCREEN_HEIGHT, // 0 to open, SCREEN_HEIGHT to close
+      duration: 300,
+      easing: Easing.inOut(Easing.ease), // Smooth easing for in-out effect
+      useNativeDriver: true, // For smoother and better performance
+    }).start();
+  }, [editRoom]);
+
   return (
     <BlurView
       intensity={50}
@@ -1440,11 +1644,27 @@ const Game = () => {
           game={game}
           setAttention={setAttention}
           setOpenLogs={setOpenLogs}
+          setOpenBlackList={setOpenBlackList}
           openConfirmRoles={openConfirmRoles}
           setOpenSpectators={setOpenSpectators}
           setOpenChat={setOpenChat}
           openChat={openChat}
           unreadMessages={unreadMessages}
+          setEditRoom={setEditRoom}
+          setGame={setGame}
+          activePlayerToSpeech={activePlayerToSpeech}
+          setActivePlayerToSpeech={setActivePlayerToSpeech}
+          setDayNumber={setDayNumber}
+          setCurrentSpeechData={setCurrentSpeechData}
+          setOpenNominationsWindow={setOpenNominationsWindow}
+          setNightNumber={setNightNumber}
+          setNightSkips={setNightSkips}
+          setCommonTimeSkips={setCommonTimeSkips}
+          setNights={setNights}
+          setDays={setDays}
+          setLastWordData={setLastWordData}
+          days={days}
+          dayNumber={dayNumber}
         />
         {openVideo && (
           <OpenVideo
@@ -1461,7 +1681,7 @@ const Game = () => {
             setLoading={setLoadingConfirm}
           />
         )}
-        {game.value === "Personal Time Of Death" && (
+        {/* {game.value === "Personal Time Of Death" && (
           <PersonalTimeOfDead
             game={game}
             setGame={setGame}
@@ -1479,7 +1699,7 @@ const Game = () => {
               });
             }}
           />
-        )}
+        )} */}
         {openNominationsWindow?.active && (
           <NominationWindow
             data={openNominationsWindow}
@@ -1491,6 +1711,8 @@ const Game = () => {
             setDays={setDays}
             setAttention={setAttention}
             SaveAfterLeaveDataInDB={SaveAfterLeaveDataInDB}
+            setOpenVideo={setOpenVideo}
+            setOpenUser={setOpenUser}
           />
         )}
         <Table
@@ -1524,52 +1746,67 @@ const Game = () => {
         {/**
          * თამაშის პერიოდის აღწერა და დღის თაიმერი
          */}
-        <View style={styles.review}>
-          <GameProcess
-            game={game}
-            setGame={setGame}
-            timeController={
-              game.value === "Day"
-                ? speechTimer
-                : game.value === "Users are confirming own roles.."
-                ? dealingCardsTimer
-                : game.value === "Getting to know mafias"
-                ? gettingKnowsMafiasTimer
-                : game.value === "Night"
-                ? nightTimer
-                : game.value === "Common Time"
-                ? commonTimer
-                : 0
-            }
-            dayNumber={dayNumber}
-            nightNumber={nightNumber}
-            speecher={activePlayerToSpeech}
-            loading={loading}
-            setLoading={setLoading}
-            activePlayerToSpeech={activePlayerToSpeech}
-            speechTimer={speechTimer}
-            StartPlay={StartPlay}
-            changeSpeakerLoading={
-              game?.value === "Personal Time Of Death"
-                ? skipLastTimerLoading
-                : changeSpeakerLoading
-            }
-            SkipSpeech={() => {
-              if (haptics) {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+        {!loadingSpectate && !loadingReJoin && (
+          <View style={styles.review}>
+            <GameProcess
+              game={game}
+              setGame={setGame}
+              timeController={
+                game.value === "Day"
+                  ? speechTimer
+                  : game.value === "Users are confirming own roles.."
+                  ? dealingCardsTimer
+                  : game.value === "Getting to know mafias"
+                  ? gettingKnowsMafiasTimer
+                  : game.value === "Night"
+                  ? nightTimer
+                  : game.value === "Common Time"
+                  ? commonTimer
+                  : game.value === "Personal Time Of Death"
+                  ? lastWordTimer
+                  : 0
               }
+              dayNumber={dayNumber}
+              nightNumber={nightNumber}
+              speecher={activePlayerToSpeech}
+              loading={loading}
+              setLoading={setLoading}
+              activePlayerToSpeech={activePlayerToSpeech}
+              speechTimer={speechTimer}
+              StartPlay={StartPlay}
+              SkipNight={SkipNight}
+              nightSkips={nightSkips}
+              skipLoading={skipLoading}
+              commonTimeSkips={commonTimeSkips}
+              CommonTimeSkip={CommonTimeSkip}
+              changeSpeakerLoading={
+                game?.value === "Personal Time Of Death"
+                  ? skipLastTimerLoading
+                  : changeSpeakerLoading
+              }
+              SkipSpeech={() => {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
 
-              setChangeSpeakerLoading(true);
+                setChangeSpeakerLoading(true);
 
-              socket.emit("changeSpeaker", currentSpeechData);
-            }}
-            setOpenConfirmRoles={setOpenConfirmRoles}
-            confirmedRoles={confirmedRoles}
-            setConfirmedRoles={setConfirmedRoles}
-          />
-        </View>
+                socket.emit("changeSpeaker", currentSpeechData);
+              }}
+              setOpenConfirmRoles={setOpenConfirmRoles}
+              confirmedRoles={confirmedRoles}
+              setConfirmedRoles={setConfirmedRoles}
+            />
+          </View>
+        )}
       </Animated.View>
       <LogsModal openLogs={openLogs} setOpenLogs={setOpenLogs} />
+      {openBlackList && (
+        <BlackList
+          roomId={activeRoom?._id}
+          setOpenBlackList={setOpenBlackList}
+        />
+      )}
       {openUser && (
         <UserPopup
           openUser={openUser}
@@ -1613,6 +1850,23 @@ const Game = () => {
           setUnreadMessages={setUnreadMessages}
         />
       )}
+      <Animated.View
+        style={[
+          styles.screen,
+          {
+            transform: [{ translateY: translateYEditRoom }],
+          },
+        ]}
+      >
+        <EditRoom
+          editRoom={activeRoom}
+          setEditRoom={setEditRoom}
+          setDoorReview={(data: any) => {
+            setActiveRoom(data);
+            socket.emit("updateRoomLive", { roomId: data?._id, room: data });
+          }}
+        />
+      </Animated.View>
     </BlurView>
   );
 };
@@ -1633,5 +1887,13 @@ const styles = StyleSheet.create({
     width: "90%",
     alignItems: "center",
     gap: 4,
+  },
+  screen: {
+    width: "100%",
+    height: "110%",
+    position: "absolute",
+    top: 0,
+    zIndex: 80,
+    paddingBottom: 96,
   },
 });

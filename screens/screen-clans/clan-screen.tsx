@@ -215,6 +215,7 @@ const Clan = ({ route, navigation }: any) => {
             return SendNotification({
               userId: a.user.id,
               type: "leftClan",
+              title: item?.title,
             });
           }
         });
@@ -302,7 +303,8 @@ const Clan = ({ route, navigation }: any) => {
                 }}
                 activeOpacity={userStatus?.value === "pending" ? 1 : 0.8}
                 style={{
-                  width: "50%",
+                  maxWidth: "70%",
+                  minWidth: "50%",
                   height: 28,
                   borderRadius: 50,
                   backgroundColor:

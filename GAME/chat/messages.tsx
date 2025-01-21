@@ -66,17 +66,16 @@ const Messages = ({ messages, AddNewMessages, setUnreadMessages }: any) => {
 };
 
 // Memoize Message component to avoid unnecessary re-renders
-const MemoizedMessage = React.memo(Message);
 
 const styles = StyleSheet.create({
   container: {
     width: "100%",
     flex: 1,
     justifyContent: "flex-end",
-    marginTop: 350,
   },
   contentContainer: {
     paddingHorizontal: 12,
+    paddingBottom: 356,
   },
 });
 

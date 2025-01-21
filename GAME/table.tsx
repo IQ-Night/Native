@@ -43,9 +43,19 @@ const Table = ({
    */
   const { gamePlayers, activeRoom, loadingSpectate } = useGameContext();
 
-  let gamePlayersSorted = gamePlayers?.sort(
-    (a: any, b: any) => a.playerNumber - b.playerNumber
-  );
+  let gamePlayersSorted = gamePlayers?.sort((a: any, b: any) => {
+    // 1. პირველი ადგილი დაიკავოს თუ userId ემთხვევა founder.id-ს
+    if (a.userId === activeRoom.admin.founder.id) return -1; // a პირველ ადგილზე
+    if (b.userId === activeRoom.admin.founder.id) return 1; // b მეორე ადგილზე
+
+    // 2. დანარჩენების სორტირება playerNumber-ის მიხედვით
+    if (a.playerNumber !== undefined && b.playerNumber !== undefined) {
+      return a.playerNumber - b.playerNumber;
+    }
+
+    // 3. თუ playerNumber არ არის, არ შეცვალოს რიგი
+    return 0;
+  });
 
   /**
    * Vote to safe by doctor

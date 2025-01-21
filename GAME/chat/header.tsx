@@ -37,7 +37,7 @@ const Header = ({ handleClose, setMessages, totalMessages }: any) => {
 
   // Effect to handle timeout for clearing invoices
   useEffect(() => {
-    let timer: NodeJS.Timeout; // Define timer variable for cleanup
+    let timer: any; // Define timer variable for cleanup
 
     if (isTimerActive && clearTimeoutValue > 0) {
       // Set interval to decrement the clearTimeoutValue every second

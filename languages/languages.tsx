@@ -154,6 +154,10 @@ export const en = {
   days: "Days",
   year: "Year",
   room_closed_by_host: "Room closed by host!",
+  room_closed_by_admin: "Room closed by admin!",
+  all_logout: "All devices have been successfully logged out!",
+  logout_all_offer: "Logout from all device and try again!",
+  already_signed: "The account already signed in from another device!",
   price: "Price",
   releaseAll: "Release all",
   empty: "Empty",
@@ -310,7 +314,10 @@ export const en = {
   starting_voting: "Starting Voting",
   game_over_winners: "Game over - Winner",
   left_game_starting_night: "has left the game by itself. Starting Night...",
+  last_speech: "Last speech",
   left_game_starting_last_speech: "has left the game. Starting Last speech...",
+  current_game_finished_by_admin: "Current game has finished earlier by Admin",
+  player_saved: "Player saved by doctor",
   winner: "Winner",
   game: "Game",
   finishedAt: "Finished at",
@@ -338,6 +345,7 @@ export const en = {
   endDate: "End date",
   warningSent: "Warning sent successfully!",
   blockAdded: "Block added successfully!",
+  notEnoughCoins: "You don't have enough coins!",
   notEnoughCoinsChangeCover: "You don't have enough coins to change cover!",
   completeSuccessfully: "Complete successfully!",
   coinsBought: "Coins have bought successfully!",
@@ -366,6 +374,9 @@ export const en = {
   userAccess: "User Access",
   offer: "Offers",
   other: "Other",
+  went_wrong: "Something went wrong, try again!",
+  user_identificator_error:
+    "User with your apple identificator Not Found! Continue with email & password, or google authentication, or contact to support!",
 };
 
 export const ka = {
@@ -467,7 +478,7 @@ export const ka = {
   product_sold: "პროდუქტის გაყიდვა",
   product_bought: "პროდუქტის ყიდვა",
   send_gift: "საჩუქრის გაგზავნა",
-  total: "ჯამი",
+  total: "სულ",
   left: "დარჩა",
   en: "ინგლისური",
   ka: "ქართული",
@@ -523,6 +534,10 @@ export const ka = {
   days: "დღე",
   year: "წელი",
   room_closed_by_host: "ოთახი დაიხურა ჰოსტის მიერ!",
+  room_closed_by_admin: "ოთახი დაიხურა ადმინის მიერ!",
+  all_logout: "ყველა მოწყობილობა წარმატებით გაითიშა!",
+  logout_all_offer: "გამოდით ყველა მოწყობილობიდან და სცადეთ ხელახლა!",
+  already_signed: "ანგარიში უკვე შესულია სხვა მოწყობილობიდან!",
   price: "ფასი",
   releaseAll: "ყველას გათავისუფლება",
   empty: "ცარიელი",
@@ -565,8 +580,8 @@ export const ka = {
   manager: "მენეჯერი",
   foundedAt: "დაარსების თარიღი",
   leaveClan: "კლანიდან გასვლა",
-  leaveRoom: "ოთახის დატოვება",
-  close_room: "ოთახის დახურვა",
+  leaveRoom: "დატოვება",
+  close_room: "დახურვა",
   members: "წევრები",
   statistics: "სტატისტიკა",
   userStats: "მომხმარებლის სტატისტიკა",
@@ -679,7 +694,11 @@ export const ka = {
   starting_voting: "ხმის მიცემის დაწყება",
   game_over_winners: "თამაში დასრულდა - გამარჯვებულები",
   left_game_starting_night: "თამაში დატოვა. იწყება ღამე...",
+  last_speech: "ბოლო სიტყვა",
   left_game_starting_last_speech: "თამაში დატოვა. იწყება ბოლო სიტყვა...",
+  current_game_finished_by_admin:
+    "მიმდინარე თამაში ნაადრევად დასრულდა ადმინისტრატორის მიერ",
+  player_saved: "მოთამაშე ექიმმა გადაარჩინა",
   winner: "გამარჯვებული",
   game: "თამაში",
   finishedAt: "დასრულების თარიღი",
@@ -707,6 +726,7 @@ export const ka = {
   endDate: "ბოლო თარიღი",
   warningSent: "გაფრთხილება წარმატებით გაიგზავნა!",
   blockAdded: "ბლოკირება წარმატებით დაემატა!",
+  notEnoughCoins: "თქვენ არ გაქვთ საკმარისი მონეტები",
   notEnoughCoinsChangeCover:
     "თქვენ არ გაქვთ საკმარისი მონეტები საფარის შესაცვლელად!",
   completeSuccessfully: "წარმატებით შესრულდა!",
@@ -738,6 +758,9 @@ export const ka = {
   userAccess: "ავტორიზაცია",
   offer: "შეთავაზებები",
   other: "სხვა",
+  went_wrong: "დაფიქსირდა შეცდომა, სცადეთ ხელახლა!",
+  user_identificator_error:
+    "მომხმარებელი თქვენი Apple-ის იდენტიფიკატორით ვერ მოიძებნა! გააგრძელეთ ელფოსტით და პაროლით, ან google ავთენტიფიკაციით, ან დაუკავშირდით დახმარებას!",
 };
 
 export const ru = {
@@ -894,6 +917,10 @@ export const ru = {
   days: "Дни",
   year: "Год",
   room_closed_by_host: "Комната закрыта хостом!",
+  room_closed_by_admin: "Комната закрыта администратором!",
+  all_logout: "Все устройства успешно вышли из системы!",
+  logout_all_offer: "Выйдите со всех устройств и попробуйте снова!",
+  already_signed: "В аккаунт уже выполнен вход с другого устройства!",
   price: "Цена",
   releaseAll: "Освободить всех",
   empty: "Пусто",
@@ -1050,7 +1077,11 @@ export const ru = {
   starting_voting: "Начало голосования",
   game_over_winners: "Игра окончена - победители",
   left_game_starting_night: "Покинул игру. Начинается ночь...",
+  last_speech: "Последнее слово",
   left_game_starting_last_speech: "Покинул игру. Начинается последнее слово...",
+  current_game_finished_by_admin:
+    "Текущая игра была завершена ранее администратором",
+  player_saved: "Игрок спасен доктором",
   winner: "Победитель",
   game: "Игра",
   finishedAt: "Завершено в",
@@ -1078,6 +1109,7 @@ export const ru = {
   endDate: "Дата окончания",
   warningSent: "Предупреждение успешно отправлено!",
   blockAdded: "Блокировка успешно добавлена!",
+  notEnoughCoins: "У вас недостаточно монет!",
   notEnoughCoinsChangeCover: "У вас недостаточно монет для смены обложки!",
   completeSuccessfully: "Успешно выполнено!",
   coinsBought: "Монеты успешно куплены!",
@@ -1107,6 +1139,9 @@ export const ru = {
   userAccess: "Доступ пользователя",
   offer: "Предложения",
   other: "Другой",
+  went_wrong: "Что-то пошло не так, попробуйте еще раз!",
+  user_identificator_error:
+    "Пользователь с вашим идентификатором Apple не найден! Продолжить с адресом электронной почты и паролем, или аутентификацией Google, или обратиться в службу поддержки!",
 };
 
 // Choise Clan

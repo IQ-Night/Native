@@ -95,8 +95,8 @@ const Private = ({ roomState, setRoomState, totalPrice }: any) => {
                 gap: 6,
               }}
             >
-              <FontAwesome5 name="coins" size={14} color={theme.active} />{" "}
-              <Text style={{ fontWeight: 500, color: theme.text }}>4</Text>
+              <FontAwesome5 name="coins" size={14} color={theme.active} />
+              <Text style={{ fontWeight: 500, color: theme.text }}> 4</Text>
             </View>
           )}
         </View>

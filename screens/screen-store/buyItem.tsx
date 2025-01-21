@@ -7,10 +7,13 @@ import { useAppContext } from "../../context/app";
 import { FontAwesome5 } from "@expo/vector-icons";
 import axios from "axios";
 import { useAuthContext } from "../../context/auth";
+import { useNavigation } from "@react-navigation/native";
 
 const BuyItem = ({ item, closeComponent, setState }: any) => {
   const { apiUrl, theme, setAlert, activeLanguage } = useAppContext();
   const { currentUser, setCurrentUser } = useAuthContext();
+
+  const navigation: any = useNavigation();
 
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
@@ -33,6 +36,17 @@ const BuyItem = ({ item, closeComponent, setState }: any) => {
   };
   const [loading, setLoading] = useState(false);
   const BuyItem = async () => {
+    if (currentUser?.coins?.total < item?.price) {
+      return setAlert({
+        active: true,
+        type: "error",
+        text: activeLanguage?.notEnoughCoins,
+        button: {
+          function: () => navigation.navigate("Coins"),
+          text: activeLanguage?.buy,
+        },
+      });
+    }
     try {
       setLoading(true);
       const response = await axios.patch(

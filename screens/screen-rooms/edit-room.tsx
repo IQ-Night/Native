@@ -39,6 +39,7 @@ import Rating from "./create-room/rating";
 import RoleInfo from "./create-room/roleInfo";
 import SpectatorMode from "./create-room/spectatorMode";
 import NumberPicker from "./numberPicker";
+import { useNavigation } from "@react-navigation/native";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -167,6 +168,8 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
     setValue: undefined,
   });
 
+  const navigation: any = useNavigation();
+
   /**
    * Creat room
    */
@@ -177,6 +180,20 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
         active: true,
         type: "error",
         text: activeLanguage?.pinCodeNotDefined,
+      });
+    }
+
+    let newTotal = totalPrice?.all - oldData?.price.all;
+
+    if (newTotal > currentUser?.coins?.total) {
+      return setAlert({
+        active: true,
+        type: "error",
+        text: activeLanguage?.notEnoughCoinsBuyFeatures,
+        button: {
+          function: () => navigation.navigate("Coins"),
+          text: activeLanguage?.buy,
+        },
       });
     }
 
@@ -195,14 +212,17 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
         setRerenderRooms(true);
         setLoading(false);
         setEditRoom(false);
-        setDoorReview();
+        setDoorReview(response?.data?.data?.room);
+        setOldData(response?.data?.data?.room);
         if (totalPrice?.all > oldData?.price.all) {
-          let newTotal = totalPrice?.all - oldData?.price.all;
           setCurrentUser((prev: any) => ({
             ...prev,
             coins: { ...prev.coins, total: prev.coins.total - newTotal },
           }));
         }
+        setTimeout(() => {
+          setRerenderRooms(false);
+        }, 500);
       }
     } catch (error: any) {
       setAlert({
@@ -330,7 +350,7 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
                         name="coins"
                         size={14}
                         color={theme.active}
-                      />{" "}
+                      />
                       <Text style={{ fontWeight: 500, color: theme.text }}>
                         800
                       </Text>
