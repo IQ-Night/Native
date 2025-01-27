@@ -7,7 +7,7 @@ const DrawInReVote = ({ roomState, setRoomState }: any) => {
   /**
    * App context
    */
-  const { theme, haptics, activeLanguage } = useAppContext();
+  const { theme, haptics, activeLanguage, language } = useAppContext();
   // styles
   const styles = createStyles(theme);
   return (
@@ -26,12 +26,12 @@ const DrawInReVote = ({ roomState, setRoomState }: any) => {
       <Text style={styles.title}>{activeLanguage?.drawInReVote}</Text>
       <View
         style={{
-          flexDirection: "row",
-          alignItems: "center",
+          flexDirection: language === "GB" ? "row" : "column",
+          alignItems: language === "GB" ? "center" : "flex-start",
           justifyContent: "center",
           width: "100%",
           marginTop: 16,
-          gap: 8,
+          gap: language === "GB" ? 8 : 12,
         }}
       >
         <Pressable
@@ -45,7 +45,7 @@ const DrawInReVote = ({ roomState, setRoomState }: any) => {
             }
           }}
           style={{
-            flex: 1,
+            width: language === "GB" ? "auto" : "100%",
             justifyContent: "center",
             alignItems: "center",
             backgroundColor:
@@ -78,7 +78,7 @@ const DrawInReVote = ({ roomState, setRoomState }: any) => {
             }
           }}
           style={{
-            flex: 1,
+            width: language === "GB" ? "auto" : "100%",
             justifyContent: "center",
             alignItems: "center",
             backgroundColor:
@@ -111,7 +111,7 @@ const DrawInReVote = ({ roomState, setRoomState }: any) => {
             }
           }}
           style={{
-            flex: 1,
+            width: language === "GB" ? "auto" : "100%",
             justifyContent: "center",
             alignItems: "center",
             backgroundColor:

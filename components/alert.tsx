@@ -53,7 +53,7 @@ const Alert: React.FC<PropsTypes> = ({ type, onClose, text, button }) => {
         height: SCREEN_HEIGHT,
         alignItems: "center",
         justifyContent: "flex-end",
-        zIndex: 1000,
+        zIndex: 90,
       }}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
@@ -92,7 +92,7 @@ const Alert: React.FC<PropsTypes> = ({ type, onClose, text, button }) => {
             transform: [{ translateY }],
           }}
         >
-          <View style={{ gap: 4 }}>
+          <View style={{ gap: 4, width: "90%" }}>
             <Text style={{ color: "white", maxWidth: "90%", fontWeight: 500 }}>
               {text}
             </Text>

@@ -21,8 +21,7 @@ import ChangePassword from "../screens/screen-profile/changePassword/main";
 import Gift from "../screens/screen-profile/gifts/main";
 import Invoices from "../screens/screen-profile/invoices/main";
 import Profile from "../screens/screen-profile/main";
-import Clan from "../screens/screen-profile/myClans/clan-screen";
-import MyClans from "../screens/screen-profile/myClans/main";
+import Clan from "../screens/screen-clans/clan-screen";
 import Notifications from "../screens/screen-profile/notifications/main";
 import User from "../screens/screen-user/main";
 import Vip from "../screens/screen-VIP/main";
@@ -112,35 +111,7 @@ const ProfileStackNavigator = () => {
             headerShown: false,
           }}
         />
-        <ProfileStack.Screen
-          name="My Clans"
-          options={({ route, navigation }) => ({
-            headerTitle: "",
-            headerLeft: () => (
-              <Pressable
-                onPress={() => {
-                  if (haptics) {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                  }
-                  navigation.goBack();
-                }}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <MaterialIcons name="arrow-left" size={42} color={theme.text} />
-                <Text
-                  style={{ color: theme.text, fontSize: 18, fontWeight: 600 }}
-                >
-                  {activeLanguage?.myClans}
-                </Text>
-              </Pressable>
-            ),
-          })}
-          component={MyClans}
-        />
-        <ProfileStack.Screen
+        {/* <ProfileStack.Screen
           name="Clan"
           component={Clan}
           options={({ route, navigation }: any) => ({
@@ -244,7 +215,7 @@ const ProfileStackNavigator = () => {
               },
             },
           })}
-        />
+        /> */}
 
         <ProfileStack.Screen
           name="User"

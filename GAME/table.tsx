@@ -12,6 +12,7 @@ import { useAuthContext } from "../context/auth";
 import { useGameContext } from "../context/game";
 import Chair from "./chair";
 import { ActivityIndicator } from "react-native-paper";
+import { useVideoConnectionContext } from "../context/videoConnection";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -28,6 +29,9 @@ const Table = ({
   loadingReJoin,
   setOpenUser,
   timeController,
+  setNightSkips,
+  setSkipLastTimerLoading,
+  setSkipLoading,
 }: any) => {
   /**
    * App context
@@ -104,8 +108,52 @@ const Table = ({
     }
   }, [activeRoom]);
 
+  // video, audio connectiom
+  const { setMicrophone, setVideo, setRemoteStreams } =
+    useVideoConnectionContext();
+
   // serial killer kill
   const [killBySerialKiller, setKillBySerialKiller] = useState<any>(null);
+
+  // clean states if game end
+  useEffect(() => {
+    if (game?.value !== "Night") {
+      setFindNight(null);
+      setFoundedMafias([]);
+      setNightSkips([]);
+      setSafePlayer(false);
+      setKillBySerialKiller(null);
+      setSkipLoading(false);
+      setSkipLastTimerLoading(false);
+    }
+    if (game?.value === "Ready to start") {
+      setMicrophone("inactive");
+      setVideo("inactive");
+      setRemoteStreams((prevStreams: any[]) =>
+        prevStreams.map((stream) => {
+          const updatedStream = { ...stream };
+
+          // Update audio tracks
+          const audioTrack = updatedStream.streams
+            ?.getAudioTracks()
+            ?.find((track: any) => track.kind === "audio");
+          if (audioTrack) {
+            audioTrack.enabled = false;
+          }
+
+          // Update video tracks
+          const videoTrack = updatedStream.streams
+            ?.getVideoTracks()
+            ?.find((track: any) => track.kind === "video");
+          if (videoTrack) {
+            videoTrack.enabled = false;
+          }
+
+          return updatedStream;
+        })
+      );
+    }
+  }, [game]);
 
   return (
     <View style={styles.container}>
@@ -162,7 +210,7 @@ const Table = ({
               }}
             >
               {(() => {
-                const chairs = [];
+                const chairs: any = [];
                 const numChairs =
                   game.value === "Ready to start"
                     ? activeRoom.options.maxPlayers
@@ -173,6 +221,7 @@ const Table = ({
                     gamePlayersSorted && gamePlayersSorted[i]
                       ? gamePlayersSorted[i]
                       : null;
+
                   if (!item?.death) {
                     chairs.push(
                       <Chair
@@ -201,6 +250,7 @@ const Table = ({
                         killBySerialKiller={killBySerialKiller}
                         setKillBySerialKiller={setKillBySerialKiller}
                         timeController={timeController}
+                        setNightSkips={setNightSkips}
                       />
                     );
                   }

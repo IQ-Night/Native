@@ -15,7 +15,8 @@ import Members from "../screens/screen-clans/members";
 import Coins from "../screens/screen-coins/coins";
 import User from "../screens/screen-user/main";
 import Vip from "../screens/screen-VIP/main";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { useClansContext } from "../context/clans";
 
 const ClansStackNavigator = () => {
   /**
@@ -27,6 +28,10 @@ const ClansStackNavigator = () => {
    * App context
    */
   const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
+  /**
+   * Clan context
+   */
+  const { setUpdateClanState, openDeleteConfirm } = useClansContext();
   /**
    * Auth context
    */
@@ -225,7 +230,7 @@ const ClansStackNavigator = () => {
             },
           })}
         />
-        <ClanStack.Screen
+        {/* <ClanStack.Screen
           name="Clan"
           component={Clan}
           options={({ route, navigation }: any) => ({
@@ -277,6 +282,111 @@ const ClansStackNavigator = () => {
                 </View>
               </Pressable>
             ),
+          })}
+        /> */}
+        <ClanStack.Screen
+          name="Clan"
+          component={Clan}
+          options={({ route, navigation }: any) => ({
+            headerTitle: "",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (haptics) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                  }
+                  navigation.goBack();
+                }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <MaterialIcons name="arrow-left" size={42} color={theme.text} />
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View
+                    style={{
+                      borderRadius: 2,
+                      overflow: "hidden",
+                      marginRight: 8,
+                    }}
+                  >
+                    <CountryFlag
+                      isoCode={route.params?.item?.language}
+                      size={16}
+                    />
+                  </View>
+
+                  <Text
+                    style={{
+                      color: theme.text,
+                      fontSize: 18,
+                      width: "65%",
+                      fontWeight: 600,
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {route.params?.item?.title || "Clan"}
+                  </Text>
+                </View>
+              </Pressable>
+            ),
+
+            headerRight: () => (
+              <View
+                style={{
+                  height: 40,
+                  width: "100%",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  paddingHorizontal: 16,
+                  gap: 12,
+                }}
+              >
+                {currentUser._id ===
+                  route.params.item.admin.find((a: any) => a.role === "founder")
+                    .user.id && (
+                  <>
+                    <MaterialIcons
+                      name="edit"
+                      size={24}
+                      color={theme.active}
+                      onPress={() => {
+                        setUpdateClanState("Edit Title");
+                        if (haptics) {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                        }
+                      }}
+                    />
+
+                    <MaterialCommunityIcons
+                      onPress={() => {
+                        openDeleteConfirm("clan");
+                        if (haptics) {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                        }
+                      }}
+                      name="delete"
+                      size={24}
+                      color="red"
+                    />
+                  </>
+                )}
+              </View>
+            ),
+            // Add focus and blur event listeners
+            listeners: {
+              focus: () => {
+                console.log("Clan screen is focused");
+                // Run any function here when "Clan" screen becomes active
+              },
+              blur: () => {
+                console.log("Clan screen is blurred");
+                // Run any cleanup or other function when "Clan" screen loses focus
+              },
+            },
           })}
         />
         <ClanStack.Screen

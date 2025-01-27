@@ -197,7 +197,7 @@ const Chats = () => {
                     <Img uri={chat?.type?.clan?.cover} />
                   )}
                 </View>
-                <View style={{ gap: 4, width: "60%" }}>
+                <View style={{ gap: 4, width: "50%" }}>
                   <Text
                     numberOfLines={1}
                     ellipsizeMode="tail"
@@ -276,7 +276,10 @@ const Chats = () => {
                     color: theme.active,
                     margin: chat?.type?.value === "user" ? 8 : 0,
                     marginRight: 8,
+                    maxWidth: "20%",
                   }}
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
                 >
                   {chat?.type?.value === "user" ? (
                     GetTimesAgo(chat?.lastMessage?.createdAt)

@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   joinButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "500",
     color: "orange",
   },

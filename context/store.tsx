@@ -41,13 +41,20 @@ export const StoreContextWrapper: React.FC<contextProps> = ({ children }) => {
   const [type, setType] = useState("");
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
 
   //Get Products
   const GetProducts = async () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        apiUrl + "/api/v1/products?type=" + type + "&search=" + search
+        apiUrl +
+          "/api/v1/products?type=" +
+          type +
+          "&search=" +
+          search +
+          "&filter=" +
+          filter
       );
       if (response.data.status === "success") {
         setProducts(response.data.data.products);
@@ -65,7 +72,13 @@ export const StoreContextWrapper: React.FC<contextProps> = ({ children }) => {
     if (rerenderProducts || products?.length < 1) {
       GetProducts();
     }
-  }, [type, search, rerenderProducts]);
+  }, [rerenderProducts]);
+
+  useEffect(() => {
+    if (products?.length > 0) {
+      GetProducts();
+    }
+  }, [type, search, filter]);
 
   /**
    * Filter
@@ -179,6 +192,8 @@ export const StoreContextWrapper: React.FC<contextProps> = ({ children }) => {
         setOpenFilter,
         translateYFilter,
         scaleBg,
+        filter,
+        setFilter,
       }}
     >
       {children}

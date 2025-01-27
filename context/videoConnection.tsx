@@ -215,6 +215,77 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
   /** ვიდეოს გახსნა დახურვა */
   const [openVideo, setOpenVideo] = useState<any>(false);
 
+  useEffect(() => {
+    const hasDeadPlayer = gamePlayers?.some(
+      (player: any) => player.death === true
+    );
+
+    if ((spectators && spectators.length > 0) || hasDeadPlayer) {
+      setRemoteStreams((prevStreams: any[]) =>
+        prevStreams.map((stream) => {
+          const isSpectator = spectators.some(
+            (spectator: any) => spectator.userId === stream.userId
+          );
+
+          const isPlayerDead = hasDeadPlayer
+            ? gamePlayers.some(
+                (player: any) =>
+                  player.userId === stream.userId && player.death === true
+              )
+            : false;
+
+          if (isSpectator || isPlayerDead) {
+            const updatedStream = { ...stream };
+
+            // Disable audio tracks and log
+            const audioTracks = updatedStream.streams?.getAudioTracks() || [];
+            audioTracks.forEach((track: any) => {
+              track.enabled = false; // აუდიო გათიშვა
+              console.log(
+                `UserId: ${stream.userId}, Track: audio, Enabled: ${
+                  track.enabled
+                }, Reason: ${isSpectator ? "Spectator" : "Death"}`
+              );
+            });
+
+            // Disable video tracks and log
+            const videoTracks = updatedStream.streams?.getVideoTracks() || [];
+            videoTracks.forEach((track: any) => {
+              track.enabled = false; // ვიდეო გათიშვა
+              console.log(
+                `UserId: ${stream.userId}, Track: video, Enabled: ${
+                  track.enabled
+                }, Reason: ${isSpectator ? "Spectator" : "Death"}`
+              );
+            });
+
+            return updatedStream;
+          }
+
+          return stream;
+        })
+      );
+    }
+  }, [spectators, gamePlayers]);
+
+  // Log all remoteStreams
+  useEffect(() => {
+    if (remoteStreams && remoteStreams.length > 0) {
+      remoteStreams.forEach((stream: any) => {
+        const audioTracks = stream.streams?.getAudioTracks() || [];
+        const videoTracks = stream.streams?.getVideoTracks() || [];
+
+        console.log(`UserId: ${stream.userId}`);
+        audioTracks.forEach((track: any) =>
+          console.log(`  Audio Track: ${track.kind}, Enabled: ${track.enabled}`)
+        );
+        videoTracks.forEach((track: any) =>
+          console.log(`  Video Track: ${track.kind}, Enabled: ${track.enabled}`)
+        );
+      });
+    }
+  }, [remoteStreams]);
+
   return (
     <VideoConnection.Provider
       value={{
@@ -223,6 +294,7 @@ export const VideoConnectionContextWrapper: React.FC<contextProps> = ({
         localStream,
         setLocalStream,
         remoteStreams,
+        setRemoteStreams,
         StartConnection,
         openVideo,
         setOpenVideo,

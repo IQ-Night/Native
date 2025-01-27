@@ -2,6 +2,7 @@ import { BlurView } from "expo-blur";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import Button from "../components/button";
 import { useAppContext } from "../context/app";
+import * as Haptics from "expo-haptics";
 
 const DeleteConfirm = ({
   text,
@@ -10,7 +11,7 @@ const DeleteConfirm = ({
   loadingDelete,
   Function,
 }: any) => {
-  const { activeLanguage } = useAppContext();
+  const { activeLanguage, haptics } = useAppContext();
   return (
     <BlurView
       intensity={20}
@@ -24,7 +25,12 @@ const DeleteConfirm = ({
       }}
     >
       <Pressable
-        onPress={closeDeleteConfirm}
+        onPress={() => {
+          if (haptics) {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+          }
+          closeDeleteConfirm();
+        }}
         style={{ width: "100%", height: "100%" }}
       >
         <Animated.View

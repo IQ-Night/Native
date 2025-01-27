@@ -10,6 +10,9 @@ import { useClansContext } from "../../context/clans";
 import { useContentContext } from "../../context/content";
 import Filter from "./filter";
 import List from "./list";
+import Button from "../../components/button";
+import CreateClan from "./createClan";
+import { useAuthContext } from "../../context/auth";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -17,7 +20,12 @@ const Clans = ({ navigation }: any) => {
   /**
    * App context
    */
-  const { haptics, activeLanguage } = useAppContext();
+  const { haptics, activeLanguage, theme } = useAppContext();
+  /**
+   * Current user
+   */
+  const { currentUser } = useAuthContext();
+
   /**
    * Context state
    */
@@ -135,6 +143,30 @@ const Clans = ({ navigation }: any) => {
     }
   }, [open]);
 
+  /**
+   * Create clan opening
+   */
+  const [createClan, setCreateClan] = useState(false);
+  const translateYCreateClan = useRef(
+    new Animated.Value(SCREEN_HEIGHT)
+  ).current;
+
+  useEffect(() => {
+    if (createClan) {
+      Animated.timing(translateYCreateClan, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(translateYCreateClan, {
+        toValue: SCREEN_HEIGHT,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [createClan]);
+
   return (
     <View style={{ minHeight: "100%" }}>
       <Animated.View style={{ flex: 1, transform: [{ scale: scaleBg }] }}>
@@ -176,7 +208,62 @@ const Clans = ({ navigation }: any) => {
           <List navigation={navigation} />
         </Animated.View>
       </Animated.View>
-
+      {!loadClans &&
+        !clans?.find((c: any) =>
+          c?.members?.some(
+            (m: any) => m?.userId === currentUser?._id && m?.status === "member"
+          )
+        ) && (
+          <View
+            style={{
+              width: "100%",
+              // Box shadow for iOS
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.2,
+              shadowRadius: 2,
+              // Elevation for Android
+              elevation: 4,
+            }}
+          >
+            <View style={styles.createIcon}>
+              <View
+                style={{
+                  borderRadius: 8,
+                  overflow: "hidden",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: "94%",
+                }}
+              >
+                <Button
+                  title={activeLanguage?.create_new_clan}
+                  onPressFunction={() => {
+                    setCreateClan(true);
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
+                  }}
+                  style={{
+                    backgroundColor: theme.active,
+                    color: "white",
+                    width: "100%",
+                  }}
+                />
+              </View>
+            </View>
+          </View>
+        )}
+      <Animated.View
+        style={[
+          styles.screen,
+          {
+            transform: [{ translateY: translateYCreateClan }],
+          },
+        ]}
+      >
+        <CreateClan setCreateClan={setCreateClan} />
+      </Animated.View>
       {openFilter && (
         <Animated.View style={[styles.screen]}>
           <Filter
@@ -196,11 +283,10 @@ const styles = StyleSheet.create({
   createIcon: {
     borderRadius: 10,
     position: "absolute",
-    right: 12,
     bottom: 90,
     overflow: "hidden",
-    borderWidth: 1.5,
-    borderColor: "#222",
+    width: "100%",
+    alignItems: "center",
   },
   screen: {
     width: "100%",
@@ -209,5 +295,6 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 50,
     paddingBottom: 96,
+    paddingTop: 40,
   },
 });

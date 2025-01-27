@@ -48,10 +48,8 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
    */
   const [totalNotifications, setTotalNotifications] = useState<any>(null);
   const [notifications, setNotifications] = useState<any>([]);
+  const [unreadNotifications, setUnreadNotifications] = useState([]);
   const [page, setPage] = useState(1);
-  const unreadNotifications = notifications.filter(
-    (notif: any) => notif.status === "unread"
-  );
 
   const [clansNotifications, setClansNotifications] = useState<any>([]);
   const [supportTickets, setSupportTickets] = useState<any>([]);
@@ -64,10 +62,12 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
         );
         if (response.data.status === "success") {
           setNotifications(response.data.data.notifications);
+          setUnreadNotifications(response.data.data.unreadNotifications);
           setClansNotifications(response.data.data.clansNotifications);
           setSupportTickets(response.data.data.tickets);
           setTotalNotifications(response.data.total);
           setPage(1);
+          setRerenderNotifications(false);
         }
       } catch (error: any) {
         console.log(error.response.data.message);
@@ -129,52 +129,7 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
     }
   };
 
-  /**
-   get total of requests
-   *  */
-  let clansRequestsNotifications = clansNotifications.filter((clan: any) =>
-    clan.admin?.some((a: any) => a.user.id === currentUser._id)
-  );
-
-  // Initialize total requests
-  let totalRequests = 0;
-
-  // Loop through each clan and find members with "request" status
-  clansRequestsNotifications.forEach((clan: any) => {
-    const requestMembers = clan.members.filter(
-      (member: any) => member.status === "request"
-    );
-    totalRequests += requestMembers.length; // Add the number of requests to total
-  });
-
-  /**
-   get total of pendings
-   *  */
-  let clansPendingsNotifications = clansNotifications.filter((clan: any) =>
-    clan.members.some(
-      (member: any) =>
-        member.userId === currentUser._id && member.status === "pending"
-    )
-  );
-
-  // Initialize total pending requests counter
-  let totalPending = 0;
-
-  // Loop through each clan and count the pending requests for the current user
-  clansPendingsNotifications.forEach((clan: any) => {
-    const pendingMembers = clan.members.filter(
-      (member: any) =>
-        member.userId === currentUser._id && member.status === "pending"
-    );
-    totalPending += pendingMembers.length; // Add the count of pending members
-  });
-
-  let clansTotalBadge = totalRequests + totalPending;
-  let totalBadge =
-    unreadNotifications.length +
-    totalRequests +
-    totalPending +
-    supportTickets?.length;
+  let totalBadge = unreadNotifications?.length + supportTickets?.length;
 
   useEffect(() => {
     if (socket) {
@@ -238,6 +193,7 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
       );
       if (response.data.status === "success") {
         setNotifications([]);
+        setUnreadNotifications([]);
         setTotalNotifications(0);
         setClearState(null);
         setLoading(false);
@@ -282,10 +238,10 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
         unreadNotifications,
         totalNotifications,
         setTotalNotifications,
+        setUnreadNotifications,
         clansNotifications,
         setClansNotifications,
         totalBadge,
-        clansTotalBadge,
         SendNotification,
         loading,
         clearState,
@@ -295,6 +251,8 @@ export const NotificationsContextWrapper: React.FC<contextProps> = ({
         setSupportTickets,
         noAuthTickets,
         setNoAuthTickets,
+        rerenderNotifications,
+        setRerenderNotifications,
       }}
     >
       {children}

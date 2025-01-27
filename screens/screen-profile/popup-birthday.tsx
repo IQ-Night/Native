@@ -40,8 +40,9 @@ const BirthdayWindow = () => {
       style={{
         borderRadius: 10,
         width: "100%",
-        height: "100%",
+        height: "60%",
         gap: 10,
+        marginTop: "40%",
       }}
     >
       <View style={styles.container}>

@@ -8,14 +8,16 @@ import * as Haptics from "expo-haptics";
 
 const Spectators = ({ setOpenSpectators, setOpenUser }: any) => {
   const { theme, haptics, activeLanguage } = useAppContext();
-  const { spectators } = useGameContext();
+  const { spectators, gamePlayers } = useGameContext();
   const slideAnim = useRef(new Animated.Value(500)).current; // Start off-screen
 
+  const deathPlayers = gamePlayers?.filter((p: any) => p.death);
+
   useEffect(() => {
-    if (spectators?.length < 1) {
+    if (spectators?.length < 1 && deathPlayers?.length < 1) {
       setOpenSpectators(false);
     }
-  }, [spectators]);
+  }, [spectators, deathPlayers]);
 
   useEffect(() => {
     // Slide up when the component mounts
@@ -80,34 +82,41 @@ const Spectators = ({ setOpenSpectators, setOpenUser }: any) => {
               width: "90%",
               height: "60%",
               padding: 16,
+              gap: 16,
             }}
           >
-            {spectators?.map((spectator: any, index: number) => (
-              <Pressable
-                key={index}
-                style={{ gap: 4 }}
-                onPress={() => {
-                  if (haptics) {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                  }
-                  setOpenUser(spectator);
-                }}
-              >
-                <View
+            {[...spectators, ...deathPlayers]?.map(
+              (spectator: any, index: number) => (
+                <Pressable
+                  key={index}
                   style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 50,
-                    overflow: "hidden",
+                    gap: 12,
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}
+                  onPress={() => {
+                    if (haptics) {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                    }
+                    setOpenUser(spectator);
                   }}
                 >
-                  <Img uri={spectator.userCover} />
-                </View>
-                <Text style={{ color: theme.text, fontWeight: "500" }}>
-                  {spectator?.userName}
-                </Text>
-              </Pressable>
-            ))}
+                  <View
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 50,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Img uri={spectator.userCover} />
+                  </View>
+                  <Text style={{ color: theme.text, fontWeight: "500" }}>
+                    {spectator?.userName}
+                  </Text>
+                </Pressable>
+              )
+            )}
           </View>
         </Animated.View>
       </Pressable>

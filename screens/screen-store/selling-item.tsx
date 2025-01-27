@@ -52,7 +52,6 @@ const Item = ({ item, setState, setOpenBuyItem }: any) => {
       label: activeLanguage?.clanAvatar,
     },
   ];
-  console.log(item.file);
   return (
     <View
       style={{

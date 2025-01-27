@@ -16,7 +16,7 @@ export const handleReceiveCandidate = async ({
     try {
       // ვამატებთ ICE კანდიდატს კავშირის ობიექტში
       await peerConnections.current[userId].addIceCandidate(candidate);
-      console.log(`ICE candidate added for userId: ${userId}`);
+      // console.log(`ICE candidate added for userId: ${userId}`);
     } catch (error) {
       console.log(`Error adding ICE candidate for userId: ${userId}:`, error);
     }

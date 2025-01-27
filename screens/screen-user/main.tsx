@@ -423,40 +423,37 @@ const User = ({ route, navigation, userItem, from }: any) => {
                     {activeLanguage?.not_found}
                   </Text>
                 )}
-                {user?.clans?.map((i: any, index: number) => {
-                  return (
-                    <Pressable
-                      onPress={() => {
-                        if (haptics)
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                        if (!userItem) {
-                          navigation.navigate("Clan", { item: i });
-                        }
-                      }}
-                      key={index}
+                {user?.clan && (
+                  <Pressable
+                    onPress={() => {
+                      if (haptics)
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                      if (!userItem) {
+                        navigation.navigate("Clan", { item: user?.clan });
+                      }
+                    }}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    <View
                       style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 6,
+                        width: 24,
+                        height: 24,
+                        aspectRatio: 1,
+                        overflow: "hidden",
+                        borderRadius: 50,
                       }}
                     >
-                      <View
-                        style={{
-                          width: 24,
-                          height: 24,
-                          aspectRatio: 1,
-                          overflow: "hidden",
-                          borderRadius: 50,
-                        }}
-                      >
-                        <Img uri={i?.cover} />
-                      </View>
-                      <Text style={{ color: theme.text, fontWeight: 500 }}>
-                        {i.title}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
+                      <Img uri={user?.clan?.cover} />
+                    </View>
+                    <Text style={{ color: theme.text, fontWeight: 500 }}>
+                      {user?.clan.title}
+                    </Text>
+                  </Pressable>
+                )}
               </View>
             )}
             {activeSection === "Warnings" && <Warnings list={user?.warnings} />}

@@ -19,7 +19,7 @@ export default function GetTimesAgo(date, justNow) {
 
   // Return appropriate time unit based on time difference
   if (timeDiff < minute) {
-    return "Just now";
+    return activeLanguage?.justNow;
   } else if (timeDiff < hour) {
     const minutesAgo = Math.floor(timeDiff / minute);
     return `${minutesAgo}${activeLanguage?.min}`;

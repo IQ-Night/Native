@@ -140,7 +140,7 @@ export const AuthContextWrapper: React.FC<contextProps> = ({ children }) => {
         });
         if (response.data.status === "success") {
           if (response?.data?.data?.user?.name) {
-            setCurrentUser(response.data.data.user);
+            setCurrentUser(response?.data?.data?.user);
           } else {
             setLoading(false);
             setAddationalFields({

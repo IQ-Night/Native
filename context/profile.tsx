@@ -337,19 +337,6 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
       ),
     },
     {
-      value: "My Clans",
-      label: activeLanguage?.myClans,
-      icon: (
-        <Entypo
-          name="flag"
-          size={21}
-          color={theme.text}
-          style={{ position: "relative", bottom: 1 }}
-        />
-      ),
-      type: "screen",
-    },
-    {
       value: "Notifications",
       label: activeLanguage?.notifications,
       icon: (

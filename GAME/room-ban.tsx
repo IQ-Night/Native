@@ -12,21 +12,21 @@ import { convertDuration } from "../functions/checkBan";
 import { useNotificationsContext } from "../context/notifications";
 import { useAuthContext } from "../context/auth";
 
-const bansList = [
-  { totalHours: 0.0164, label: "1 min" },
-  { totalHours: 0.5, label: "30 min" },
-  { totalHours: 2, label: "2 hours" },
-  { totalHours: 6, label: "6 hours" },
-  { totalHours: 24, label: "24 hours" },
-  { totalHours: 72, label: "3 days" },
-  { totalHours: 168, label: "1 week" },
-  { totalHours: 720, label: "1 month" },
-];
-
 const Ban = ({ openUser, setOpenBan, setOpenUser }: any) => {
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
   const { socket, activeRoom } = useGameContext();
   const { currentUser } = useAuthContext();
+
+  const bansList = [
+    { totalHours: 0.0164, label: "1 " + activeLanguage?.min },
+    { totalHours: 0.5, label: "30 " + activeLanguage?.min },
+    { totalHours: 2, label: "2 " + activeLanguage?.h },
+    { totalHours: 6, label: "6 " + activeLanguage?.h },
+    { totalHours: 24, label: "24 " + activeLanguage?.h },
+    { totalHours: 72, label: "3 " + activeLanguage?.days },
+    { totalHours: 168, label: "1 " + activeLanguage?.week },
+    { totalHours: 720, label: "1 " + activeLanguage?.m },
+  ];
 
   const slideAnim = useRef(new Animated.Value(500)).current;
   const [selectedDuration, setSelectedDuration] = useState(
@@ -125,7 +125,7 @@ const Ban = ({ openUser, setOpenBan, setOpenUser }: any) => {
             <>
               <View style={styles.header}>
                 <Text style={[styles.headerText, { color: theme.text }]}>
-                  Add Ban in this room
+                  {activeLanguage?.add_ban_in_room}
                 </Text>
                 <MaterialCommunityIcons
                   name="block-helper"
@@ -153,7 +153,7 @@ const Ban = ({ openUser, setOpenBan, setOpenUser }: any) => {
                 </Picker>
               </Pressable>
               <Button
-                title="Add Ban"
+                title={activeLanguage?.add_ban}
                 style={{
                   backgroundColor: "red",
                   width: "100%",
@@ -166,7 +166,7 @@ const Ban = ({ openUser, setOpenBan, setOpenUser }: any) => {
           )}
 
           <Button
-            title="Simple throw out from this room"
+            title={activeLanguage?.simple_throw_out}
             icon={
               <MaterialCommunityIcons name="logout" size={23} color="white" />
             }

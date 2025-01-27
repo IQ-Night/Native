@@ -1302,67 +1302,65 @@ const NominationWindow = ({
               textAlign: "center",
             }}
           >
-            Choice Release or Jail Players (If Draw Release)
+            {activeLanguage?.choice_release_or_jail_players}
           </Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 24,
-            }}
-          >
-            <Pressable
-              onPress={
-                currentPlayerInRoom?.death
-                  ? () => alert("You can't choice")
-                  : () => DecideVote({ value: "Release all" })
-              }
+          {!currentPlayerInRoom?.death && (
+            <View
               style={{
-                width: "40%",
-                paddingHorizontal: 24,
-                paddingVertical: 8,
-                backgroundColor: decideVotes?.find(
-                  (v: any) =>
-                    v.player === currentUser?._id && v.value === "Release all"
-                )
-                  ? "#888"
-                  : theme.active,
-                borderRadius: 8,
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 8,
+                gap: 24,
               }}
             >
-              <Text style={{ color: "white" }}>Release all</Text>
-            </Pressable>
-            <Pressable
-              onPress={
-                currentPlayerInRoom?.death
-                  ? () => alert("You can't choice")
-                  : () => DecideVote({ value: "Jail all" })
-              }
-              style={{
-                width: "40%",
-                paddingHorizontal: 24,
-                paddingVertical: 8,
-                backgroundColor: decideVotes?.find(
-                  (v: any) =>
-                    v.player === currentUser?._id && v.value === "Jail all"
-                )
-                  ? "#888"
-                  : theme.active,
-                borderRadius: 8,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
-            >
-              <Text style={{ color: "white" }}>Jail all</Text>
-            </Pressable>
-          </View>
+              <Pressable
+                onPress={() => DecideVote({ value: "Release all" })}
+                style={{
+                  width: "40%",
+                  paddingHorizontal: 24,
+                  paddingVertical: 8,
+                  backgroundColor: decideVotes?.find(
+                    (v: any) =>
+                      v.player === currentUser?._id && v.value === "Release all"
+                  )
+                    ? "#888"
+                    : theme.active,
+                  borderRadius: 8,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+              >
+                <Text style={{ color: "white" }}>
+                  {activeLanguage?.releaseAll}
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => DecideVote({ value: "Jail all" })}
+                style={{
+                  width: "40%",
+                  paddingHorizontal: 24,
+                  paddingVertical: 8,
+                  backgroundColor: decideVotes?.find(
+                    (v: any) =>
+                      v.player === currentUser?._id && v.value === "Jail all"
+                  )
+                    ? "#888"
+                    : theme.active,
+                  borderRadius: 8,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+              >
+                <Text style={{ color: "white" }}>
+                  {activeLanguage?.jailAll}
+                </Text>
+              </Pressable>
+            </View>
+          )}
 
           <View
             style={{

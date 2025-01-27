@@ -5,6 +5,7 @@ import ClanItem from "./clan-item";
 import { ActivityIndicator } from "react-native-paper";
 import { useAppContext } from "../../context/app";
 import { useContentContext } from "../../context/content";
+import { useAuthContext } from "../../context/auth";
 
 const List = ({ setUserScreen, navigation }: any) => {
   /**
@@ -18,7 +19,12 @@ const List = ({ setUserScreen, navigation }: any) => {
   /**
    * List
    */
-  const { clans, totalClans, AddClans, loadAddClans } = useClansContext();
+  const { clans, totalClans, loadClans, loadAddClans } = useClansContext();
+
+  /**
+   * current user
+   */
+  const { currentUser } = useAuthContext();
 
   return (
     <ScrollView
@@ -53,6 +59,7 @@ const List = ({ setUserScreen, navigation }: any) => {
             No Clans Found!
           </Text>
         )}
+
         {clans?.map((item: any, index: number) => {
           return (
             <ClanItem
@@ -82,7 +89,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     flexWrap: "wrap",
-    paddingBottom: 79,
+    paddingBottom: 170,
     paddingTop: 154,
     gap: 6,
     paddingHorizontal: 8,

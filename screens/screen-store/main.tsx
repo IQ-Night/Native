@@ -4,15 +4,17 @@ import {
   Animated,
   Dimensions,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import * as Haptics from "expo-haptics";
 import { useAppContext } from "../../context/app";
 import { useStoreContext } from "../../context/store";
 import List from "./list";
 import Header from "../../components/header";
-import Filter from "./filter";
+import Filter from "../../admin/products/filter";
 import { ActivityIndicator } from "react-native-paper";
 import { useContentContext } from "../../context/content";
 import BuyItem from "./buyItem";
@@ -23,7 +25,7 @@ const Store = () => {
   /**
    * App state
    */
-  const { rerenderProducts, activeLanguage } = useAppContext();
+  const { rerenderProducts, activeLanguage, theme, haptics } = useAppContext();
   /**
    * Store state
    */
@@ -45,6 +47,8 @@ const Store = () => {
     translateYFilter,
     scaleBg,
     totalProducts,
+    type,
+    setType,
   } = useStoreContext();
 
   /**
@@ -90,8 +94,15 @@ const Store = () => {
           <ActivityIndicator color="orange" size="small" />
         </Animated.View>
         <Animated.View
-          style={{ flex: 1, transform: [{ translateY: transformListY }] }}
+          style={{
+            paddingTop: 148,
+            paddingBottom: 56,
+            transform: [{ translateY: transformListY }],
+          }}
         >
+          <View>
+            <Filter type={type} setType={setType} />
+          </View>
           <List setOpenBuyItem={setOpenBuyItem} setState={setProducts} />
         </Animated.View>
       </Animated.View>
@@ -125,6 +136,5 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     zIndex: 50,
-    paddingBottom: 96,
   },
 });

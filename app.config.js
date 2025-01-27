@@ -4,18 +4,21 @@ module.exports = {
   expo: {
     name: "IQ Night",
     slug: "iq-night",
-    version: "1.0.1",
+    version: "1.0.2",
     sdkVersion: "52.0.0",
     icon: "./assets/iqnight-icon.png",
     ios: {
       bundleIdentifier: "com.iqnight.app",
-      buildNumber: "1.0.18",
+      buildNumber: "1.0.19",
       icon: "./assets/iqnight-icon.png",
       supportsTablet: false,
+      infoPlist: {
+        UIBackgroundModes: ["audio", "voip"],
+      },
     },
     splash: {
       image: "./assets/bg.jpg",
-      resizeMode: "contain",
+      resizeMode: "cover",
       backgroundColor: "#000",
     },
     plugins: [withPurchases],

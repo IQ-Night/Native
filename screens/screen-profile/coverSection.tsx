@@ -22,8 +22,6 @@ const CoverSection = () => {
    */
   const { setUpdateState, setLoading } = useProfileContext();
 
-  // upload img from device
-
   return (
     <View
       style={[
@@ -70,10 +68,18 @@ const CoverSection = () => {
         </Pressable>
       </View>
 
-      <View style={{ gap: 4 }}>
+      <View
+        style={{
+          width: "70%",
+          gap: 4,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <View
           style={{
-            width: "70%",
+            width: "100%",
             flexDirection: "row",
             alignItems: "center",
             gap: 8,
@@ -99,16 +105,18 @@ const CoverSection = () => {
             />
           </Pressable>
         </View>
-        <Text
-          style={{
-            color: theme.text,
-            opacity: 0.8,
-            fontSize: 14,
-            fontWeight: "normal",
-          }}
-        >
-          {currentUser?.email}
-        </Text>
+        {currentUser?.clan && (
+          <View
+            style={{
+              width: 24,
+              aspectRatio: 1,
+              overflow: "hidden",
+              borderRadius: 150,
+            }}
+          >
+            <Img uri={currentUser?.clan?.cover} />
+          </View>
+        )}
       </View>
     </View>
   );

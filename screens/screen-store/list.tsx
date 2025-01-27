@@ -6,7 +6,7 @@ import { ActivityIndicator } from "react-native-paper";
 import { useAppContext } from "../../context/app";
 
 const List = ({ setOpenBuyItem, setState }: any) => {
-  const { theme } = useAppContext();
+  const { theme, activeLanguage } = useAppContext();
   const { products, totalProducts } = useStoreContext();
   return (
     <ScrollView style={{ marginTop: 8 }}>
@@ -59,7 +59,6 @@ const styles = StyleSheet.create({
     position: "relative",
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingTop: 140,
     paddingBottom: 79,
     gap: 1,
     padding: 1,

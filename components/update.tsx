@@ -27,7 +27,7 @@ export const Update = (props: any) => {
     if (Platform.OS === "ios") {
       url = "https://apps.apple.com/ge/app/iq-night-online/id6738655481";
     } else {
-      url = "https://play.google.com/store/apps/details?id=com.pirtaxx.wordex";
+      url = "https://apps.apple.com/ge/app/iq-night-online/id6738655481";
     }
     Linking.canOpenURL(url)
       .then((supported) => {

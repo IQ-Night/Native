@@ -23,15 +23,15 @@ import {
   View,
 } from "react-native";
 import CountryFlag from "react-native-country-flag";
-import Avatars from "../../../components/avatars";
-import Button from "../../../components/button";
-import Input from "../../../components/input";
-import ChoiceLanguage from "../../../components/popup-languages";
-import { useAppContext } from "../../../context/app";
-import { useAuthContext } from "../../../context/auth";
-import { useClansContext } from "../../../context/clans";
-import Img from "../../../components/image";
-import { useProfileContext } from "../../../context/profile";
+import Avatars from "../../components/avatars";
+import Button from "../../components/button";
+import Input from "../../components/input";
+import ChoiceLanguage from "../../components/popup-languages";
+import { useAppContext } from "../../context/app";
+import { useAuthContext } from "../../context/auth";
+import { useClansContext } from "../../context/clans";
+import Img from "../../components/image";
+import { useProfileContext } from "../../context/profile";
 import { create } from "lodash";
 import { useNavigation } from "@react-navigation/native";
 
@@ -46,7 +46,7 @@ const CreateClan = ({ setCreateClan }: any) => {
   /**
    * Auth context
    */
-  const { currentUser } = useAuthContext();
+  const { currentUser, setCurrentUser } = useAuthContext();
 
   /**
    * Clan state
@@ -107,7 +107,7 @@ const CreateClan = ({ setCreateClan }: any) => {
    * Creat Clan
    */
   const [loading, setLoading] = useState(false);
-  const { setClans, GetClans } = useProfileContext();
+  const { setClans, GetClans } = useClansContext();
 
   const navigation: any = useNavigation();
 
@@ -138,10 +138,20 @@ const CreateClan = ({ setCreateClan }: any) => {
         GetClans();
         setLoading(false);
         setCreateClan(false);
+        setCurrentUser((prev: any) => ({
+          ...prev,
+          clan: response?.data?.data?.clan,
+          coins: { total: prev.coins.total - totalPrice?.all },
+        }));
         setClanState({
-          admin: [{ user: currentUser._id, role: "founder" }],
+          admin: [
+            {
+              user: { id: currentUser._id, name: currentUser?.name },
+              role: "founder",
+            },
+          ],
           cover:
-            "https://firebasestorage.googleapis.com/v0/b/iq-night.appspot.com/o/products%2Fclan-avatars%2FAvatar%203Thu%20Aug%2015%202024%2015%3A03%3A18%20GMT%2B0400?alt=media&token=e611ca31-a386-44af-82ec-67596ccfdbeb",
+            "https://firebasestorage.googleapis.com/v0/b/iq-night.appspot.com/o/products%2FAvatar%202Tue%20Nov%2012%202024%2023%3A09%3A18%20GMT%2B0400?alt=media&token=355befff-2be1-427f-9ecf-92516f5f275c",
           title: "",
           language: "GE",
           members: [

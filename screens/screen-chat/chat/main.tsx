@@ -95,7 +95,7 @@ const Chat = ({ route }: any) => {
     if (route?.params?.chat?._id) {
       GetMessages();
     } else {
-      if (route?.params?.type === "user") {
+      if (route?.params?.chat?.type?.value === "user") {
         CheckChat();
       }
       setLoading(false);

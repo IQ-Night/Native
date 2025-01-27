@@ -21,6 +21,8 @@ import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import Countries from "./countries";
 import VerifyCodePopup from "./inputPopup";
+import CheckboxWithLabel from "../components/checkBox";
+import Alert from "../components/alert";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -47,6 +49,8 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
   const [country, setCountry] = useState("GE");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [terms, setTerms] = useState(false);
+  const [privacy, setPrivacy] = useState(false);
 
   const nameInputRef = useRef<TextInput>(null);
   const emailInputRef = useRef<TextInput>(null);
@@ -71,7 +75,9 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
       email?.length < 1 ||
       password?.length < 1 ||
       name?.length < 1 ||
-      confirmPassword?.length < 1
+      confirmPassword?.length < 1 ||
+      !terms ||
+      !privacy
     ) {
       return setAlert({
         active: true,
@@ -146,6 +152,8 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
             registerType: "email",
             country: country,
             language: language,
+            acceptPrivacy: true,
+            acceptTerms: true,
           })
           .then(async (data) => {
             if (data) {
@@ -200,10 +208,11 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
     >
-      <View style={{ position: "absolute" }}>
+      <View style={{ position: "absolute", zIndex: 50 }}>
         {verify && (
           <VerifyCodePopup
-            code={codeInput}
+            codeInput={codeInput}
+            code={code}
             setCode={setCodeInput}
             setFunction={RegisterFnc}
             open={verify}
@@ -297,6 +306,26 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
               ref={confirmPasswordInputRef}
               value={confirmPassword}
             />
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                transform: [{ scale: 0.8 }],
+                gap: 24,
+              }}
+            >
+              <CheckboxWithLabel
+                isChecked={terms}
+                setIsChecked={setTerms}
+                label={activeLanguage?.terms}
+              />
+              <CheckboxWithLabel
+                isChecked={privacy}
+                setIsChecked={setPrivacy}
+                label={activeLanguage?.privacy}
+              />
+            </View>
+
             <View style={{ gap: 4, alignItems: "center" }}>
               <TouchableOpacity
                 activeOpacity={0.9}
@@ -323,7 +352,6 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
               </TouchableOpacity>
             </View>
           </View>
-
           <View
             style={{
               width: "100%",
@@ -342,6 +370,14 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
               title={activeLanguage.register}
               loading={loading}
               onPressFunction={SendEmail}
+              disabled={
+                email?.length < 1 ||
+                password?.length < 1 ||
+                name?.length < 1 ||
+                confirmPassword?.length < 1 ||
+                !terms ||
+                !privacy
+              }
             />
           </View>
           {openCountries && (

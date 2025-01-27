@@ -11,18 +11,19 @@ import {
   Text,
   View,
 } from "react-native";
-import Button from "../../../components/button";
-import Input from "../../../components/input";
-import { useAppContext } from "../../../context/app";
-import { useAuthContext } from "../../../context/auth";
-import { useProfileContext } from "../../../context/profile";
+import Button from "../../components/button";
+import Input from "../../components/input";
+import { useAppContext } from "../../context/app";
+import { useAuthContext } from "../../context/auth";
+import { useProfileContext } from "../../context/profile";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
-import { useContentContext } from "../../../context/content";
+import { useContentContext } from "../../context/content";
 import * as Haptics from "expo-haptics";
+import { useClansContext } from "../../context/clans";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
-const EditSlogan = ({ navigation, item, setItem }: any) => {
+const EditTitle = ({ navigation, item, setItem }: any) => {
   /**
    * App context
    */
@@ -35,34 +36,34 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
   /**
    * content context
    */
-  const { setRerenderProfile } = useContentContext();
+  const { setRerenderClans } = useContentContext();
 
   /**
    * Edit field
    */
-  const [input, setInput] = useState(item.slogan);
+  const [input, setInput] = useState(item.title);
   /**
    * Clan context
    */
-  const { setUpdateClanState, updateClanState, setClans } = useProfileContext();
+  const { updateClanState, setUpdateClanState } = useClansContext();
 
   /**
-   * Edit slogan
+   * Edit title
    */
   const [loading, setLoading] = useState(false);
 
-  const EditSlogan = async () => {
+  const EditTitle = async () => {
     if (haptics) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     }
     if (input?.length < 1) {
       return setUpdateClanState(null);
     }
-    const needToPay = item.price.slogan < 1;
-    if (needToPay && currentUser?.coins?.total < 700) {
+    const needToPay = item.price.title < 1;
+    if (needToPay && currentUser?.coins?.total < 800) {
       return setAlert({
         active: true,
-        text: activeLanguage?.notEnoughCoinsSetPaidSlogan,
+        text: activeLanguage?.notEnoughCoinsSetPaidTitle,
         type: "error",
         button: {
           function: () => navigation.navigate("Coins"),
@@ -77,18 +78,19 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
 
       setLoading(true);
       const response = await axios.patch(
-        apiUrl + "/api/v1/clans/" + item._id + "?type=slogan&paid=" + needToPay,
+        apiUrl + "/api/v1/clans/" + item._id + "?type=name&paid=" + needToPay,
         {
-          slogan: input,
+          title: input,
         }
       );
       if (response.data.status === "success") {
         GetUser();
+        setRerenderClans(true);
         navigation.setParams({
           item: {
             ...item,
-            slogan: input,
-            price: needToPay ? { ...item.price, slogan: 700 } : item.price,
+            title: input,
+            price: needToPay ? { ...item.price, title: 800 } : item.price,
           },
         });
         setTimeout(() => {
@@ -98,6 +100,17 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
     } catch (error: any) {
       console.log(error.response.data.message);
       setLoading(false);
+      if (
+        error.response.data.message.includes(
+          "E11000 duplicate key error collection"
+        )
+      ) {
+        setAlert({
+          active: true,
+          text: activeLanguage?.clanTitleExists,
+          type: "error",
+        });
+      }
     }
   };
 
@@ -105,7 +118,7 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
 
   // Animation to slide the popup in and out
   useEffect(() => {
-    if (updateClanState === "Edit Slogan") {
+    if (updateClanState === "Edit Title") {
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 300,
@@ -117,6 +130,9 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
 
   // Function to close the confirmation popup
   const closeState = () => {
+    if (haptics) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+    }
     Animated.timing(slideAnim, {
       toValue: 500, // Slide back down
       duration: 200,
@@ -136,8 +152,8 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
         height: "100%",
         width: "100%",
         position: "absolute",
-        top: 0,
         zIndex: 90,
+        top: 0,
         alignItems: "center",
       }}
     >
@@ -145,9 +161,6 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
         style={{ margin: 12, marginBottom: 0 }}
         onPress={() => {
           closeState();
-          if (haptics) {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-          }
         }}
       >
         <MaterialIcons name="arrow-drop-down" size={42} color={theme.active} />
@@ -172,10 +185,10 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
           }}
         >
           <Input
-            placeholder={activeLanguage?.slogan}
+            placeholder={activeLanguage.fullName}
             onChangeText={(text: string) => setInput(text)}
             type="text"
-            onSubmitEditing={EditSlogan}
+            onSubmitEditing={EditTitle}
             returnKeyType="go"
             value={input}
           />
@@ -185,26 +198,28 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
               color: "white",
               backgroundColor: theme.active,
             }}
-            disabled={input === item?.slogan}
+            disabled={
+              input === item?.title || (input?.length > 0 && input?.length < 3)
+            }
             icon={
-              item?.price.slogan < 1 &&
-              input?.length > 0 && (
+              item?.price.title < 1 &&
+              input?.length > 2 && (
                 <View
                   style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
                 >
                   <Text style={{ color: "white", fontWeight: 600 }}>
                     (
                     <Text style={{ color: "white", fontWeight: 600 }}>
-                      700{" "}
+                      800{" "}
                     </Text>
                     <FontAwesome5 name="coins" size={14} color="white" />)
                   </Text>
                 </View>
               )
             }
-            title={activeLanguage?.change_slogan}
+            title={activeLanguage.changeName}
             loading={loading}
-            onPressFunction={() => EditSlogan()}
+            onPressFunction={() => EditTitle()}
           />
         </Pressable>
       </Animated.View>
@@ -212,6 +227,6 @@ const EditSlogan = ({ navigation, item, setItem }: any) => {
   );
 };
 
-export default EditSlogan;
+export default EditTitle;
 
 const styles = StyleSheet.create({});

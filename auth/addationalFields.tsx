@@ -17,6 +17,7 @@ import Input from "../components/input";
 import { useAppContext } from "../context/app";
 import { useAuthContext } from "../context/auth";
 import Countries from "./countries";
+import CheckboxWithLabel from "../components/checkBox";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -46,6 +47,8 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
    */
   const [name, setName] = useState("");
   const [country, setCountry] = useState("GE");
+  const [terms, setTerms] = useState(false);
+  const [privacy, setPrivacy] = useState(false);
 
   /**
    * Add fields
@@ -54,7 +57,7 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
   const [addingLoading, setAddingLoading] = useState(false);
 
   const AddFields = async () => {
-    if (name?.length < 1) {
+    if (name?.length < 1 || !terms || !privacy) {
       Keyboard.dismiss();
       return setAlert({
         active: true,
@@ -68,6 +71,8 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
         .patch(`${apiUrl}/api/v1/users/${addationalFields?.user?._id}`, {
           name: name,
           country: country,
+          acceptPrivacy: true,
+          acceptTerms: true,
         })
         .then(async (data) => {
           if (data) {
@@ -75,6 +80,8 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
               ...addationalFields?.user,
               name: name,
               country: country,
+              acceptPrivacy: true,
+              acceptTerms: true,
             });
             setTimeout(() => {
               setAddingLoading(false);
@@ -177,6 +184,25 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
             </Pressable>
             <View
               style={{
+                flexDirection: "row",
+                alignItems: "center",
+                transform: [{ scale: 0.8 }],
+                gap: 24,
+              }}
+            >
+              <CheckboxWithLabel
+                isChecked={terms}
+                setIsChecked={setTerms}
+                label={activeLanguage?.terms}
+              />
+              <CheckboxWithLabel
+                isChecked={privacy}
+                setIsChecked={setPrivacy}
+                label={activeLanguage?.privacy}
+              />
+            </View>
+            <View
+              style={{
                 width: "100%",
                 position: "relative",
                 top: 12,
@@ -193,6 +219,7 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
                 title={activeLanguage.register}
                 loading={addingLoading}
                 onPressFunction={AddFields}
+                disabled={name?.length < 1 || !terms || !privacy}
               />
             </View>
             <View

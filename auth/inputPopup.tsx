@@ -21,28 +21,44 @@ const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
  * authentication email Verification code input popup
  */
 
-const InputPopup = (props: any) => {
+const InputPopup = ({
+  open,
+  setOpen,
+  code,
+  codeInput,
+  registerMessages,
+  loading,
+  setCode,
+  setLoading,
+  setFunction,
+}: any) => {
   /**
    * App context
    */
   const { theme, activeLanguage, haptics } = useAppContext();
 
+  const [alert, setAlert] = useState<any>(null);
+
   const handleSend = () => {
-    props.setLoading(true);
-    props.setFunction();
-    Keyboard.dismiss();
+    if (code !== codeInput) {
+      setAlert(true);
+    } else {
+      setLoading(true);
+      setFunction();
+      Keyboard.dismiss();
+    }
   };
 
   const handleCancel = () => {
-    props.setLoading(false);
-    props.setOpen(false);
-    props.setCode("");
+    setLoading(false);
+    setOpen(false);
+    setCode("");
     Keyboard.dismiss();
   };
 
   return (
     <View style={styles.container}>
-      <Modal animationType="slide" transparent visible={props.open}>
+      <Modal animationType="slide" transparent visible={open}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{ flex: 1 }}
@@ -51,7 +67,7 @@ const InputPopup = (props: any) => {
             <View
               style={[styles.modalView, { backgroundColor: theme.background2 }]}
             >
-              {props.registerMessages && (
+              {registerMessages && (
                 <Text
                   style={[
                     styles.modalText,
@@ -69,8 +85,8 @@ const InputPopup = (props: any) => {
 
               <Input
                 type="numeric"
-                value={props.code}
-                onChangeText={(text) => props.setCode(text)}
+                value={codeInput}
+                onChangeText={(text) => setCode(text)}
                 placeholder={activeLanguage.code}
                 returnKeyType="go"
                 onSubmitEditing={() => {
@@ -80,6 +96,13 @@ const InputPopup = (props: any) => {
                   }
                 }}
               />
+              {alert && (
+                <Text
+                  style={{ marginVertical: 12, color: "red", fontWeight: 600 }}
+                >
+                  {activeLanguage?.wrongVerificationCode}
+                </Text>
+              )}
               <View style={styles.buttonsContainer}>
                 <Button
                   style={{
@@ -100,7 +123,7 @@ const InputPopup = (props: any) => {
                   }}
                   icon=""
                   title={activeLanguage.verify}
-                  loading={props.loading}
+                  loading={loading}
                   onPressFunction={handleSend}
                 />
               </View>

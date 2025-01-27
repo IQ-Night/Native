@@ -33,6 +33,7 @@ const VideoComponent = ({
   const {
     localStream,
     remoteStreams,
+    setRemoteStreams,
     setLoading,
     video,
     loadingFirstConnection,
@@ -72,7 +73,7 @@ const VideoComponent = ({
         InCallManager.setForceSpeakerphoneOn(true);
         InCallManager.setSpeakerphoneOn(true);
         isInCallManagerStarted.current = true;
-        console.log("InCallManager started with Speakerphone ON");
+        // console.log("InCallManager started with Speakerphone ON");
       } catch (error) {
         console.log("InCallManager Error:", error);
       }
@@ -83,7 +84,7 @@ const VideoComponent = ({
         console.log("Cleaning up InCallManager for Android");
         InCallManager.stop();
       } else {
-        console.log("Preserving InCallManager for iOS");
+        // console.log("Preserving InCallManager for iOS");
       }
       isInCallManagerStarted.current = false;
     };
@@ -126,6 +127,21 @@ const VideoComponent = ({
   const [isAudioActive, setIsAudioActive] = useState<boolean>(true);
 
   const handleUpdateStatus = (data: any) => {
+    // if (data?.type === "spectator") {
+    //   if (data?.userName === "Geo Market") {
+    //     console.log(
+    //       "<<<<<   ",
+    //       currentUser?.name,
+    //       " - ",
+    //       data?.type,
+    //       " - ",
+    //       data?.audio,
+    //       " - ",
+    //       data?.video,
+    //       "   >>>>>>>"
+    //     );
+    //   }
+    // }
     if (
       data?.userId !== currentUser?._id &&
       data?.userId === userStream?.userId
@@ -157,12 +173,38 @@ const VideoComponent = ({
         } else {
           console.warn("No audio track found in the user stream.");
         }
+        setRemoteStreams((prevStreams: any[]) =>
+          prevStreams.map((stream) => {
+            if (stream.userId === data.userId) {
+              const updatedStream = { ...stream };
+
+              // Update audio tracks
+              const audioTrack = updatedStream.streams
+                ?.getAudioTracks()
+                ?.find((track: any) => track.kind === "audio");
+              if (audioTrack) {
+                audioTrack.enabled = data?.audio === "active";
+              }
+
+              // Update video tracks
+              const videoTrack = updatedStream.streams
+                ?.getVideoTracks()
+                ?.find((track: any) => track.kind === "video");
+              if (videoTrack) {
+                videoTrack.enabled = data?.video === "active";
+              }
+
+              return updatedStream;
+            }
+            return stream;
+          })
+        );
       }
     }
   };
   useEffect(() => {
     handleUpdateStatus(user);
-  }, [userStream]);
+  }, [userStream?.userId]);
 
   useEffect(() => {
     if (socket) {
@@ -178,9 +220,9 @@ const VideoComponent = ({
    */
   useEffect(() => {
     if (userId === currentUser?._id) {
-      if (game?.value === "Ready to start") {
-        setVideo("inactive");
+      if (game?.value === "Dealing Cards") {
         setMicrophone("inactive");
+        setVideo("inactive");
       }
       if (
         game?.value === "Getting to know mafias" &&
@@ -228,7 +270,6 @@ const VideoComponent = ({
     currentUser?._id,
     currentUserRole,
     nominations,
-    userId,
     voting,
   ]);
 
@@ -326,7 +367,7 @@ const VideoComponent = ({
           <RTCView
             key="local"
             streamURL={localStreamURL}
-            style={styles.video}
+            style={[styles.video, { transform: [{ scaleX: -1 }] }]} // სარკისებური ეფექტი
             objectFit="cover"
           />
         </View>
@@ -353,7 +394,7 @@ const VideoComponent = ({
           <RTCView
             key={`remote-${userId}`}
             streamURL={userStreamURL}
-            style={styles.video}
+            style={[styles.video, { transform: [{ scaleX: -1 }] }]} // სარკისებური ეფექტი
             objectFit="cover"
           />
         </View>

@@ -76,7 +76,7 @@ const CreateChat = ({ openState, setOpenState }: any) => {
       setLoadPlayers(true);
       try {
         const response = await axios.get(
-          apiUrl + "/api/v1/users?search=" + search
+          apiUrl + "/api/v1/users?search=" + search + "&searching=true"
         );
         if (response.data.status === "success") {
           setTimeout(() => {
@@ -113,8 +113,8 @@ const CreateChat = ({ openState, setOpenState }: any) => {
       <Animated.View
         style={{
           position: "absolute",
-          bottom: "14%",
-          height: "80%",
+          top: 50,
+          height: "85%",
           width: "95%",
           borderRadius: 24,
           overflow: "hidden",
@@ -122,6 +122,8 @@ const CreateChat = ({ openState, setOpenState }: any) => {
           backgroundColor: "rgba(255,255,255,0.05)",
           justifyContent: "space-between",
           padding: 8,
+
+          paddingBottom: 12,
         }}
       >
         <Search
@@ -135,7 +137,7 @@ const CreateChat = ({ openState, setOpenState }: any) => {
           style={{
             width: "100%",
             backgroundColor: "#222",
-            height: 600,
+            flex: 1,
             marginTop: 8,
             borderRadius: 8,
             padding: 8,

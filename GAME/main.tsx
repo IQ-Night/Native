@@ -405,54 +405,54 @@ const Game = () => {
       setLoadingSpectate(false);
       // Determine virtual host for the single request
       if (!game?.reJoin) {
-        const timerTotal =
-          game?.options?.includes("No Vote") &&
-          game?.players?.find((p: any) => p.role.value === "mafia-don") &&
-          game?.players?.filter((p: any) => p.value?.includes("mafia"))
-            ?.length > 1
-            ? 5000
-            : 2500;
-        if (
-          game?.options?.includes("No Vote") &&
-          game?.players?.find((p: any) => p.role.value === "mafia-don") &&
-          game?.players?.filter((p: any) => p.value?.includes("mafia"))
-            ?.length > 1
-        ) {
-          setAttention({
-            active: true,
-            value: "Start of the day",
-            timer: true,
-          });
-        } else {
-          setAttention({ active: true, value: "Start of the day" });
-        }
-        setTimeout(() => {
-          setAttention({ active: false, value: "" });
+        // const timerTotal =
+        //   game?.options?.includes("No Vote") &&
+        //   game?.players?.find((p: any) => p.role.value === "mafia-don") &&
+        //   game?.players?.filter((p: any) => p.value?.includes("mafia"))
+        //     ?.length > 1
+        //     ? 5000
+        //     : 2500;
+        // if (
+        //   game?.options?.includes("No Vote") &&
+        //   game?.players?.find((p: any) => p.role.value === "mafia-don") &&
+        //   game?.players?.filter((p: any) => p.value?.includes("mafia"))
+        //     ?.length > 1
+        // ) {
+        //   setAttention({
+        //     active: true,
+        //     value: "Start of the day",
+        //     timer: true,
+        //   });
+        // } else {
+        //   setAttention({ active: true, value: "Start of the day" });
+        // }
+        // setTimeout(() => {
+        //   setAttention({ active: false, value: "" });
 
-          const createNewDay = async () => {
-            try {
-              await axios.patch(
-                `${apiUrl}/api/v1/rooms/${host?.roomId}/createDay`,
-                {
-                  number: dayNumber,
-                  votes: [],
-                }
-              );
-            } catch (error: any) {
-              console.log(error.response?.data?.message);
-            }
-          };
+        const createNewDay = async () => {
+          try {
+            await axios.patch(
+              `${apiUrl}/api/v1/rooms/${host?.roomId}/createDay`,
+              {
+                number: dayNumber,
+                votes: [],
+              }
+            );
+          } catch (error: any) {
+            console.log(error.response?.data?.message);
+          }
+        };
 
-          const handleFirstPlayerToSpeech = async () => {
-            // Only the host creates the new day
-            if (currentUser?._id === host?.userId) {
-              await createNewDay();
-            }
-          };
+        const handleFirstPlayerToSpeech = async () => {
+          // Only the host creates the new day
+          if (currentUser?._id === host?.userId) {
+            await createNewDay();
+          }
+        };
 
-          // Initiating first player selection
-          handleFirstPlayerToSpeech();
-        }, timerTotal);
+        // Initiating first player selection
+        handleFirstPlayerToSpeech();
+        // }, timerTotal);
       }
     }
   }, [game, socket]);
@@ -694,11 +694,11 @@ const Game = () => {
 
       setLoadingSpectate(false);
 
-      setAttention({ active: true, value: "Start of the night" });
+      // setAttention({ active: true, value: "Start of the night" });
 
-      setTimeout(() => {
-        setAttention({ active: false, value: "" });
-      }, 2500);
+      // setTimeout(() => {
+      //   setAttention({ active: false, value: "" });
+      // }, 2500);
 
       // Create a new night
       const createNewNight = async () => {
@@ -1034,17 +1034,17 @@ const Game = () => {
           }
         } else {
           setSkipLoading(false);
-          if (playerSaved) {
-            setAttention({
-              active: true,
-              value: "player saved",
-            });
-          } else {
-            setAttention({
-              active: true,
-              value: "No player left the game - common timer start",
-            });
-          }
+          // if (playerSaved) {
+          //   setAttention({
+          //     active: true,
+          //     value: "player saved",
+          //   });
+          // } else {
+          setAttention({
+            active: true,
+            value: "No player left the game - common timer start",
+          });
+          // }
           setTimeout(() => {
             setNightSkips([]);
             setAttention({
@@ -1260,6 +1260,7 @@ const Game = () => {
   const [skipLastTimerLoading, setSkipLastTimerLoading] = useState(false);
 
   const handleLastWordTimerEnd = (data: any) => {
+    setSkipLastTimerLoading(false);
     if (!data?.nextDeath) {
       setGamePlayers(data?.players);
       if (data?.gameStage?.options[1] === "After Night") {
@@ -1612,13 +1613,48 @@ const Game = () => {
     }).start();
   }, [editRoom]);
 
+  /**
+   * Edit Bg darker when night, lighter when not night
+   */
+
+  // Create an animated value for the background color
+  const bg = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Determine the target value based on the game phase
+    const toValue =
+      game?.value === "Night" ||
+      game?.value === "Getting to know mafias" ||
+      game?.value === "Ready to start"
+        ? 1
+        : game?.value === "Personal Time Of Death"
+        ? 2
+        : 0;
+
+    // Stop any ongoing animation before starting a new one
+    Animated.timing(bg, {
+      toValue,
+      duration: 1500,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: false, // Colors interpolation requires useNativeDriver: false
+    }).start();
+  }, [game?.value]);
+
+  // Interpolate the background color
+  const bgColor = bg.interpolate({
+    inputRange: [0, 1, 2],
+    outputRange: [
+      "rgba(255,255,255,0.1)", // Light for Day
+      "rgba(0,0,0,0)", // Dark for Night
+      "#120000", // Specific color for "Personal Time Of Death"
+    ],
+  });
+
   return (
-    <BlurView
-      intensity={50}
-      tint="dark"
+    <Animated.View
       style={{
         flex: 1,
-        width: "100%",
+        backgroundColor: bgColor,
       }}
     >
       {openSpectators && (
@@ -1741,6 +1777,9 @@ const Game = () => {
           speechTimer={speechTimer}
           loadingReJoin={loadingReJoin}
           setOpenUser={setOpenUser}
+          setNightSkips={setNightSkips}
+          setSkipLastTimerLoading={setSkipLastTimerLoading}
+          setSkipLoading={setSkipLoading}
         />
 
         {/**
@@ -1796,6 +1835,18 @@ const Game = () => {
               setOpenConfirmRoles={setOpenConfirmRoles}
               confirmedRoles={confirmedRoles}
               setConfirmedRoles={setConfirmedRoles}
+              skipLastTimerLoading={skipLastTimerLoading}
+              skipLastWord={() => {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+
+                setSkipLastTimerLoading(true);
+                socket.emit("skipLastTimer", {
+                  ...lastWordData,
+                  roomId: activeRoom?._id,
+                });
+              }}
             />
           </View>
         )}
@@ -1867,7 +1918,7 @@ const Game = () => {
           }}
         />
       </Animated.View>
-    </BlurView>
+    </Animated.View>
   );
 };
 

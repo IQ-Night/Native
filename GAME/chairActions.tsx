@@ -115,7 +115,7 @@ const ChaitActions = ({
       style={{
         // transform: [{ scale: scaleAnim }],
         // opacity: opacityAnim,
-        width: (SCREEN_WIDTH * 0.9 - 72) / 4,
+        width: (SCREEN_WIDTH * 0.9 - 80) / 4,
         aspectRatio: 1,
         borderRadius: 100,
         position: "absolute",
@@ -124,8 +124,8 @@ const ChaitActions = ({
     >
       <View
         style={{
-          width: (SCREEN_WIDTH * 0.9 - 72) / 4,
-          height: (SCREEN_WIDTH * 0.9 - 72) / 4,
+          width: (SCREEN_WIDTH * 0.9 - 80) / 4,
+          height: (SCREEN_WIDTH * 0.9 - 80) / 4,
           borderRadius: 50,
           overflow: "hidden",
           borderWidth: 2,
@@ -261,7 +261,7 @@ const ChaitActions = ({
                     style={{
                       color: "red",
                       fontWeight: 600,
-                      fontSize: 14,
+                      fontSize: 12,
                       position: "relative",
                       bottom: 0.5,
                     }}
@@ -305,7 +305,7 @@ const ChaitActions = ({
                 );
               }}
               style={{
-                width: "70%",
+                width: "90%",
                 height: "33%",
                 borderRadius: 100,
                 backgroundColor: "rgba(0,0,0,0.7)",
@@ -319,7 +319,7 @@ const ChaitActions = ({
             >
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: 600,
                   color: "red",
                 }}
@@ -331,9 +331,12 @@ const ChaitActions = ({
                   fontSize: 12,
                   fontWeight: 600,
                   color: theme.text,
+                  maxWidth: "81%",
                 }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
               >
-                {safePlayer === item?.userId ? "" : "Safe"}
+                {safePlayer === item?.userId ? "" : activeLanguage?.safe}
               </Text>
             </Pressable>
           </BlurView>
@@ -469,9 +472,12 @@ const ChaitActions = ({
                   color: "red",
                   fontWeight: 600,
                   fontSize: 12,
+                  maxWidth: "80%",
                 }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
               >
-                Kill
+                {activeLanguage?.kill}
               </Text>
             </Pressable>
           </BlurView>
@@ -531,7 +537,10 @@ const ChaitActions = ({
                       : "#999",
                   fontWeight: 600,
                   fontSize: 12,
+                  maxWidth: "90%",
                 }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
               >
                 {activeLanguage?.vote}
               </Text>

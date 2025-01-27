@@ -14,7 +14,7 @@ import {
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import React, { useEffect } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { Badge } from "react-native-elements";
 import Img from "../components/image";
 import { useAdminContext } from "../context/admin";
@@ -74,6 +74,11 @@ const ScreenManager = () => {
 
   const { currentUser, GetUser } = useAuthContext();
   /**
+   * Notifications context
+   */
+
+  const { setRerenderNotifications } = useNotificationsContext();
+  /**
    * Admin context
    */
 
@@ -100,7 +105,7 @@ const ScreenManager = () => {
   /**
    * Notifications context
    */
-  const { totalBadge } = useNotificationsContext();
+  const { totalBadge, clansNotifications } = useNotificationsContext();
 
   const handleTabPress = (tab: any, focused: any, route: any) => {
     const routeName = getFocusedRouteNameFromRoute(route) || route.name;
@@ -126,6 +131,7 @@ const ScreenManager = () => {
         scrollToTop("Clans");
       } else {
         setRerenderClans(true);
+        setRerenderNotifications(true);
       }
     } else if (focused && tab.includes("Store")) {
       if (scrollYStore?.current > 0) {
@@ -178,6 +184,23 @@ const ScreenManager = () => {
     );
   }
 
+  // define clans notifications total
+  const adminClan = clansNotifications?.find((clan: any) =>
+    clan.admin.some((a: any) => a.user.id === currentUser?._id)
+  );
+  const adminClansNotifs =
+    adminClan?.members?.filter((m: any) => m?.status === "request")?.length ||
+    0;
+
+  const userClansNotifs =
+    clansNotifications?.filter((clan: any) =>
+      clan.members.some(
+        (a: any) => a.userId === currentUser?._id && a.status === "offer"
+      )
+    )?.length || 0;
+
+  const totalClansNotifs = adminClansNotifs + userClansNotifs;
+
   return (
     <NavigationContainer ref={navigationRef} theme={MyTheme}>
       <Tab.Navigator
@@ -208,7 +231,26 @@ const ScreenManager = () => {
                 case "Rooms":
                   return <Entypo name="grid" size={36} color={iconColor} />;
                 case "Clans":
-                  return <Entypo name="flag" size={28} color={iconColor} />;
+                  return (
+                    <View>
+                      {totalClansNotifs > 0 && (
+                        <Badge
+                          value={totalClansNotifs}
+                          status="success"
+                          badgeStyle={{ backgroundColor: theme.active }}
+                          containerStyle={{
+                            position: "absolute",
+                            zIndex: 30,
+                            top: -8,
+                            right: -8,
+                          }}
+                        />
+                      )}
+                      <Text>
+                        <Entypo name="flag" size={28} color={iconColor} />
+                      </Text>
+                    </View>
+                  );
                 case "Store":
                   return <Entypo name="shop" size={26} color={iconColor} />;
                 case "Liderboard":

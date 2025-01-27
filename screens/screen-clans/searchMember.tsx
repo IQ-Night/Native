@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Animated, StyleSheet, View, Keyboard } from "react-native";
 import { TextInput } from "react-native-paper";
 import { Feather, FontAwesome } from "@expo/vector-icons";
-import { useAppContext } from "../../../context/app";
+import { useAppContext } from "../../context/app";
 
 const Search = ({
   search,

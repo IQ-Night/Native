@@ -338,11 +338,13 @@ const Avatars = ({
             />
           </View>
         ) : (
-          avatars.map((item: any, index: number) => {
+          avatars.map((i: any, index: number) => {
             return (
               <Item
                 key={index}
-                item={item}
+                type={type}
+                item={i}
+                targetItem={item}
                 state={state}
                 setState={setState}
                 setAvatars={setAvatars}
@@ -365,7 +367,9 @@ const Avatars = ({
 };
 
 const Item = ({
+  type,
   item,
+  targetItem,
   state,
   setState,
   setAvatars,
@@ -382,6 +386,7 @@ const Item = ({
    * Content context
    */
   const { setConfirmAction } = useContentContext();
+
   return (
     <Pressable
       onPress={() => {
@@ -395,12 +400,21 @@ const Item = ({
           if (setState) {
             setState((prev: any) => ({ ...prev, cover: item.file }));
           } else {
-            setConfirmAction({
-              active: true,
-              text: activeLanguage?.first_avatar_change,
-              price: currentUser?.editOptions?.paidForCover ? 0 : 1500,
-              Function: () => onChange(item.file),
-            });
+            if (type === "profile-avatar") {
+              setConfirmAction({
+                active: true,
+                text: activeLanguage?.avatar_change,
+                price: currentUser?.editOptions?.paidForCover ? 0 : 1500,
+                Function: () => onChange(item.file),
+              });
+            } else {
+              setConfirmAction({
+                active: true,
+                text: activeLanguage?.avatar_change,
+                price: targetItem?.price?.cover > 0 ? 0 : 2000,
+                Function: () => onChange(item.file),
+              });
+            }
           }
         } else {
           setOpenBuyItem(item);

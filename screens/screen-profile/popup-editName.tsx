@@ -54,7 +54,8 @@ const EditNameWindow = () => {
               textAlign: "center",
             }}
           >
-            {currentUser?.editOptions?.totalFreeEditName} free changes left!
+            {currentUser?.editOptions?.totalFreeEditName}{" "}
+            {activeLanguage?.free_changes}!
           </Text>
         )}
         <Input

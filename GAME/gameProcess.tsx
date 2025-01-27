@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Animated,
   StyleSheet,
@@ -31,6 +31,8 @@ const GameProcess = ({
   CommonTimeSkip,
   setOpenConfirmRoles,
   StartPlay,
+  skipLastWord,
+  skipLastTimerLoading,
 }: any) => {
   /**
    * App context
@@ -119,6 +121,23 @@ const GameProcess = ({
     (player: any) => player?.userId === currentUser?._id
   )?.death;
 
+  /**
+   * last word speech skip
+   */
+  useEffect(() => {
+    if (socket) {
+      const skipSpeech = (data: any) => {
+        if (game?.options[0]?.userId === data?.user) {
+          skipLastWord();
+        }
+      };
+      socket.on("userStatusInRoom", skipSpeech);
+      return () => {
+        socket.off("userStatusInRoom", skipSpeech);
+      };
+    }
+  }, [socket, game, skipLastWord]);
+
   return (
     <View
       style={{
@@ -188,7 +207,7 @@ const GameProcess = ({
                 ? activeLanguage?.common_time
                 : game.value === "Personal Time Of Death"
                 ? activeLanguage?.last_speech
-                : " "}
+                : " "}{" "}
               {game.value === "Day"
                 ? `${dayNumber}`
                 : game.value === "Night"
@@ -350,7 +369,7 @@ const GameProcess = ({
         (currentUserRole?.includes("mafia") ||
           currentUserRole === "doctor" ||
           currentUserRole === "police" ||
-          currentUserRole === "serial-killer") && (
+          (currentUserRole === "serial-killer" && nightNumber > 1)) && (
           <View style={{ alignItems: "center", marginTop: 16 }}>
             <TouchableOpacity
               activeOpacity={0.8}
@@ -442,6 +461,36 @@ const GameProcess = ({
           </TouchableOpacity>
         </View>
       )}
+      {game.value === "Personal Time Of Death" &&
+        game.options[0].userId === currentUser?._id && (
+          <View style={{ alignItems: "center", marginTop: 16 }}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={skipLastWord}
+              style={{
+                width: 160,
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 6,
+                borderRadius: 50,
+                backgroundColor: "#181818",
+                borderWidth: 1,
+                borderColor: theme.active,
+                height: 34,
+                position: "relative",
+                bottom: 8,
+              }}
+            >
+              <Text style={{ color: "white", fontWeight: 600 }}>
+                {skipLastTimerLoading ? (
+                  <ActivityIndicator size={16} color="white" />
+                ) : (
+                  activeLanguage?.skip
+                )}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
     </View>
   );
 };

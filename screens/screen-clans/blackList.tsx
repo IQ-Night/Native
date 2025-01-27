@@ -13,13 +13,13 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
-import BanTimer from "../../../components/banTimer";
-import DeleteConfirm from "../../../components/deleteConfirm";
-import Img from "../../../components/image";
-import { useAppContext } from "../../../context/app";
-import { useAuthContext } from "../../../context/auth";
-import { useGameContext } from "../../../context/game";
-import { checkBanExpired } from "../../../functions/checkBan";
+import BanTimer from "../../components/banTimer";
+import DeleteConfirm from "../../components/deleteConfirm";
+import Img from "../../components/image";
+import { useAppContext } from "../../context/app";
+import { useAuthContext } from "../../context/auth";
+import { useGameContext } from "../../context/game";
+import { checkBanExpired } from "../../functions/checkBan";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 

@@ -4,7 +4,7 @@ import NotificationItem from "./notification-item";
 import { useNotificationsContext } from "../../../context/notifications";
 import { useAppContext } from "../../../context/app";
 
-const List = ({ setDeleteItem }: any) => {
+const List = ({ openDeleteConfirm }: any) => {
   const { activeLanguage } = useAppContext();
   const { notifications, totalNotifications, AddNotifications } =
     useNotificationsContext();
@@ -49,7 +49,7 @@ const List = ({ setDeleteItem }: any) => {
             <NotificationItem
               key={index}
               item={item}
-              setDeleteItem={setDeleteItem}
+              openDeleteConfirm={openDeleteConfirm}
             />
           );
         })}

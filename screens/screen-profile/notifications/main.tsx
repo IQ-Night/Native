@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useRef, useState } from "react";
+import {
+  Animated,
+  Easing,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import List from "./list";
 import axios from "axios";
 import { useAppContext } from "../../../context/app";
@@ -8,12 +15,13 @@ import { useNotificationsContext } from "../../../context/notifications";
 import { BlurView } from "expo-blur";
 import { ActivityIndicator } from "react-native-paper";
 import * as Haptics from "expo-haptics";
+import DeleteConfirm from "../../../components/deleteConfirm";
 
 const Notifications = () => {
   /**
    * App context
    */
-  const { apiUrl, theme, haptics } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
   /**
    * Auth context
    */
@@ -42,95 +50,51 @@ const Notifications = () => {
         setNotifications((prev: any) =>
           prev.filter((notif: any) => notif.notificationId !== deleteItem)
         );
-        setDeleteItem(null);
+        closeDeleteConfirm();
         setLoading(false);
       }
     } catch (error: any) {
       console.log(error);
     }
   };
+
+  /**
+   * Delete
+   */
+
+  // Animation for confirmation popup
+  const deleteAnim = useRef(new Animated.Value(300)).current; // Start off-screen
+
+  const openDeleteConfirm = (data: any) => {
+    setDeleteItem(data);
+    Animated.timing(deleteAnim, {
+      toValue: 0,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeDeleteConfirm = () => {
+    Animated.timing(deleteAnim, {
+      toValue: 300, // Slide back down
+      duration: 300,
+      easing: Easing.in(Easing.ease),
+      useNativeDriver: true,
+    }).start(() => setDeleteItem(null));
+  };
+
   return (
     <View style={{ minHeight: "100%" }}>
-      <List setDeleteItem={setDeleteItem} />
+      <List openDeleteConfirm={openDeleteConfirm} />
       {deleteItem && (
-        <BlurView
-          intensity={120}
-          tint="dark"
-          style={{
-            position: "absolute",
-            top: -50,
-            zIndex: 50,
-            height: "100%",
-            width: "100%",
-            justifyContent: "center",
-          }}
-        >
-          <View style={{ paddingHorizontal: 24, gap: 16 }}>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: 500,
-                textAlign: "center",
-                color: theme.text,
-              }}
-            >
-              Are you sure to want to delete this Notification?
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                width: "100%",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
-            >
-              <Pressable
-                onPress={() => {
-                  setDeleteItem(null);
-                  if (haptics) {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                  }
-                }}
-                style={{
-                  paddingVertical: 12,
-                  paddingHorizontal: 8,
-                  borderRadius: 12,
-                  backgroundColor: "#333",
-                  width: "48%",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: 40,
-                }}
-              >
-                <Text style={{ fontWeight: "bold", color: theme.text }}>
-                  Cancel
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={DeleteNotification}
-                style={{
-                  paddingVertical: 12,
-                  paddingHorizontal: 8,
-                  borderRadius: 12,
-                  backgroundColor: theme.active,
-                  width: "48%",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: 40,
-                }}
-              >
-                {loading ? (
-                  <ActivityIndicator size={22} color="white" />
-                ) : (
-                  <Text style={{ fontWeight: "bold", color: "white" }}>
-                    Confirm
-                  </Text>
-                )}
-              </Pressable>
-            </View>
-          </View>
-        </BlurView>
+        <DeleteConfirm
+          closeDeleteConfirm={closeDeleteConfirm}
+          text={activeLanguage?.confirm}
+          Function={DeleteNotification}
+          loadingDelete={loading}
+          slideAnim={deleteAnim}
+        />
       )}
     </View>
   );

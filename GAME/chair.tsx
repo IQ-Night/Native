@@ -18,6 +18,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const Chair = ({
   item,
+  index,
   game,
   activePlayerToSpeech,
   dayNumber,
@@ -38,11 +39,19 @@ const Chair = ({
   setKillBySerialKiller,
   timeController,
   speechTimer,
+  setNightSkips,
 }: any) => {
+  if (item) {
+    // console.log({
+    //   name: item?.userName,
+    //   video: item?.video,
+    //   audio: item?.audio,
+    // });
+  }
   /**
    * App context
    */
-  const { apiUrl, theme, haptics, activeLanguage } = useAppContext();
+  const { apiUrl, theme, haptics, activeLanguage, setAlert } = useAppContext();
 
   /**
    * Auth context
@@ -60,6 +69,7 @@ const Chair = ({
     setGamePlayers,
     setActiveRoom,
   } = useGameContext();
+
   /**
    * Video context
    */
@@ -394,13 +404,8 @@ const Chair = ({
   // clean states if game end
   useEffect(() => {
     if (game.value === "Ready to start") {
-      setSafePlayer(false);
       setDailyVotes(0);
       setNightVotes([]);
-      setKillBySerialKiller(null);
-      setFindNight(null);
-      setSafePlayer(null);
-      setFoundedMafias([]);
     }
   }, [game]);
 
@@ -410,7 +415,19 @@ const Chair = ({
     }
 
     setFindNight(nightNumber);
-    alert(item.role.value === "police" ? "Sherif - Yes" : "Sherif - No");
+    if (item.role.value === "police") {
+      setAlert({
+        active: true,
+        text: activeLanguage?.yes_sheriff,
+        type: "success",
+      });
+    } else {
+      setAlert({
+        active: true,
+        text: activeLanguage?.no_sheriff,
+        type: "error",
+      });
+    }
     const SaveFinding = async () => {
       try {
         const response = await axios.patch(
@@ -441,7 +458,6 @@ const Chair = ({
   /**
    * Find mafia by sherif
    */
-
   const FindMafia = () => {
     if (haptics) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
@@ -452,7 +468,19 @@ const Chair = ({
         ?.filter((u: any) => !u.death)
         ?.find((user: any) => user.role.value.includes("mafia"))
     ) {
-      alert(item.role.value.includes("mafia") ? "Yes - Mafia" : "No - Mafia");
+      if (item.role.value.includes("mafia")) {
+        setAlert({
+          active: true,
+          text: activeLanguage?.yes_mafia,
+          type: "success",
+        });
+      } else {
+        setAlert({
+          active: true,
+          text: activeLanguage?.no_mafia,
+          type: "error",
+        });
+      }
       if (item.role.value.includes("mafia")) {
         AddRating({
           points: 12,
@@ -504,13 +532,21 @@ const Chair = ({
           }
         };
         SaveFinding();
-        alert("Serial-Killer");
+        setAlert({
+          active: true,
+          text: activeLanguage?.serialKiller,
+          type: "success",
+        });
         AddRating({
           points: 15,
           scenario: "Found Serial-Killer",
         });
       } else {
-        alert("No - Mafia");
+        setAlert({
+          active: true,
+          text: activeLanguage?.no_mafia,
+          type: "error",
+        });
       }
     }
   };
@@ -553,7 +589,16 @@ const Chair = ({
           // overflow: "hidden",
           gap: 6,
           opacity:
-            isMafiaRevealed && !item?.role.value.includes("mafia") ? 0.2 : 1,
+            isMafiaRevealed && !item?.role.value.includes("mafia")
+              ? 0.2
+              : game.value === "Personal Time Of Death" &&
+                game.options[0].userId !== item.userId
+              ? 0.5
+              : game?.value === "Day" &&
+                activePlayerToSpeech?.userId !== item?.userId &&
+                activePlayerToSpeech?.userId !== currentUser?._id
+              ? 0.5
+              : 1,
         },
       ]}
     >
@@ -631,8 +676,8 @@ const Chair = ({
         <>
           <View
             style={{
-              width: (SCREEN_WIDTH * 0.9 - 72) / 4,
-              height: (SCREEN_WIDTH * 0.9 - 72) / 4,
+              width: (SCREEN_WIDTH * 0.9 - 80) / 4,
+              height: (SCREEN_WIDTH * 0.9 - 80) / 4,
               overflow: "hidden",
               position: "relative",
               alignItems: "center",
@@ -698,8 +743,8 @@ const Chair = ({
             />
             <View
               style={{
-                width: (SCREEN_WIDTH * 0.9 - 72) / 4,
-                height: (SCREEN_WIDTH * 0.9 - 72) / 4,
+                width: (SCREEN_WIDTH * 0.9 - 80) / 4,
+                height: (SCREEN_WIDTH * 0.9 - 80) / 4,
                 borderRadius: 50,
                 overflow: "hidden",
                 borderWidth: 2,
@@ -712,12 +757,20 @@ const Chair = ({
               <Img uri={item.userCover} />
             </View>
           </View>
-          {item?.playerNumber && (
-            <View
+          {item?.playerNumber ? (
+            <Pressable
+              onPress={() => {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+                setOpenUser(item);
+              }}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 4,
+                maxWidth: "90%",
+                height: 14,
               }}
             >
               <Text
@@ -735,13 +788,13 @@ const Chair = ({
                       ? "red"
                       : theme.text,
                   fontWeight: 600,
-                  fontSize: 14,
+                  fontSize: 12,
                   overflow: "hidden",
                 }}
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                N{item?.playerNumber}
+                {item?.playerNumber}. {item?.userName}
               </Text>
               {/* {sherifPlayer &&
                 currentUserRole === "mafia-don" &&
@@ -770,14 +823,54 @@ const Chair = ({
                     color={theme.active}
                   />
                 )} */}
-            </View>
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={() => {
+                if (haptics) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                }
+                setOpenUser(item);
+              }}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+                maxWidth: "90%",
+                maxHeight: 14,
+              }}
+            >
+              <Text
+                style={{
+                  color:
+                    (isMafiaRevealed && item?.role?.value?.includes("mafia")) ||
+                    (game.value === "Night" &&
+                      item?.role?.value?.includes("mafia") &&
+                      currentUserRole?.includes("mafia")) ||
+                    (game?.value === "Day" &&
+                      activePlayerToSpeech?.userId === item?.userId)
+                      ? theme.active
+                      : game.value === "Personal Time Of Death" &&
+                        game.options[0].userId === item.userId
+                      ? "red"
+                      : theme.text,
+                  fontWeight: 600,
+                  fontSize: 12,
+                  overflow: "hidden",
+                }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {index + 1}. {item?.userName}
+              </Text>
+            </Pressable>
           )}
         </>
       ) : (
         <>
           <View
             style={{
-              width: (SCREEN_WIDTH * 0.9 - 72) / 4,
+              width: (SCREEN_WIDTH * 0.9 - 80) / 4,
               aspectRatio: 1,
               borderRadius: 50,
               overflow: "hidden",
@@ -792,6 +885,7 @@ const Chair = ({
               {activeLanguage?.empty}
             </Text>
           </View>
+          <View style={{ height: 10 }}></View>
         </>
       )}
     </View>

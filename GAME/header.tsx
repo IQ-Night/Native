@@ -208,10 +208,8 @@ const Header = ({
       newType: "spectator",
     });
     setConfirm(false); // Close the confirmation modal or prompt
-    if (video === "active" || microphone === "active") {
-      setVideo("inactive");
-      setMicrophone("inactive");
-    }
+    setVideo("inactive");
+    setMicrophone("inactive");
   };
 
   // switch to player
@@ -587,7 +585,10 @@ const Header = ({
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => {
-              if (spectators?.length > 0) {
+              if (
+                spectators?.length > 0 ||
+                gamePlayers?.filter((p: any) => p.death)?.length > 0
+              ) {
                 if (haptics) {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
                 }
@@ -601,7 +602,10 @@ const Header = ({
             }}
           >
             <MaterialCommunityIcons name="eye" size={18} color={theme.text} />
-            <Text style={{ color: theme.text }}>{spectators?.length}</Text>
+            <Text style={{ color: theme.text }}>
+              {spectators?.length +
+                gamePlayers?.filter((p: any) => p.death)?.length}
+            </Text>
           </TouchableOpacity>
           {game?.value === "Ready to start" && (
             <View

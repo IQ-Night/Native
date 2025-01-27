@@ -42,7 +42,6 @@ export default function App() {
   const current = versionToNumber(currentVersion);
   const app = versionToNumber(appVersion);
 
-  // const apiUrl = "http://192.168.100.2:5000";
   const apiUrl = "https://iq-night-acb3bc094c45.herokuapp.com";
 
   useEffect(() => {
@@ -60,7 +59,7 @@ export default function App() {
 
   return (
     <AppContextWrapper>
-      {current > app && (
+      {app > current && (
         <BlurView
           intensity={100}
           tint="dark"

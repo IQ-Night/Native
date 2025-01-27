@@ -244,7 +244,7 @@ const EditRoom = ({ editRoom, setEditRoom, setDoorReview }: any) => {
   const translateYState = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   useEffect(() => {
-    if (openPopup === "avatars")
+    if (openPopup !== "")
       Animated.timing(translateYState, {
         toValue: 0,
         duration: 250,
