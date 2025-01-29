@@ -296,13 +296,6 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
               placeholder={`${activeLanguage.confirmPassword}*`}
               onChangeText={(text: string) => setConfirmPassword(text)}
               type="password"
-              returnKeyType="go"
-              onSubmitEditing={() => {
-                SendEmail();
-                if (haptics) {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                }
-              }}
               ref={confirmPasswordInputRef}
               value={confirmPassword}
             />
@@ -318,11 +311,17 @@ const Register: React.FC<PropsType> = ({ navigation }: any) => {
                 isChecked={terms}
                 setIsChecked={setTerms}
                 label={activeLanguage?.terms}
+                pressable="Terms & Rules"
+                navigation={navigation}
+                from="register"
               />
               <CheckboxWithLabel
                 isChecked={privacy}
                 setIsChecked={setPrivacy}
                 label={activeLanguage?.privacy}
+                pressable="Privacy"
+                navigation={navigation}
+                from="register"
               />
             </View>
 

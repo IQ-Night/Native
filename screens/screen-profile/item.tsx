@@ -7,7 +7,7 @@ import { useProfileContext } from "../../context/profile";
 import { Badge } from "react-native-elements";
 import { useNotificationsContext } from "../../context/notifications";
 
-const Item = ({ item, style, navigation }: any) => {
+const Item = ({ item, style, navigation, openDeactivate }: any) => {
   /**
    * App state
    */
@@ -26,15 +26,18 @@ const Item = ({ item, style, navigation }: any) => {
     <Pressable
       style={style}
       onPress={() => {
+        if (haptics && item?.type !== "switch") {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+        }
+        if (item?.value === "Deactivation") {
+          return openDeactivate();
+        }
         if (item.function) {
           item.function();
         } else if (item.type === "screen") {
           navigation.navigate(item.value);
         } else if (item.type === "popup") {
           setUpdateState(item.value);
-        }
-        if (haptics && item?.type !== "switch") {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
         }
       }}
     >
@@ -67,14 +70,6 @@ const Item = ({ item, style, navigation }: any) => {
         />
       )}
       {/* {item.value === "Gifts" && 0 > 0 && (
-        <Badge
-          value={unreadNotifications}
-          status="success"
-          badgeStyle={{ backgroundColor: theme.active }}
-          containerStyle={{}}
-        />
-      )} */}
-      {/* {item.value === "Invoices" && 0 > 0 && (
         <Badge
           value={unreadNotifications}
           status="success"

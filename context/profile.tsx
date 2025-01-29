@@ -650,19 +650,19 @@ export const ProfileContextWrapper: React.FC<contextProps> = ({ children }) => {
       type: "screen",
     },
 
-    // {
-    //   value: "Delete Account",
-    //   label: "Delete Account",
-    //   icon: (
-    //     <MaterialIcons
-    //       name="delete"
-    //       size={22}
-    //       color={"red"}
-    //       style={{ position: "relative", bottom: 1 }}
-    //     />
-    //   ),
-    //   type: "",
-    // },
+    {
+      value: "Deactivation",
+      label: activeLanguage?.deactivation,
+      icon: (
+        <MaterialIcons
+          name="delete"
+          size={22}
+          color={"red"}
+          style={{ position: "relative", bottom: 1 }}
+        />
+      ),
+      type: "",
+    },
     {
       value: "Logout",
       label: activeLanguage?.logout,

@@ -154,7 +154,6 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
   /**
    * Registration
    */
-  const [openCheckEmail, setOpenCheckEmail] = useState(false);
   const ProviderAuth = async (
     first: string,
     last: string,
@@ -163,6 +162,7 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
     registerDevice: string,
     identityToken: string
   ) => {
+    const randomName = new Date().getTime();
     try {
       const response = await axios.post(
         `${apiUrl}/api/v1/providerauth?provider=` +
@@ -170,15 +170,31 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
           "&device=" +
           registerDevice,
         {
-          name: first || last ? first + " " + last : "Random name",
+          name: first || last ? first + " " + last : randomName,
           email: email,
           identityToken: identityToken,
           language: language,
         }
       );
       if (response?.data?.status === "success") {
-        if (!response?.data?.user?.name) {
-          setAddationalFields({ user: response.data.user });
+        if (
+          !response?.data?.user?.acceptPrivacy ||
+          !response?.data?.user?.acceptTerms ||
+          !response?.data?.user?.country
+        ) {
+          await AsyncStorage.setItem(
+            "IQ-Night:jwtToken",
+            JSON.stringify(response.data.accessToken)
+          );
+          await AsyncStorage.setItem(
+            "IQ-Night:jwtRefreshToken",
+            JSON.stringify(response.data.refreshToken)
+          );
+          setAddationalFields({
+            user: response.data.user,
+            registerType: response?.data?.registerType,
+            navigation: navigation,
+          });
         } else {
           await AsyncStorage.setItem(
             "IQ-Night:jwtToken",
@@ -443,6 +459,8 @@ const Login: React.FC<PropsType> = ({ navigation }: any) => {
                           // Destructure the fullName object for clarity
                           const { givenName, familyName } =
                             credential.fullName || {};
+
+                          console.log(credential?.fullName);
 
                           // Providing default values in case givenName or familyName are undefined
                           const firstName = givenName || "";

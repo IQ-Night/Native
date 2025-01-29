@@ -9,11 +9,11 @@ module.exports = {
     icon: "./assets/iqnight-icon.png",
     ios: {
       bundleIdentifier: "com.iqnight.app",
-      buildNumber: "1.0.19",
+      buildNumber: "1.0.21",
       icon: "./assets/iqnight-icon.png",
       supportsTablet: false,
       infoPlist: {
-        UIBackgroundModes: ["audio", "voip"],
+        UIBackgroundModes: ["audio"],
       },
     },
     splash: {

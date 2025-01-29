@@ -26,7 +26,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.iqnight.app",
       "newArchEnabled": false,
-      "buildNumber": "1.0.19",
+      "buildNumber": "1.0.21",
       "usesAppleSignIn": true,
       "keychainSharing": false
     },

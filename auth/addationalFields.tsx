@@ -7,6 +7,7 @@ import {
   Dimensions,
   Keyboard,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
@@ -14,16 +15,24 @@ import {
 } from "react-native";
 import Button from "../components/button";
 import Input from "../components/input";
-import { useAppContext } from "../context/app";
+import {
+  privacyPolicyContentEn,
+  privacyPolicyContentKa,
+  privacyPolicyContentRu,
+  useAppContext,
+} from "../context/app";
 import { useAuthContext } from "../context/auth";
 import Countries from "./countries";
 import CheckboxWithLabel from "../components/checkBox";
+import Rules from "../screens/screen-rules/main";
+import { FontAwesome } from "@expo/vector-icons";
+import Privacy from "../screens/screen-privacy/main";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
 interface PropsType {}
 
-const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
+const AddationalFields: React.FC<PropsType> = ({ regiserType }: any) => {
   /**
    * App context
    */
@@ -45,7 +54,6 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
   /**
    * Register fields
    */
-  const [name, setName] = useState("");
   const [country, setCountry] = useState("GE");
   const [terms, setTerms] = useState(false);
   const [privacy, setPrivacy] = useState(false);
@@ -57,7 +65,7 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
   const [addingLoading, setAddingLoading] = useState(false);
 
   const AddFields = async () => {
-    if (name?.length < 1 || !terms || !privacy) {
+    if (!terms || !privacy) {
       Keyboard.dismiss();
       return setAlert({
         active: true,
@@ -65,11 +73,11 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
         text: activeLanguage.inputFields,
       });
     }
+
     setAddingLoading(true);
     try {
       await axios
         .patch(`${apiUrl}/api/v1/users/${addationalFields?.user?._id}`, {
-          name: name,
           country: country,
           acceptPrivacy: true,
           acceptTerms: true,
@@ -78,7 +86,6 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
           if (data) {
             setCurrentUser({
               ...addationalFields?.user,
-              name: name,
               country: country,
               acceptPrivacy: true,
               acceptTerms: true,
@@ -110,6 +117,19 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
 
   // open countries
   const [openCountries, setOpenCountries] = useState(false);
+
+  // open rules windows
+  const [openWindow, setOpenWindow] = useState<any>(null);
+
+  const { language } = useAppContext();
+  let currentLangText: any;
+  if (language === "GE") {
+    currentLangText = privacyPolicyContentKa;
+  } else if (language === "RU") {
+    currentLangText = privacyPolicyContentRu;
+  } else {
+    currentLangText = privacyPolicyContentEn;
+  }
   return (
     <BlurView
       intensity={120}
@@ -137,13 +157,6 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
             >
               {activeLanguage?.addationalFields}
             </Text>
-            <Input
-              placeholder={`${activeLanguage.fullName}*`}
-              onChangeText={(text: string) => setName(text)}
-              type="text"
-              returnKeyType="next"
-              value={name}
-            />
 
             <Pressable
               style={{
@@ -194,11 +207,15 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
                 isChecked={terms}
                 setIsChecked={setTerms}
                 label={activeLanguage?.terms}
+                pressable="Terms & Rules"
+                setOpenWindow={setOpenWindow}
               />
               <CheckboxWithLabel
                 isChecked={privacy}
                 setIsChecked={setPrivacy}
                 label={activeLanguage?.privacy}
+                pressable="Privacy"
+                setOpenWindow={setOpenWindow}
               />
             </View>
             <View
@@ -219,7 +236,7 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
                 title={activeLanguage.register}
                 loading={addingLoading}
                 onPressFunction={AddFields}
-                disabled={name?.length < 1 || !terms || !privacy}
+                disabled={!terms || !privacy}
               />
             </View>
             <View
@@ -264,6 +281,35 @@ const AddationalFields: React.FC<PropsType> = ({ route, navigation }: any) => {
           )}
         </View>
       </TouchableWithoutFeedback>
+      {openWindow && (
+        <BlurView
+          intensity={120}
+          tint="dark"
+          style={{
+            height: SCREEN_HEIGHT,
+            position: "absolute",
+            zIndex: 90,
+          }}
+        >
+          <Pressable
+            onPress={() => {
+              if (haptics) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+              }
+              setOpenWindow(false);
+            }}
+            style={{
+              alignItems: "center",
+              backgroundColor: "white",
+              paddingTop: 48,
+              paddingBottom: 8,
+            }}
+          >
+            <FontAwesome name="close" size={40} color={theme.active} />
+          </Pressable>
+          {openWindow === "Privacy" ? <Privacy /> : <Rules />}
+        </BlurView>
+      )}
     </BlurView>
   );
 };
@@ -309,5 +355,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginVertical: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginVertical: 4,
+    marginTop: 16,
+  },
+  text: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#333",
   },
 });

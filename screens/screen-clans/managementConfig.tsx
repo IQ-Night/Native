@@ -216,10 +216,17 @@ const ManagementConfig = ({
                 </Text>
 
                 <Text
-                  style={{ color: theme.text, fontWeight: 500, fontSize: 16 }}
+                  style={{
+                    color: theme.text,
+                    fontWeight: 500,
+                    fontSize: 16,
+                    maxWidth: "85%",
+                  }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
                 >
                   {activeLanguage?.role}:{" "}
-                  <Text style={{ color: theme.active }}>
+                  <Text style={{ color: theme.active, maxWidth: 40 }}>
                     {newRole ? activeLanguage[newRole] : activeLanguage?.noRole}
                   </Text>
                 </Text>

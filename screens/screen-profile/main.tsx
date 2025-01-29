@@ -2,10 +2,11 @@ import { MaterialIcons } from "@expo/vector-icons";
 import axios from "axios";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
+  Easing,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -27,6 +28,7 @@ import BirthdayWindow from "./popup-birthday";
 import EditCountry from "./popup-country";
 import EditNameWindow from "./popup-editName";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Deactivate from "./deactivation";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -128,6 +130,34 @@ const Profile = ({ navigation }: any) => {
     await AsyncStorage.setItem("IQ-Night:language", e);
     setLanguage(e);
   };
+
+  /**
+   * Deactivate
+   */
+  const [deactivateConfirm, setDeactivateConfirm] = useState<any>(false);
+
+  // Animation for confirmation popup
+  const slideAnim = useRef(new Animated.Value(300)).current; // Start off-screen
+
+  const openDeactivate = () => {
+    setDeactivateConfirm(true);
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeDeactivate = () => {
+    Animated.timing(slideAnim, {
+      toValue: 300, // Slide back down
+      duration: 300,
+      easing: Easing.in(Easing.ease),
+      useNativeDriver: true,
+    }).start(() => setDeactivateConfirm(false));
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <Header tab="Profile" tabTitle={activeLanguage?.profile} />
@@ -268,6 +298,7 @@ const Profile = ({ navigation }: any) => {
                 key={index}
                 item={item}
                 navigation={navigation}
+                openDeactivate={openDeactivate}
               />
             );
           })}
@@ -322,6 +353,9 @@ const Profile = ({ navigation }: any) => {
             </Animated.View>
           </View>
         </BlurView>
+      )}
+      {deactivateConfirm && (
+        <Deactivate closeDeactivate={closeDeactivate} slideAnim={slideAnim} />
       )}
     </View>
   );

@@ -140,7 +140,11 @@ export const en = {
   doctor: "Doctor",
   police: "Detective",
   serialKiller: "Serial Killer",
-
+  deactivation: "Deactivation",
+  sure_deactivate_account: "Are you sure you want to deactivate this account?",
+  delete_your_clan: "Delete your clan?",
+  after_deactivation:
+    "After deactivating your account, your data will be erased!",
   mafiaDon: "Mafia Don",
   avatar: "Avatar",
   editRoom: "Edit room",
@@ -533,7 +537,12 @@ export const ka = {
   doctor: "ექიმი",
   police: "დეტექტივი",
   serialKiller: "სერიული მკვლელი",
-
+  deactivation: "დეაქტივაცია",
+  sure_deactivate_account:
+    "დარწმუნებული ხართ, რომ გსურთ ამ ანგარიშის დეაქტივაცია?",
+  delete_your_clan: "გაუქმდეს თქვენი კლანი?",
+  after_deactivation:
+    "ანგარიშის დეაქტივაციის შემდგომ, თქვენი მონაცემები გასუფთავდება!",
   mafiaDon: "მაფიის ბოსი",
   avatar: "ავატარი",
   editRoom: "ოთახის რედაქტირება",
@@ -929,7 +938,12 @@ export const ru = {
   doctor: "Доктор",
   police: "Полиция",
   serialKiller: "Серийный убийца",
-
+  deactivation: "Деактивация",
+  sure_deactivate_account:
+    "Вы уверены, что хотите деактивировать эту учетную запись?",
+  delete_your_clan: "Удалить свой клан?",
+  after_deactivation:
+    "После деактивации вашего аккаунта ваши данные будут удалены!",
   mafiaDon: "Дон мафии",
   avatar: "Аватар",
   editRoom: "Редактировать комнату",

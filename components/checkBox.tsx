@@ -1,10 +1,18 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Checkbox } from "react-native-paper"; // Import Checkbox from React Native Paper
 import { useAppContext } from "../context/app";
 import * as Haptics from "expo-haptics";
 
-const CheckboxWithLabel = ({ isChecked, setIsChecked, label }: any) => {
+const CheckboxWithLabel = ({
+  isChecked,
+  setIsChecked,
+  label,
+  pressable,
+  setOpenWindow,
+  navigation,
+  from,
+}: any) => {
   const { theme, haptics } = useAppContext();
 
   return (
@@ -29,7 +37,40 @@ const CheckboxWithLabel = ({ isChecked, setIsChecked, label }: any) => {
           style={isChecked ? styles.checkedCheckbox : styles.uncheckedCheckbox} // Conditional styles based on checked state
         />
       </View>
-      <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
+      {pressable ? (
+        <Pressable
+          onPress={() => {
+            if (haptics) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+            }
+            if (from === "register") {
+              navigation?.navigate(pressable);
+            } else {
+              setOpenWindow(pressable);
+            }
+          }}
+        >
+          <Text
+            style={[
+              styles.label,
+              { color: theme.text, textDecorationLine: "underline" },
+            ]}
+          >
+            {label}
+          </Text>
+        </Pressable>
+      ) : (
+        <Pressable
+          onPress={() => {
+            if (haptics) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+            }
+            setIsChecked(!isChecked);
+          }}
+        >
+          <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
+        </Pressable>
+      )}
     </View>
   );
 };

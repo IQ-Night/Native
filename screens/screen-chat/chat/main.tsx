@@ -64,7 +64,11 @@ const Chat = ({ route }: any) => {
         `${apiUrl}/api/v1/chats/members?user1=${sender?.id}&user2=${receiver?.id}`
       );
       if (response?.data.status === "success") {
-        updateChatRoute(response?.data.data.chat);
+        if (response?.data.data.chat) {
+          updateChatRoute(response?.data.data.chat);
+        } else {
+          navigation.goBack();
+        }
       }
     } catch (error: any) {
       console.log(error.response?.data?.message);
